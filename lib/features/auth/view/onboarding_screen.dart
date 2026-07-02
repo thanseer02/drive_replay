@@ -40,7 +40,7 @@ class OnboardingScreen extends StatelessWidget {
               Spacer(),
               PrimaryButton(
                 text: 'Get Started',
-                onPressed: () => context.go('/login'),
+                onPressed: () => context.go('/dashboard'),
               ),
               SizedBox(height: 16.spMin),
             ],

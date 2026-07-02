@@ -36,7 +36,9 @@ class _LiveDriveScreenState extends State<LiveDriveScreen> {
     final center = pos != null ? LatLng(pos.latitude, pos.longitude) : const LatLng(51.5, -0.09);
 
     if (pos != null) {
-      _mapController.move(center, 18.0);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _mapController.move(center, 18.0);
+      });
     }
 
     return Scaffold(

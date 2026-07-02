@@ -4,6 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import '../../../services/location_service.dart';
 import '../../../services/sensor_service.dart';
 import '../../../repositories/trip_repository.dart';
+import '../../../helpers/permission_helper.dart';
 import '../model/trip_model.dart';
 
 class TripViewModel extends ChangeNotifier {
@@ -23,7 +24,12 @@ class TripViewModel extends ChangeNotifier {
   Position? get currentPosition => _currentPosition;
   double get currentSpeed => _currentSpeed; // m/s
 
-  void startTrip() {
+  Future<void> startTrip() async {
+    bool hasPermission = await PermissionHelper.requestLocationPermission();
+    if (!hasPermission) {
+      return; // Stop if permissions are completely denied
+    }
+
     _isRecording = true;
     _currentTrip = TripModel(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -41,6 +47,8 @@ class TripViewModel extends ChangeNotifier {
       }
       
       notifyListeners();
+    }, onError: (e) {
+      // Handle stream errors silently
     });
 
     // Start Sensor Tracking for harsh events
