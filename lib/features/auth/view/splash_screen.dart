@@ -35,12 +35,16 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.directions_car,
-              size: 80.spMin,
-              color: AppColors.primary,
+            ClipRRect(
+              borderRadius: BorderRadius.circular(24.spMin),
+              child: Image.asset(
+                'assets/images/logo.png',
+                width: 120.spMin,
+                height: 120.spMin,
+                fit: BoxFit.cover,
+              ),
             ),
-            SizedBox(height: 16.spMin),
+            SizedBox(height: 24.spMin),
             Text(
               'Drive Replay',
               style: AppStyles.tsS32W700CFFFFFF,
