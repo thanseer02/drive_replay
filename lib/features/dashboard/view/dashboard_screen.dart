@@ -16,6 +16,16 @@ class DashboardScreen extends StatelessWidget {
         title: Text('Drive Replay', style: AppStyles.tsS20W600CFFFFFF),
         backgroundColor: AppColors.background,
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.history, color: AppColors.white),
+            onPressed: () => context.push('/history'),
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings, color: AppColors.white),
+            onPressed: () => context.push('/settings'),
+          ),
+        ],
       ),
       body: SafeArea(
         child: Padding(

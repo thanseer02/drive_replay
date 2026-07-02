@@ -22,7 +22,9 @@ class LocationService {
   Future<Position?> getCurrentPosition() async {
     try {
       return await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.bestForNavigation,
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.bestForNavigation,
+        ),
       );
     } catch (e) {
       // TODO: Integrate LoggerHelper

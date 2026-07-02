@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../../services/location_service.dart';
 import '../../../services/sensor_service.dart';
+import '../../../repositories/trip_repository.dart';
 import '../model/trip_model.dart';
 
 class TripViewModel extends ChangeNotifier {
@@ -58,7 +59,9 @@ class TripViewModel extends ChangeNotifier {
     _locationSub?.cancel();
     _sensorService.stopListening();
     
-    // TODO: Save trip to local Database (Hive)
+    if (_currentTrip != null) {
+      TripRepository.instance.saveTrip(_currentTrip!);
+    }
     
     notifyListeners();
   }

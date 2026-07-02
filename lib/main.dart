@@ -8,6 +8,9 @@ import 'routes/routes.dart';
 import 'utils/colors.dart';
 
 import 'features/auth/view_model/auth_viewmodel.dart';
+import 'features/trip_recording/view_model/trip_viewmodel.dart';
+import 'features/history/view_model/history_viewmodel.dart';
+import 'features/trip_recording/model/trip_model.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,13 +18,15 @@ void main() async {
   // Initialize Hive
   await Hive.initFlutter(AppConfig.dbName);
   
-  // TODO: Register Hive Adapters here
-  // TODO: Open Hive Boxes here
+  Hive.registerAdapter(TripModelAdapter());
+  await Hive.openBox<TripModel>('trips_box');
 
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthViewModel()),
+        ChangeNotifierProvider(create: (_) => TripViewModel()),
+        ChangeNotifierProvider(create: (_) => HistoryViewModel()),
       ],
       child: const DriveReplayApp(),
     ),

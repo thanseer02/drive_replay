@@ -51,7 +51,8 @@ class _LiveDriveScreenState extends State<LiveDriveScreen> {
             ),
             children: [
               TileLayer(
-                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                urlTemplate: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+                subdomains: const ['a', 'b', 'c', 'd'],
                 userAgentPackageName: 'com.drivereplay.app',
               ),
               if (pos != null)
@@ -63,7 +64,7 @@ class _LiveDriveScreenState extends State<LiveDriveScreen> {
                       height: 50,
                       child: Container(
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.3),
+                          color: AppColors.primary.withValues(alpha: 0.3),
                           shape: BoxShape.circle,
                         ),
                         child: Center(
@@ -117,7 +118,7 @@ class _LiveDriveScreenState extends State<LiveDriveScreen> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 24.spMin, vertical: 20.spMin),
       decoration: BoxDecoration(
-        color: AppColors.surface.withOpacity(0.95),
+        color: AppColors.surface.withValues(alpha: 0.95),
         borderRadius: BorderRadius.circular(24.spMin),
         boxShadow: const [
           BoxShadow(

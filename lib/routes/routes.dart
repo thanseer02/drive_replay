@@ -1,8 +1,12 @@
-import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:go_router/go_router.dart';
 import '../features/auth/view/splash_screen.dart';
 import '../features/auth/view/onboarding_screen.dart';
 import '../features/auth/view/login_screen.dart';
+import '../features/dashboard/view/dashboard_screen.dart';
+import '../features/trip_recording/view/live_drive_screen.dart';
+import '../features/history/view/history_screen.dart';
+import '../features/settings/view/settings_screen.dart';
 
 class AppRouter {
   AppRouter._();
@@ -25,14 +29,26 @@ class AppRouter {
         name: 'login',
         builder: (context, state) => const LoginScreen(),
       ),
-      // Placeholder for Dashboard
       GoRoute(
-        path: '/dashboard',
+        path: DashboardScreen.routeName,
         name: 'dashboard',
-        builder: (context, state) => const Scaffold(
-          body: Center(child: Text('Dashboard Placeholder')),
-        ),
-      )
+        builder: (context, state) => const DashboardScreen(),
+      ),
+      GoRoute(
+        path: LiveDriveScreen.routeName,
+        name: 'live_drive',
+        builder: (context, state) => const LiveDriveScreen(),
+      ),
+      GoRoute(
+        path: HistoryScreen.routeName,
+        name: 'history',
+        builder: (context, state) => const HistoryScreen(),
+      ),
+      GoRoute(
+        path: SettingsScreen.routeName,
+        name: 'settings',
+        builder: (context, state) => const SettingsScreen(),
+      ),
     ],
   );
 }
