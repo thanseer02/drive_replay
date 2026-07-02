@@ -241,32 +241,56 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Center(
       child: GestureDetector(
         onTap: () async {
-          final bool? start = await showDialog<bool>(
+          final bool? start = await showModalBottomSheet<bool>(
             context: context,
-            builder: (context) => AlertDialog(
-              backgroundColor: AppColors.surface,
-              title: Text('Start Trip', style: AppStyles.tsS20W600CFFFFFF),
-              content: Text(
-                'Are you ready to start recording a new trip?',
-                style: AppStyles.tsS14W400CFFFFFF.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+            backgroundColor: Colors.transparent,
+            builder: (context) => Container(
+              padding: EdgeInsets.all(24.spMin),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(30.spMin)),
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  child: Text(
-                    'Cancel',
-                    style: AppStyles.tsS16W600CFFFFFF.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Start Trip', style: AppStyles.tsS24W700CFFFFFF),
+                  SizedBox(height: 16.spMin),
+                  Text(
+                    'Are you ready to start recording a new trip?',
+                    textAlign: TextAlign.center,
+                    style: AppStyles.tsS16W400CFFFFFF.copyWith(color: AppColors.textSecondary),
                   ),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.pop(context, true),
-                  child: Text('Start', style: AppStyles.tsS16W600CPrimary),
-                ),
-              ],
+                  SizedBox(height: 32.spMin),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.symmetric(vertical: 16.spMin),
+                            backgroundColor: AppColors.surfaceLight,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.spMin)),
+                          ),
+                          child: Text('Cancel', style: AppStyles.tsS16W600CFFFFFF.copyWith(color: AppColors.textSecondary)),
+                        ),
+                      ),
+                      SizedBox(width: 16.spMin),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.pop(context, true),
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.symmetric(vertical: 16.spMin),
+                            backgroundColor: AppColors.primary,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.spMin)),
+                          ),
+                          child: Text('Start', style: AppStyles.tsS16W600CFFFFFF),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 16.spMin),
+                ],
+              ),
             ),
           );
           if (start == true && context.mounted) {

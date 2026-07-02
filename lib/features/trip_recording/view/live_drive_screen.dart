@@ -20,7 +20,7 @@ class LiveDriveScreen extends StatefulWidget {
 
 class _LiveDriveScreenState extends State<LiveDriveScreen> {
   final MapController _mapController = MapController();
-  
+
   @override
   void initState() {
     super.initState();
@@ -33,9 +33,11 @@ class _LiveDriveScreenState extends State<LiveDriveScreen> {
   Widget build(BuildContext context) {
     final viewModel = context.watch<TripViewModel>();
     final pos = viewModel.currentPosition;
-    
+
     // Default location if GPS hasn't locked yet
-    final center = pos != null ? LatLng(pos.latitude, pos.longitude) : const LatLng(51.5, -0.09);
+    final center = pos != null
+        ? LatLng(pos.latitude, pos.longitude)
+        : const LatLng(51.5, -0.09);
 
     if (pos != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -51,13 +53,25 @@ class _LiveDriveScreenState extends State<LiveDriveScreen> {
             options: MapOptions(
               initialCenter: center,
               initialZoom: 18.0,
-              interactionOptions: const InteractionOptions(flags: InteractiveFlag.none),
+              interactionOptions: const InteractionOptions(
+                flags: InteractiveFlag.none,
+              ),
             ),
             children: [
               TileLayer(
                 urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                 userAgentPackageName: 'com.drivereplay.app',
               ),
+              if (viewModel.routePath.isNotEmpty)
+                PolylineLayer(
+                  polylines: [
+                    Polyline(
+                      points: viewModel.routePath,
+                      strokeWidth: 6.0,
+                      color: AppColors.primaryLight,
+                    ),
+                  ],
+                ),
               if (pos != null)
                 MarkerLayer(
                   markers: [
@@ -86,7 +100,7 @@ class _LiveDriveScreenState extends State<LiveDriveScreen> {
                 ),
             ],
           ),
-          
+
           // Speed Overlay
           Positioned(
             bottom: 40.spMin,
@@ -94,7 +108,7 @@ class _LiveDriveScreenState extends State<LiveDriveScreen> {
             right: 20.spMin,
             child: _buildBottomPanel(viewModel),
           ),
-          
+
           // Back Button
           Positioned(
             top: 50.spMin,
@@ -109,7 +123,7 @@ class _LiveDriveScreenState extends State<LiveDriveScreen> {
                 },
               ),
             ),
-          )
+          ),
         ],
       ),
     );
@@ -117,17 +131,20 @@ class _LiveDriveScreenState extends State<LiveDriveScreen> {
 
   Widget _buildBottomPanel(TripViewModel viewModel) {
     final speedKmH = (viewModel.currentSpeed * 3.6).toStringAsFixed(0);
-    final topSpeedKmH = ((viewModel.currentTrip?.topSpeed ?? 0.0) * 3.6).toStringAsFixed(0);
-    final distanceKm = ((viewModel.currentTrip?.distanceInMeters ?? 0.0) / 1000).toStringAsFixed(2);
-    final startTimeStr = viewModel.currentTrip != null 
+    final topSpeedKmH = ((viewModel.currentTrip?.topSpeed ?? 0.0) * 3.6)
+        .toStringAsFixed(0);
+    final distanceKm = ((viewModel.currentTrip?.distanceInMeters ?? 0.0) / 1000)
+        .toStringAsFixed(2);
+    final startTimeStr = viewModel.currentTrip != null
         ? DateFormat('h:mm a').format(viewModel.currentTrip!.startTime)
         : '--:--';
-    
+
     final duration = viewModel.tripDuration;
-    final String durationStr = '${duration.inHours > 0 ? '${duration.inHours}:' : ''}'
+    final String durationStr =
+        '${duration.inHours > 0 ? '${duration.inHours}:' : ''}'
         '${duration.inMinutes.remainder(60).toString().padLeft(2, '0')}:'
         '${duration.inSeconds.remainder(60).toString().padLeft(2, '0')}';
-    
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(30.spMin),
       child: BackdropFilter(
@@ -153,38 +170,135 @@ class _LiveDriveScreenState extends State<LiveDriveScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('CURRENT SPEED', style: AppStyles.tsS12W400C666666.copyWith(letterSpacing: 1.2)),
+                      Text(
+                        'CURRENT SPEED',
+                        style: AppStyles.tsS12W400C666666.copyWith(
+                          letterSpacing: 1.2,
+                        ),
+                      ),
                       SizedBox(height: 4.spMin),
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.baseline,
                         textBaseline: TextBaseline.alphabetic,
                         children: [
                           Text(
-                            speedKmH, 
+                            speedKmH,
                             style: TextStyle(
                               fontSize: 56.spMin,
                               fontWeight: FontWeight.w900,
                               color: AppColors.primaryLight,
                               height: 1.0,
-                            )
+                            ),
                           ),
                           SizedBox(width: 8.spMin),
-                          Text('km/h', style: AppStyles.tsS16W600CFFFFFF.copyWith(color: AppColors.textSecondary)),
+                          Text(
+                            'km/h',
+                            style: AppStyles.tsS16W600CFFFFFF.copyWith(
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
                         ],
                       ),
                     ],
                   ),
                   GestureDetector(
-                    onTap: () {
-                      viewModel.stopTrip();
-                      Navigator.pop(context);
+                    onTap: () async {
+                      final bool? stop = await showModalBottomSheet<bool>(
+                        context: context,
+                        backgroundColor: Colors.transparent,
+                        builder: (context) => Container(
+                          padding: EdgeInsets.all(24.spMin),
+                          decoration: BoxDecoration(
+                            color: AppColors.surface,
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(30.spMin),
+                            ),
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'Stop Trip',
+                                style: AppStyles.tsS24W700CFFFFFF,
+                              ),
+                              SizedBox(height: 16.spMin),
+                              Text(
+                                'Are you sure you want to stop recording and save this trip?',
+                                textAlign: TextAlign.center,
+                                style: AppStyles.tsS16W400CFFFFFF.copyWith(
+                                  color: AppColors.textSecondary,
+                                ),
+                              ),
+                              SizedBox(height: 32.spMin),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(context, false),
+                                      style: TextButton.styleFrom(
+                                        padding: EdgeInsets.symmetric(
+                                          vertical: 16.spMin,
+                                        ),
+                                        backgroundColor: AppColors.surfaceLight,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            16.spMin,
+                                          ),
+                                        ),
+                                      ),
+                                      child: Text(
+                                        'Cancel',
+                                        style: AppStyles.tsS16W600CFFFFFF
+                                            .copyWith(
+                                              color: AppColors.textSecondary,
+                                            ),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(width: 16.spMin),
+                                  Expanded(
+                                    child: ElevatedButton(
+                                      onPressed: () =>
+                                          Navigator.pop(context, true),
+                                      style: ElevatedButton.styleFrom(
+                                        padding: EdgeInsets.symmetric(
+                                          vertical: 16.spMin,
+                                        ),
+                                        backgroundColor: AppColors.error,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            16.spMin,
+                                          ),
+                                        ),
+                                      ),
+                                      child: Text(
+                                        'Stop Trip',
+                                        style: AppStyles.tsS16W600CFFFFFF,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 16.spMin),
+                            ],
+                          ),
+                        ),
+                      );
+                      if (stop == true && context.mounted) {
+                        viewModel.stopTrip();
+                        Navigator.pop(context);
+                      }
                     },
                     child: Container(
                       width: 64.spMin,
                       height: 64.spMin,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [AppColors.error, AppColors.error.withValues(alpha: 0.8)],
+                          colors: [
+                            AppColors.error,
+                            AppColors.error.withValues(alpha: 0.8),
+                          ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -197,33 +311,69 @@ class _LiveDriveScreenState extends State<LiveDriveScreen> {
                           ),
                         ],
                       ),
-                      child: const Icon(Icons.stop_rounded, color: AppColors.white, size: 36),
+                      child: const Icon(
+                        Icons.stop_rounded,
+                        color: AppColors.white,
+                        size: 36,
+                      ),
                     ),
                   ),
                 ],
               ),
-              
+
               SizedBox(height: 24.spMin),
               Container(
                 height: 1,
                 color: AppColors.white.withValues(alpha: 0.05),
               ),
               SizedBox(height: 24.spMin),
-              
+
               // Bottom Section: Grid of Stats
               Row(
                 children: [
-                  Expanded(child: _buildDetailItem(Icons.timer_outlined, 'Duration', durationStr)),
-                  Container(width: 1, height: 40.spMin, color: AppColors.white.withValues(alpha: 0.05)),
-                  Expanded(child: _buildDetailItem(Icons.route_outlined, 'Distance', '$distanceKm km')),
+                  Expanded(
+                    child: _buildDetailItem(
+                      Icons.timer_outlined,
+                      'Duration',
+                      durationStr,
+                    ),
+                  ),
+                  Container(
+                    width: 1,
+                    height: 40.spMin,
+                    color: AppColors.white.withValues(alpha: 0.05),
+                  ),
+                  Expanded(
+                    child: _buildDetailItem(
+                      Icons.route_outlined,
+                      'Distance',
+                      '$distanceKm km',
+                    ),
+                  ),
                 ],
               ),
               SizedBox(height: 16.spMin),
               Row(
                 children: [
-                  Expanded(child: _buildDetailItem(Icons.speed_outlined, 'Top Speed', '$topSpeedKmH km/h')),
-                  Container(width: 1, height: 40.spMin, color: AppColors.white.withValues(alpha: 0.05)),
-                  Expanded(child: _buildDetailItem(Icons.access_time_outlined, 'Started', startTimeStr)),
+                  Expanded(
+                    child: _buildDetailItem(
+                      Icons.speed_outlined,
+                      'Top Speed',
+                      '$topSpeedKmH km/h',
+                    ),
+                  ),
+                  Container(
+                    width: 1,
+                    height: 40.spMin,
+                    color: AppColors.white.withValues(alpha: 0.05),
+                  ),
+                  Expanded(
+                    child: _buildDetailItem(
+                      Icons.access_time_outlined,
+                      'Started',
+                      startTimeStr,
+                    ),
+                  ),
                 ],
               ),
             ],
@@ -253,7 +403,12 @@ class _LiveDriveScreenState extends State<LiveDriveScreen> {
               children: [
                 Text(label, style: AppStyles.tsS12W400C666666),
                 SizedBox(height: 2.spMin),
-                Text(value, style: AppStyles.tsS14W400CFFFFFF.copyWith(fontWeight: FontWeight.w600)),
+                Text(
+                  value,
+                  style: AppStyles.tsS14W400CFFFFFF.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ],
             ),
           ),

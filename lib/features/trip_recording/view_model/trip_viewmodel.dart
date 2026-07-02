@@ -6,6 +6,7 @@ import '../../../services/sensor_service.dart';
 import '../../../repositories/trip_repository.dart';
 import '../../../helpers/permission_helper.dart';
 import '../model/trip_model.dart';
+import 'package:latlong2/latlong.dart';
 
 class TripViewModel extends ChangeNotifier {
   final LocationService _locationService = LocationService();
@@ -20,12 +21,14 @@ class TripViewModel extends ChangeNotifier {
   StreamSubscription<Position>? _locationSub;
   Timer? _durationTimer;
   Duration _tripDuration = Duration.zero;
+  final List<LatLng> _routePath = [];
 
   bool get isRecording => _isRecording;
   TripModel? get currentTrip => _currentTrip;
   Position? get currentPosition => _currentPosition;
   double get currentSpeed => _currentSpeed; // m/s
   Duration get tripDuration => _tripDuration;
+  List<LatLng> get routePath => _routePath;
 
   Future<void> startTrip() async {
     bool hasPermission = await PermissionHelper.requestLocationPermission();
@@ -35,6 +38,7 @@ class TripViewModel extends ChangeNotifier {
 
     _isRecording = true;
     _tripDuration = Duration.zero;
+    _routePath.clear();
     _currentTrip = TripModel(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       startTime: DateTime.now(),
@@ -47,6 +51,8 @@ class TripViewModel extends ChangeNotifier {
     
     // Start GPS Tracking
     _locationSub = _locationService.startTracking().listen((Position position) {
+      final currentLatLng = LatLng(position.latitude, position.longitude);
+      _routePath.add(currentLatLng);
       if (_currentPosition != null) {
         final distance = Geolocator.distanceBetween(
           _currentPosition!.latitude, 
