@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:go_router/go_router.dart';
+import '../../dashboard/view/dashboard_screen.dart';
 import '../../../utils/colors.dart';
 import '../../../utils/styles.dart';
 import '../../../widgets/button_widgets.dart';
@@ -40,7 +40,7 @@ class OnboardingScreen extends StatelessWidget {
               Spacer(),
               PrimaryButton(
                 text: 'Get Started',
-                onPressed: () => context.go('/dashboard'),
+                onPressed: () => Navigator.pushReplacementNamed(context, DashboardScreen.routeName),
               ),
               SizedBox(height: 16.spMin),
             ],

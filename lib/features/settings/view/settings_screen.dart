@@ -3,6 +3,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../utils/colors.dart';
 import '../../../utils/styles.dart';
 import '../../reports/helpers/export_helper.dart';
+import 'package:provider/provider.dart';
+import '../../history/view_model/history_viewmodel.dart';
 
 class SettingsScreen extends StatelessWidget {
   static const String routeName = '/settings';
@@ -38,7 +40,40 @@ class SettingsScreen extends StatelessWidget {
             'Clear All Trips', 
             '', 
             color: AppColors.error, 
-            onTap: () {},
+            onTap: () async {
+              final bool? confirm = await showDialog<bool>(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    backgroundColor: AppColors.surface,
+                    title: Text('Clear All Trips', style: AppStyles.tsS20W600CFFFFFF),
+                    content: Text('Are you sure you want to delete all trips? This action cannot be undone.', style: AppStyles.tsS16W400CFFFFFF.copyWith(color: AppColors.textSecondary)),
+                    actions: [
+                      TextButton(
+                        child: Text('Cancel', style: AppStyles.tsS16W600CFFFFFF),
+                        onPressed: () => Navigator.of(context).pop(false),
+                      ),
+                      TextButton(
+                        child: Text('Delete', style: AppStyles.tsS16W600CFFFFFF.copyWith(color: AppColors.error)),
+                        onPressed: () => Navigator.of(context).pop(true),
+                      ),
+                    ],
+                  );
+                },
+              );
+
+              if (confirm == true && context.mounted) {
+                await context.read<HistoryViewModel>().clearAllTrips();
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('All trips cleared'),
+                      backgroundColor: AppColors.surfaceLight,
+                    ),
+                  );
+                }
+              }
+            },
           ),
           
           SizedBox(height: 24.spMin),

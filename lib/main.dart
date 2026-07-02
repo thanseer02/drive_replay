@@ -1,9 +1,11 @@
+import 'package:drive_replay/config/app_config.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-import 'config/app_config.dart';
+import 'features/auth/view/splash_screen.dart';
 import 'routes/routes.dart';
 import 'utils/colors.dart';
 
@@ -14,6 +16,12 @@ import 'features/trip_recording/model/trip_model.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Lock app to portrait mode
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
   
   // Initialize Hive
   await Hive.initFlutter(AppConfig.dbName);
@@ -43,21 +51,21 @@ class DriveReplayApp extends StatelessWidget {
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (context, child) {
-        return MaterialApp.router(
-          title: AppConfig.appName,
+        return MaterialApp(
+          title: 'Drive Replay',
+          debugShowCheckedModeBanner: false,
           theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: AppColors.primary,
-              brightness: Brightness.dark,
-              // ignore: deprecated_member_use
-              background: AppColors.background,
+            primaryColor: AppColors.primary,
+            scaffoldBackgroundColor: AppColors.background,
+            colorScheme: const ColorScheme.dark(
+              primary: AppColors.primary,
+              secondary: AppColors.primaryLight,
               surface: AppColors.surface,
             ),
             useMaterial3: true,
-            scaffoldBackgroundColor: AppColors.background,
           ),
-          routerConfig: AppRouter.router,
-          debugShowCheckedModeBanner: false,
+          initialRoute: SplashScreen.routeName,
+          routes: AppRouter.routes,
         );
       },
     );

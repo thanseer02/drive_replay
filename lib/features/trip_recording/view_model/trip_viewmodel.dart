@@ -18,11 +18,14 @@ class TripViewModel extends ChangeNotifier {
   double _currentSpeed = 0.0;
   
   StreamSubscription<Position>? _locationSub;
+  Timer? _durationTimer;
+  Duration _tripDuration = Duration.zero;
 
   bool get isRecording => _isRecording;
   TripModel? get currentTrip => _currentTrip;
   Position? get currentPosition => _currentPosition;
   double get currentSpeed => _currentSpeed; // m/s
+  Duration get tripDuration => _tripDuration;
 
   Future<void> startTrip() async {
     bool hasPermission = await PermissionHelper.requestLocationPermission();
@@ -31,13 +34,30 @@ class TripViewModel extends ChangeNotifier {
     }
 
     _isRecording = true;
+    _tripDuration = Duration.zero;
     _currentTrip = TripModel(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       startTime: DateTime.now(),
     );
     
+    _durationTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      _tripDuration = DateTime.now().difference(_currentTrip!.startTime);
+      notifyListeners();
+    });
+    
     // Start GPS Tracking
     _locationSub = _locationService.startTracking().listen((Position position) {
+      if (_currentPosition != null) {
+        final distance = Geolocator.distanceBetween(
+          _currentPosition!.latitude, 
+          _currentPosition!.longitude, 
+          position.latitude, 
+          position.longitude
+        );
+        final newDistance = (_currentTrip?.distanceInMeters ?? 0.0) + distance;
+        _currentTrip = _currentTrip?.copyWith(distanceInMeters: newDistance);
+      }
+      
       _currentPosition = position;
       _currentSpeed = position.speed; // speed provided by Geolocator in m/s
       
@@ -64,6 +84,7 @@ class TripViewModel extends ChangeNotifier {
     _isRecording = false;
     _currentTrip = _currentTrip?.copyWith(endTime: DateTime.now());
     
+    _durationTimer?.cancel();
     _locationSub?.cancel();
     _sensorService.stopListening();
     
@@ -76,6 +97,7 @@ class TripViewModel extends ChangeNotifier {
   
   @override
   void dispose() {
+    _durationTimer?.cancel();
     _locationSub?.cancel();
     _sensorService.stopListening();
     super.dispose();

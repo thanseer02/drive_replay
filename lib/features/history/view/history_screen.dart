@@ -6,6 +6,7 @@ import '../../../utils/colors.dart';
 import '../../../utils/styles.dart';
 import '../view_model/history_viewmodel.dart';
 import '../../trip_recording/model/trip_model.dart';
+import 'trip_detail_screen.dart';
 
 class HistoryScreen extends StatefulWidget {
   static const String routeName = '/history';
@@ -84,8 +85,17 @@ class _HistoryScreenState extends State<HistoryScreen> {
           onDismissed: (_) {
             viewModel.deleteTrip(trip.id);
           },
-          child: Container(
-            padding: EdgeInsets.all(16.spMin),
+          child: GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => TripDetailScreen(trip: trip),
+                ),
+              );
+            },
+            child: Container(
+              padding: EdgeInsets.all(16.spMin),
             decoration: BoxDecoration(
               color: AppColors.surfaceLight,
               borderRadius: BorderRadius.circular(12.spMin),
@@ -125,8 +135,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 Icon(Icons.chevron_right, color: AppColors.textSecondary),
               ],
             ),
-          ),
-        );
+          ), // Container
+          ), // GestureDetector
+        ); // Dismissible
       },
     );
   }

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 
 class LocationService {
@@ -27,7 +28,7 @@ class LocationService {
         ),
       );
     } catch (e) {
-      // TODO: Integrate LoggerHelper
+      debugPrint("Location error: $e");
       return null;
     }
   }

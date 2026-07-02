@@ -25,4 +25,9 @@ class TripRepository {
     final box = Hive.box<TripModel>(boxName);
     await box.delete(id);
   }
+
+  Future<void> clearAllTrips() async {
+    final box = Hive.box<TripModel>(boxName);
+    await box.clear();
+  }
 }

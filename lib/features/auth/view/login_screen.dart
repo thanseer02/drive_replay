@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
-import 'package:go_router/go_router.dart';
+import '../../dashboard/view/dashboard_screen.dart';
 import '../../../utils/colors.dart';
 import '../../../utils/styles.dart';
 import '../../../widgets/button_widgets.dart';
@@ -37,7 +37,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (authViewModel.isAuthenticated && mounted) {
       // Navigate to Home Dashboard (to be built)
-      context.go('/dashboard');
+      Navigator.pushReplacementNamed(context, DashboardScreen.routeName);
     } else if (authViewModel.errorMessage != null && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(authViewModel.errorMessage!)),

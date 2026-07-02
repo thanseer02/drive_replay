@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:go_router/go_router.dart';
+import 'onboarding_screen.dart';
 import '../../../utils/colors.dart';
 import '../../../utils/styles.dart';
 
@@ -23,7 +23,7 @@ class _SplashScreenState extends State<SplashScreen> {
   Future<void> _navigateToNext() async {
     await Future.delayed(const Duration(seconds: 2));
     if (mounted) {
-      context.go('/onboarding');
+      Navigator.pushReplacementNamed(context, OnboardingScreen.routeName);
     }
   }
 

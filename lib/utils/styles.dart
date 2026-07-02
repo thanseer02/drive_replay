@@ -31,6 +31,12 @@ class AppStyles {
         color: AppColors.textPrimary,
       );
 
+  static TextStyle get tsS14W400CFFFFFF => TextStyle(
+        fontSize: 14.spMin,
+        fontWeight: FontWeight.w400,
+        color: AppColors.textPrimary,
+      );
+
   static TextStyle get tsS14W400CB3B3B3 => TextStyle(
         fontSize: 14.spMin,
         fontWeight: FontWeight.w400,

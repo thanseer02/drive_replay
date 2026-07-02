@@ -25,4 +25,9 @@ class HistoryViewModel extends ChangeNotifier {
     await _repository.deleteTrip(id);
     await loadTrips(); // Refresh the list
   }
+
+  Future<void> clearAllTrips() async {
+    await _repository.clearAllTrips();
+    await loadTrips(); // Refresh the list
+  }
 }
