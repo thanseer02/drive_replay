@@ -285,7 +285,7 @@ class _LiveDriveScreenState extends State<LiveDriveScreen> {
                           ),
                         ),
                       );
-                      if (stop == true && context.mounted) {
+                      if (stop == true && mounted) {
                         viewModel.stopTrip();
                         Navigator.pop(context);
                       }

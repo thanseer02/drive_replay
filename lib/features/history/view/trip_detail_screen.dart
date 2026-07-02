@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import '../../../utils/colors.dart';
 import '../../../utils/styles.dart';
 import '../../trip_recording/model/trip_model.dart';
@@ -29,10 +31,18 @@ class TripDetailScreen extends StatelessWidget {
         backgroundColor: AppColors.background,
         elevation: 0,
       ),
-      body: ListView(
-        padding: EdgeInsets.all(16.spMin),
+      body: Column(
         children: [
-          // Score Card
+          if (trip.routePath.isNotEmpty)
+            SizedBox(
+              height: 250.spMin,
+              child: _buildMap(trip.routePath),
+            ),
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.all(16.spMin),
+              children: [
+                // Score Card
           Container(
             padding: EdgeInsets.all(24.spMin),
             decoration: BoxDecoration(
@@ -100,8 +110,59 @@ class TripDetailScreen extends StatelessWidget {
               _buildStatCard('Avg Speed', '$avgSpeedKmH km/h', Icons.moving),
             ],
           ),
-        ],
+            ],
+          ),
+          ), // Expanded
+        ], // Column children
+      ), // Column
+    ); // Scaffold
+  }
+
+  Widget _buildMap(List<String> routePathStrings) {
+    // Decode strings back to LatLng
+    final routePoints = routePathStrings.map((e) {
+      final parts = e.split(',');
+      return LatLng(double.parse(parts[0]), double.parse(parts[1]));
+    }).toList();
+
+    // Calculate map center and bounds roughly
+    final center = routePoints[routePoints.length ~/ 2];
+
+    return FlutterMap(
+      options: MapOptions(
+        initialCenter: center,
+        initialZoom: 14.0,
+        interactionOptions: const InteractionOptions(
+          flags: InteractiveFlag.all,
+        ),
       ),
+      children: [
+        TileLayer(
+          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+          userAgentPackageName: 'com.drivereplay.app',
+        ),
+        PolylineLayer(
+          polylines: [
+            Polyline(
+              points: routePoints,
+              strokeWidth: 4.0,
+              color: AppColors.primaryLight,
+            ),
+          ],
+        ),
+        MarkerLayer(
+          markers: [
+            Marker(
+              point: routePoints.first,
+              child: Icon(Icons.location_on, color: Colors.green, size: 30),
+            ),
+            Marker(
+              point: routePoints.last,
+              child: Icon(Icons.location_on, color: Colors.red, size: 30),
+            ),
+          ],
+        ),
+      ],
     );
   }
 

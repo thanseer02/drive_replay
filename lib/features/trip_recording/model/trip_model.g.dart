@@ -24,13 +24,14 @@ class TripModelAdapter extends TypeAdapter<TripModel> {
       topSpeed: fields[4] as double,
       averageSpeed: fields[5] as double,
       score: fields[6] as int,
+      routePath: (fields[7] as List?)?.cast<String>() ?? [],
     );
   }
 
   @override
   void write(BinaryWriter writer, TripModel obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(8)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -44,7 +45,9 @@ class TripModelAdapter extends TypeAdapter<TripModel> {
       ..writeByte(5)
       ..write(obj.averageSpeed)
       ..writeByte(6)
-      ..write(obj.score);
+      ..write(obj.score)
+      ..writeByte(7)
+      ..write(obj.routePath);
   }
 
   @override

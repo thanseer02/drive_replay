@@ -88,7 +88,14 @@ class TripViewModel extends ChangeNotifier {
 
   void stopTrip() {
     _isRecording = false;
-    _currentTrip = _currentTrip?.copyWith(endTime: DateTime.now());
+    
+    // Convert LatLng back to string format for offline storage
+    final List<String> encodedPath = _routePath.map((e) => '${e.latitude},${e.longitude}').toList();
+    
+    _currentTrip = _currentTrip?.copyWith(
+      endTime: DateTime.now(),
+      routePath: encodedPath,
+    );
     
     _durationTimer?.cancel();
     _locationSub?.cancel();

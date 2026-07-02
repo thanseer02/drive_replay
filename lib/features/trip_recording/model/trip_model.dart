@@ -26,6 +26,9 @@ class TripModel extends Equatable {
   @HiveField(6)
   final int score;
 
+  @HiveField(7)
+  final List<String> routePath;
+
   const TripModel({
     required this.id,
     required this.startTime,
@@ -34,6 +37,7 @@ class TripModel extends Equatable {
     this.topSpeed = 0.0,
     this.averageSpeed = 0.0,
     this.score = 100, // Starts with a perfect 100 score
+    this.routePath = const [],
   });
 
   TripModel copyWith({
@@ -44,6 +48,7 @@ class TripModel extends Equatable {
     double? topSpeed,
     double? averageSpeed,
     int? score,
+    List<String>? routePath,
   }) {
     return TripModel(
       id: id ?? this.id,
@@ -53,6 +58,7 @@ class TripModel extends Equatable {
       topSpeed: topSpeed ?? this.topSpeed,
       averageSpeed: averageSpeed ?? this.averageSpeed,
       score: score ?? this.score,
+      routePath: routePath ?? this.routePath,
     );
   }
 
@@ -65,5 +71,6 @@ class TripModel extends Equatable {
         topSpeed,
         averageSpeed,
         score,
+        routePath,
       ];
 }
