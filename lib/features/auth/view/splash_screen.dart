@@ -6,7 +6,7 @@ import '../../../utils/styles.dart';
 
 class SplashScreen extends StatefulWidget {
   static const String routeName = '/';
-  
+
   const SplashScreen({super.key});
 
   @override
@@ -45,15 +45,9 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
             ),
             SizedBox(height: 24.spMin),
-            Text(
-              'Drive Replay',
-              style: AppStyles.tsS32W700CFFFFFF,
-            ),
+            Text('Drive Replay', style: AppStyles.tsS32W700CFFFFFF),
             SizedBox(height: 8.spMin),
-            Text(
-              'Your Smart Black Box',
-              style: AppStyles.tsS16W400CFFFFFF,
-            ),
+            Text('Your Smart Black Box', style: AppStyles.tsS16W400CFFFFFF),
           ],
         ),
       ),
