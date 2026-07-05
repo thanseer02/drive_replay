@@ -1,9 +1,11 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:drive_replay/config/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'firebase_options.dart';
 
 import 'features/auth/view/splash_screen.dart';
 import 'routes/routes.dart';
@@ -16,6 +18,10 @@ import 'features/trip_recording/model/trip_model.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   
   // Lock app to portrait mode
   await SystemChrome.setPreferredOrientations([
