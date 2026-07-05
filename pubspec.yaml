@@ -50,6 +50,11 @@ dependencies:
   csv: ^8.0.0
   share_plus: ^13.2.0
   intl: ^0.20.3
+  connectivity_plus: ^7.2.0
+  flutter_background_analyser:
+    git:
+      url: https://github.com/thanseer02/flutter_back_ground_analyzer
+      ref: main
 
 dev_dependencies:
   flutter_test:
@@ -112,3 +117,6 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+dependency_overrides:
+  win32: ^5.6.0

@@ -9,15 +9,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('Basic smoke test', (WidgetTester tester) async {
-    // Build a basic widget and trigger a frame.
-    await tester.pumpWidget(
-      const MaterialApp(
-        home: Scaffold(
-          body: Text('Drive Replay'),
-        ),
-      ),
-    );
+  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+    // Build our app and trigger a frame.
+    await tester.pumpWidget(const DriveReplayApp());
+
+    // Verify that our counter starts at 0.
+    expect(find.text('0'), findsOneWidget);
+    expect(find.text('1'), findsNothing);
+
+    // Tap the '+' icon and trigger a frame.
+    await tester.tap(find.byIcon(Icons.add));
+    await tester.pump();
 
     // Verify that our test widget exists.
     expect(find.text('Drive Replay'), findsOneWidget);
