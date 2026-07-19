@@ -7,8 +7,10 @@ import 'package:drive_tracker/widgets/animated_duration.dart';
 import 'package:drive_tracker/widgets/speed_gauge.dart';
 import 'package:drive_tracker/widgets/shimmer_loader.dart';
 import 'package:drive_tracker/widgets/adaptive_layout.dart';
-
-
+import 'package:drive_tracker/services/permission_service.dart';
+import 'package:drive_tracker/core/di.dart';
+import 'package:drive_tracker/widgets/prominent_disclosure_dialog.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -52,7 +54,59 @@ class _DashboardScreenState extends State<DashboardScreen> {
         );
       }
     } else {
-      dashboardVM.startTracking();
+      final permissionService = ServiceLocator.get<PermissionService>();
+
+      var locationStatus = await permissionService.checkLocationPermission();
+      var notificationStatus = await permissionService.checkNotificationPermission();
+
+      // If permissions are not yet granted, request starting with a prominent disclosure
+      if (!locationStatus.isGranted || !notificationStatus.isGranted) {
+        if (!mounted) return;
+        
+        final acceptDisclosure = await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (ctx) => ProminentDisclosureDialog(
+            onAccept: () => Navigator.pop(ctx, true),
+            onDeny: () => Navigator.pop(ctx, false),
+          ),
+        );
+
+        if (acceptDisclosure == true) {
+          locationStatus = await permissionService.requestLocationPermission();
+          notificationStatus = await permissionService.requestNotificationPermission();
+
+          // On Android 10+ (Q+), ask for ACCESS_BACKGROUND_LOCATION if foreground location is granted
+          if (locationStatus.isGranted) {
+            await permissionService.requestBackgroundLocationPermission();
+          }
+        } else {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Location tracking requires access to GPS coordinates.'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+          return;
+        }
+      }
+
+      if (locationStatus.isGranted) {
+        dashboardVM.startTracking();
+      } else {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Location permissions denied. Please enable them in app settings.'),
+            behavior: SnackBarBehavior.floating,
+            action: SnackBarAction(
+              label: 'Settings',
+              onPressed: () => permissionService.openAppSettingsPage(),
+            ),
+          ),
+        );
+      }
     }
   }
 

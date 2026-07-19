@@ -172,7 +172,15 @@ class TrackingService : Service() {
         saveCheckpointToPrefs()
 
         // Foreground notification
-        startForeground(NOTIFICATION_ID, buildNotification("Drive Tracker", "Initializing GPS…"))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(
+                NOTIFICATION_ID,
+                buildNotification("Drive Tracker", "Initializing GPS…"),
+                android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
+            )
+        } else {
+            startForeground(NOTIFICATION_ID, buildNotification("Drive Tracker", "Initializing GPS…"))
+        }
 
         // Open trace file writer
         openTraceWriter()
@@ -212,11 +220,18 @@ class TrackingService : Service() {
         currentSpeedMps = 0.0
         traceLineCount = countTraceLines()
 
-        val distKm = accumulatedDistanceMeters / 1000.0
-        startForeground(NOTIFICATION_ID, buildNotification(
-            "Active Tracking (Resumed)",
-            "%.2f km | GPS reconnecting…".format(distKm)
-        ))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(
+                NOTIFICATION_ID,
+                buildNotification("Active Tracking (Resumed)", "%.2f km | GPS reconnecting…".format(distKm)),
+                android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION
+            )
+        } else {
+            startForeground(
+                NOTIFICATION_ID,
+                buildNotification("Active Tracking (Resumed)", "%.2f km | GPS reconnecting…".format(distKm))
+            )
+        }
 
         openTraceWriter(append = true)
 
@@ -398,31 +413,34 @@ class TrackingService : Service() {
         fusedLocationClient.removeLocationUpdates(locationCallback)
         closeTraceWriter()
 
-        saveRideToSQLite()
+        bgHandler?.post {
+            saveRideToSQLite()
+            clearCheckpoints()
 
-        clearCheckpoints()
+            // Broadcast stop event via LocalBroadcastManager on main thread to guarantee EventChannel safety
+            Handler(Looper.getMainLooper()).post {
+                val intent = Intent(BROADCAST_STOPPED).apply {
+                    putExtra("startTime", startTimeMillis)
+                    putExtra("endTime", System.currentTimeMillis())
+                    putExtra("maxSpeed", maxSpeedMetersPerSec)
+                    putExtra("averageSpeed", if (drivingTimeSeconds > 0) accumulatedDistanceMeters / drivingTimeSeconds else 0.0)
+                    putExtra("distance", accumulatedDistanceMeters)
+                    putExtra("drivingTime", drivingTimeSeconds)
+                    putExtra("stopTime", stoppedTimeSeconds)
+                }
+                LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
 
-        // Broadcast stop event via LocalBroadcastManager (#12)
-        val intent = Intent(BROADCAST_STOPPED).apply {
-            putExtra("startTime", startTimeMillis)
-            putExtra("endTime", System.currentTimeMillis())
-            putExtra("maxSpeed", maxSpeedMetersPerSec)
-            putExtra("averageSpeed", if (drivingTimeSeconds > 0) accumulatedDistanceMeters / drivingTimeSeconds else 0.0)
-            putExtra("distance", accumulatedDistanceMeters)
-            putExtra("drivingTime", drivingTimeSeconds)
-            putExtra("stopTime", stoppedTimeSeconds)
+                // Service lifecycle shutdown on main thread
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    stopForeground(STOP_FOREGROUND_REMOVE)
+                } else {
+                    @Suppress("DEPRECATION")
+                    stopForeground(true)
+                }
+                if (activeInstance == this) activeInstance = null
+                stopSelf()
+            }
         }
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
-
-        // Fix #19: deprecated stopForeground(true) → STOP_FOREGROUND_REMOVE
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            stopForeground(STOP_FOREGROUND_REMOVE)
-        } else {
-            @Suppress("DEPRECATION")
-            stopForeground(true)
-        }
-        if (activeInstance == this) activeInstance = null
-        stopSelf()
     }
 
     // ─── SQLite persistence ──────────────────────────────────────────────────

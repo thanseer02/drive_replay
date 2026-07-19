@@ -101,29 +101,33 @@ class MainActivity : FlutterActivity() {
                 val sink = eventSink ?: return
                 when (intent.action) {
                     TrackingService.BROADCAST_TELEMETRY -> {
-                        sink.success(mapOf(
-                            "type" to "telemetry",
-                            "currentSpeed" to intent.getDoubleExtra("currentSpeed", 0.0),
-                            "maxSpeed" to intent.getDoubleExtra("maxSpeed", 0.0),
-                            "averageSpeed" to intent.getDoubleExtra("averageSpeed", 0.0),
-                            "distance" to intent.getDoubleExtra("distance", 0.0),
-                            "drivingTime" to intent.getIntExtra("drivingTime", 0),
-                            "stopTime" to intent.getIntExtra("stopTime", 0),
-                            "heading" to intent.getDoubleExtra("heading", 0.0),
-                            "altitude" to intent.getDoubleExtra("altitude", 0.0)
-                        ))
+                        runOnUiThread {
+                            sink.success(mapOf(
+                                "type" to "telemetry",
+                                "currentSpeed" to intent.getDoubleExtra("currentSpeed", 0.0),
+                                "maxSpeed" to intent.getDoubleExtra("maxSpeed", 0.0),
+                                "averageSpeed" to intent.getDoubleExtra("averageSpeed", 0.0),
+                                "distance" to intent.getDoubleExtra("distance", 0.0),
+                                "drivingTime" to intent.getIntExtra("drivingTime", 0),
+                                "stopTime" to intent.getIntExtra("stopTime", 0),
+                                "heading" to intent.getDoubleExtra("heading", 0.0),
+                                "altitude" to intent.getDoubleExtra("altitude", 0.0)
+                            ))
+                        }
                     }
                     TrackingService.BROADCAST_STOPPED -> {
-                        sink.success(mapOf(
-                            "type" to "stopped",
-                            "startTime" to intent.getLongExtra("startTime", 0L),
-                            "endTime" to intent.getLongExtra("endTime", 0L),
-                            "maxSpeed" to intent.getDoubleExtra("maxSpeed", 0.0),
-                            "averageSpeed" to intent.getDoubleExtra("averageSpeed", 0.0),
-                            "distance" to intent.getDoubleExtra("distance", 0.0),
-                            "drivingTime" to intent.getIntExtra("drivingTime", 0),
-                            "stopTime" to intent.getIntExtra("stopTime", 0)
-                        ))
+                        runOnUiThread {
+                            sink.success(mapOf(
+                                "type" to "stopped",
+                                "startTime" to intent.getLongExtra("startTime", 0L),
+                                "endTime" to intent.getLongExtra("endTime", 0L),
+                                "maxSpeed" to intent.getDoubleExtra("maxSpeed", 0.0),
+                                "averageSpeed" to intent.getDoubleExtra("averageSpeed", 0.0),
+                                "distance" to intent.getDoubleExtra("distance", 0.0),
+                                "drivingTime" to intent.getIntExtra("drivingTime", 0),
+                                "stopTime" to intent.getIntExtra("stopTime", 0)
+                            ))
+                        }
                     }
                 }
             }
