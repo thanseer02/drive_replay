@@ -43,9 +43,9 @@ class DashboardViewModel extends ChangeNotifier {
   int get stoppedTimeSeconds => _stoppedTimeSeconds;
 
   double get averageSpeed {
-    final totalHours = (drivingTimeSeconds + stoppedTimeSeconds) / 3600.0;
-    if (totalHours == 0.0) return 0.0;
-    return _activeDistance / totalHours;
+    final drivingHours = drivingTimeSeconds / 3600.0;
+    if (drivingHours == 0.0) return 0.0;
+    return _activeDistance / drivingHours;
   }
 
   // General historical metrics
