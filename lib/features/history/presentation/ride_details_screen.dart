@@ -6,13 +6,16 @@ import 'package:drive_tracker/features/history/viewmodel/history_viewmodel.dart'
 import 'package:drive_tracker/features/settings/viewmodel/settings_viewmodel.dart';
 import 'package:drive_tracker/models/ride.dart';
 import 'package:drive_tracker/models/ride_location.dart';
+import 'package:drive_tracker/widgets/shimmer_loader.dart';
 
 class RideDetailsScreen extends StatefulWidget {
   final int driveId;
+  final bool isEmbedded;
 
   const RideDetailsScreen({
     super.key,
     required this.driveId,
+    this.isEmbedded = false,
   });
 
   @override
@@ -41,31 +44,46 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
     final String distLabel = useMetric ? 'km' : 'mi';
 
     if (historyVM.isLoadingDetails) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Ride Metrics Summary')),
-        body: const Center(child: CircularProgressIndicator()),
-      );
+      return widget.isEmbedded
+          ? const ShimmerDetailsLoader()
+          : Scaffold(
+              appBar: AppBar(title: const Text('Ride Metrics Summary')),
+              body: const ShimmerDetailsLoader(),
+            );
     }
 
     final drive = historyVM.selectedRide;
 
     if (drive == null) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Ride Details')),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text('Drive log not found or deleted'),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => context.pop(),
-                child: const Text('Go Back'),
+      return widget.isEmbedded
+          ? Scaffold(
+              appBar: AppBar(
+                automaticallyImplyLeading: false,
+                title: const Text('Ride Details'),
               ),
-            ],
-          ),
-        ),
-      );
+              body: const Center(
+                child: Text(
+                  'Select a ride to view metrics',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                ),
+              ),
+            )
+          : Scaffold(
+              appBar: AppBar(title: const Text('Ride Details')),
+              body: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text('Drive log not found or deleted'),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () => context.pop(),
+                      child: const Text('Go Back'),
+                    ),
+                  ],
+                ),
+              ),
+            );
     }
 
     final double displayDistance = drive.distance * distMulti;
@@ -83,8 +101,50 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
 
     final locations = drive.locations ?? [];
 
+    final mainContent = Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: theme.brightness == Brightness.light
+              ? [const Color(0xFFF1F5F9), const Color(0xFFFFFFFF)]
+              : [const Color(0xFF0F172A), const Color(0xFF1E293B)],
+        ),
+      ),
+      child: ListView(
+        padding: const EdgeInsets.all(16.0),
+        children: [
+          // Header Location summary Card
+          _buildTripHeaderCard(theme, drive, dateString, startStr, endStr),
+
+          const SizedBox(height: 16),
+
+          // Tesla GPS map trace layout card using real historical locations
+          _buildTeslaNavigationCard(theme, drive, locations),
+
+          const SizedBox(height: 16),
+
+          // Performance Statistics Row Grid
+          _buildTelemetryStatGrid(theme, displayDistance, distLabel, displayAvgSpeed, displayMaxSpeed, velocityUnit, drive.durationSeconds),
+
+          const SizedBox(height: 16),
+
+          // Driving vs Stopped Time split ratio progress bar
+          _buildTimeSplitCard(theme, drivingRatio, stoppedRatio, drive.drivingTime, drive.stopTime),
+
+          const SizedBox(height: 16),
+
+          // Speed Profile Timeline line chart
+          _buildSpeedProfileChart(theme, locations, displayAvgSpeed, displayMaxSpeed, velocityUnit),
+
+          const SizedBox(height: 24),
+        ],
+      ),
+    );
+
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: !widget.isEmbedded,
         title: const Text('Ride Metrics Summary'),
         actions: [
           IconButton(
@@ -95,48 +155,10 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
           ),
         ],
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: theme.brightness == Brightness.light
-                ? [const Color(0xFFF1F5F9), const Color(0xFFFFFFFF)]
-                : [const Color(0xFF0F172A), const Color(0xFF1E293B)],
-          ),
-        ),
-        child: ListView(
-          padding: const EdgeInsets.all(16.0),
-          children: [
-            // Header Location summary Card
-            _buildTripHeaderCard(theme, drive, dateString, startStr, endStr),
-
-            const SizedBox(height: 16),
-
-            // Tesla GPS map trace layout card using real historical locations
-            _buildTeslaNavigationCard(theme, drive, locations),
-
-            const SizedBox(height: 16),
-
-            // Performance Statistics Row Grid
-            _buildTelemetryStatGrid(theme, displayDistance, distLabel, displayAvgSpeed, displayMaxSpeed, velocityUnit, drive.durationSeconds),
-
-            const SizedBox(height: 16),
-
-            // Driving vs Stopped Time split ratio progress bar
-            _buildTimeSplitCard(theme, drivingRatio, stoppedRatio, drive.drivingTime, drive.stopTime),
-
-            const SizedBox(height: 16),
-
-            // Speed Profile Timeline line chart
-            _buildSpeedProfileChart(theme, locations, displayAvgSpeed, displayMaxSpeed, velocityUnit),
-
-            const SizedBox(height: 24),
-          ],
-        ),
-      ),
+      body: mainContent,
     );
   }
+
 
   Widget _buildTripHeaderCard(
     ThemeData theme,
@@ -257,13 +279,17 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
                 ),
               )
             else
-              CustomPaint(
-                size: const Size(double.infinity, 200),
-                painter: _MapTracePainter(
-                  locations: locations,
-                  brightness: theme.brightness,
-                  primaryColor: theme.colorScheme.primary,
-                  secondaryColor: theme.colorScheme.secondary,
+              Semantics(
+                label: 'Map visualization showing path of the ride from ${drive.startLocation} to ${drive.endLocation}',
+                value: '${locations.length} total GPS path trace points recorded.',
+                child: CustomPaint(
+                  size: const Size(double.infinity, 200),
+                  painter: _MapTracePainter(
+                    locations: locations,
+                    brightness: theme.brightness,
+                    primaryColor: theme.colorScheme.primary,
+                    secondaryColor: theme.colorScheme.secondary,
+                  ),
                 ),
               ),
             // Floating Route Marker badges
@@ -611,13 +637,17 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
             SizedBox(
               height: 120,
               width: double.infinity,
-              child: CustomPaint(
-                painter: _SpeedGraphPainter(
-                  locations: locations,
-                  avgSpeed: avgSpeed,
-                  maxSpeed: maxSpeed,
-                  primaryColor: theme.colorScheme.primary,
-                  brightness: theme.brightness,
+              child: Semantics(
+                label: 'Speed Profile Chart',
+                value: 'Average speed is ${avgSpeed.toStringAsFixed(1)} $unit. Peak speed reached ${maxSpeed.toStringAsFixed(0)} $unit.',
+                child: CustomPaint(
+                  painter: _SpeedGraphPainter(
+                    locations: locations,
+                    avgSpeed: avgSpeed,
+                    maxSpeed: maxSpeed,
+                    primaryColor: theme.colorScheme.primary,
+                    brightness: theme.brightness,
+                  ),
                 ),
               ),
             ),

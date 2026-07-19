@@ -171,18 +171,44 @@ class HistoryViewModel extends ChangeNotifier {
   }
 
   Future<void> deleteDrive(int id) async {
-    await _rideRepository.deleteRide(id);
-    await loadDrives();
+    _error = null;
+    notifyListeners();
+    try {
+      await _rideRepository.deleteRide(id);
+      if (_selectedRide?.id == id) {
+        _selectedRide = null;
+      }
+      await loadDrives();
+    } catch (e) {
+      _error = 'Failed to delete ride log. Please try again.';
+      notifyListeners();
+    }
   }
 
   Future<void> clearHistory() async {
-    await _rideRepository.clearRides();
-    await loadDrives();
+    _error = null;
+    notifyListeners();
+    try {
+      await _rideRepository.clearRides();
+      _selectedRide = null;
+      await loadDrives();
+    } catch (e) {
+      _error = 'Failed to clear history database. Please try again.';
+      notifyListeners();
+    }
   }
 
   Future<void> addMockDrive(Ride ride) async {
-    await _rideRepository.addRide(ride);
-    await loadDrives();
+    _error = null;
+    notifyListeners();
+    try {
+      await _rideRepository.addRide(ride);
+      await loadDrives();
+    } catch (e) {
+      _error = 'Failed to add mock drive. Please try again.';
+      notifyListeners();
+    }
   }
+
 }
 

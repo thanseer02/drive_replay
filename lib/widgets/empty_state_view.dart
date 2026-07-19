@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 
 /// A branded empty-state view for when a list has no data.
 class AppEmptyView extends StatelessWidget {
@@ -29,19 +30,30 @@ class AppEmptyView extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
+              SizedBox(
                 width: 96,
                 height: 96,
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withValues(alpha: 0.08),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  icon,
-                  size: 44,
-                  color: theme.colorScheme.primary.withValues(alpha: 0.5),
+                child: Lottie.asset(
+                  'assets/lottie/empty_state.json',
+                  width: 96,
+                  height: 96,
+                  fit: BoxFit.contain,
+                  errorBuilder: (ctx, err, stack) {
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primary.withValues(alpha: 0.08),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        icon,
+                        size: 44,
+                        color: theme.colorScheme.primary.withValues(alpha: 0.5),
+                      ),
+                    );
+                  },
                 ),
               ),
+
               const SizedBox(height: 28),
               Text(
                 message,

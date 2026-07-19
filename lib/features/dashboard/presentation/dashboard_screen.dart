@@ -5,6 +5,10 @@ import 'package:drive_tracker/features/settings/viewmodel/settings_viewmodel.dar
 import 'package:drive_tracker/widgets/animated_number.dart';
 import 'package:drive_tracker/widgets/animated_duration.dart';
 import 'package:drive_tracker/widgets/speed_gauge.dart';
+import 'package:drive_tracker/widgets/shimmer_loader.dart';
+import 'package:drive_tracker/widgets/adaptive_layout.dart';
+
+
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -28,9 +32,171 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
+  Future<void> _handleStartStop(BuildContext context, ThemeData theme, bool isTracking) async {
+    final dashboardVM = context.read<DashboardViewModel>();
+    if (isTracking) {
+      final messenger = ScaffoldMessenger.of(context);
+      final primaryColor = theme.colorScheme.primary;
+      final savedDrive = await dashboardVM.stopTracking(
+        _selectedStartLocation,
+        _selectedEndLocation,
+      );
+      if (savedDrive != null) {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text('Drive saved successfully: ${savedDrive.notes}'),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: primaryColor,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
+    } else {
+      dashboardVM.startTracking();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
+    final Widget phoneBody = SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Column(
+        children: [
+          const SizedBox(height: 10),
+
+          // Speed gauge or Welcome vehicle overview card
+          Selector<DashboardViewModel, bool>(
+            selector: (_, vm) => vm.isTracking,
+            builder: (context, isTracking, _) {
+              if (isTracking) {
+                return Selector2<DashboardViewModel, SettingsViewModel, double>(
+                  selector: (_, vmDash, vmSet) => vmDash.currentSpeed * (vmSet.useMetric ? 1.0 : 0.621371),
+                  builder: (context, displayCurrentSpeed, _) {
+                    final useMetric = context.read<SettingsViewModel>().useMetric;
+                    return SpeedGauge(
+                      speed: displayCurrentSpeed,
+                      maxSpeed: useMetric ? 160.0 : 100.0,
+                      unit: useMetric ? 'km/h' : 'mph',
+                    );
+                  },
+                );
+              } else {
+                return _buildWelcomeCard(theme);
+              }
+            },
+          ),
+
+          const SizedBox(height: 32),
+
+          // Telemetry Stats grid (Garmin/Google Fit styled compact grid)
+          _buildStatsGrid(theme),
+
+          const SizedBox(height: 32),
+
+          // Location selectors (only shown when idling)
+          Selector<DashboardViewModel, bool>(
+            selector: (_, vm) => vm.isTracking,
+            builder: (context, isTracking, _) {
+              if (!isTracking) {
+                return _buildLocationSelectors(theme);
+              }
+              return const SizedBox.shrink();
+            },
+          ),
+
+          const SizedBox(height: 24),
+
+          // Large Premium Action Button
+          Selector<DashboardViewModel, bool>(
+            selector: (_, vm) => vm.isTracking,
+            builder: (context, isTracking, _) {
+              return _StartStopButton(
+                isTracking: isTracking,
+                onPressed: () => _handleStartStop(context, theme, isTracking),
+              );
+            },
+          ),
+          const SizedBox(height: 24),
+        ],
+      ),
+    );
+
+    final Widget tabletBody = TwoColumnLayout(
+      showDivider: false,
+      leftFlex: 1.0,
+      rightFlex: 1.0,
+      left: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: Column(
+          children: [
+            const SizedBox(height: 10),
+            Selector<DashboardViewModel, bool>(
+              selector: (_, vm) => vm.isTracking,
+              builder: (context, isTracking, _) {
+                if (isTracking) {
+                  return Selector2<DashboardViewModel, SettingsViewModel, double>(
+                    selector: (_, vmDash, vmSet) => vmDash.currentSpeed * (vmSet.useMetric ? 1.0 : 0.621371),
+                    builder: (context, displayCurrentSpeed, _) {
+                      final useMetric = context.read<SettingsViewModel>().useMetric;
+                      return SpeedGauge(
+                        speed: displayCurrentSpeed,
+                        maxSpeed: useMetric ? 160.0 : 100.0,
+                        unit: useMetric ? 'km/h' : 'mph',
+                      );
+                    },
+                  );
+                } else {
+                  return _buildWelcomeCard(theme);
+                }
+              },
+            ),
+            const SizedBox(height: 16),
+            Selector<DashboardViewModel, bool>(
+              selector: (_, vm) => vm.isTracking,
+              builder: (context, isTracking, _) {
+                if (!isTracking) {
+                  return _buildLocationSelectors(theme);
+                }
+                return const SizedBox.shrink();
+              },
+            ),
+            const SizedBox(height: 24),
+            Selector<DashboardViewModel, bool>(
+              selector: (_, vm) => vm.isTracking,
+              builder: (context, isTracking, _) {
+                return _StartStopButton(
+                  isTracking: isTracking,
+                  onPressed: () => _handleStartStop(context, theme, isTracking),
+                );
+              },
+            ),
+            const SizedBox(height: 24),
+          ],
+        ),
+      ),
+      right: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 10),
+            Text(
+              'TELEMETRY DATA LOGS',
+              style: theme.textTheme.labelSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+                letterSpacing: 2,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+            const SizedBox(height: 16),
+            _buildStatsGrid(theme),
+            const SizedBox(height: 24),
+          ],
+        ),
+      ),
+    );
 
     return Scaffold(
       body: Container(
@@ -117,89 +283,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
 
               Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 10),
-
-                      // Speed gauge or Welcome vehicle overview card
-                      Selector<DashboardViewModel, bool>(
-                        selector: (_, vm) => vm.isTracking,
-                        builder: (context, isTracking, _) {
-                          if (isTracking) {
-                            return Selector2<DashboardViewModel, SettingsViewModel, double>(
-                              selector: (_, vmDash, vmSet) => vmDash.currentSpeed * (vmSet.useMetric ? 1.0 : 0.621371),
-                              builder: (context, displayCurrentSpeed, _) {
-                                final useMetric = context.read<SettingsViewModel>().useMetric;
-                                return SpeedGauge(
-                                  speed: displayCurrentSpeed,
-                                  maxSpeed: useMetric ? 160.0 : 100.0,
-                                  unit: useMetric ? 'km/h' : 'mph',
-                                );
-                              },
-                            );
-                          } else {
-                            return _buildWelcomeCard(theme);
-                          }
-                        },
-                      ),
-
-                      const SizedBox(height: 32),
-
-                      // Telemetry Stats grid (Garmin/Google Fit styled compact grid)
-                      _buildStatsGrid(theme),
-
-                      const SizedBox(height: 32),
-
-                      // Location selectors (only shown when idling)
-                      Selector<DashboardViewModel, bool>(
-                        selector: (_, vm) => vm.isTracking,
-                        builder: (context, isTracking, _) {
-                          if (!isTracking) {
-                            return _buildLocationSelectors(theme);
-                          }
-                          return const SizedBox.shrink();
-                        },
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      // Large Premium Action Button
-                      Selector<DashboardViewModel, bool>(
-                        selector: (_, vm) => vm.isTracking,
-                        builder: (context, isTracking, _) {
-                          return _StartStopButton(
-                            isTracking: isTracking,
-                            onPressed: () async {
-                              final dashboardVM = context.read<DashboardViewModel>();
-                              if (isTracking) {
-                                final messenger = ScaffoldMessenger.of(context);
-                                final primaryColor = theme.colorScheme.primary;
-                                final savedDrive = await dashboardVM.stopTracking(
-                                  _selectedStartLocation,
-                                  _selectedEndLocation,
-                                );
-                                if (savedDrive != null) {
-                                  messenger.showSnackBar(
-                                    SnackBar(
-                                      content: Text('Drive saved successfully: ${savedDrive.notes}'),
-                                      behavior: SnackBarBehavior.floating,
-                                      backgroundColor: primaryColor,
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                    ),
-                                  );
-                                }
-                              } else {
-                                dashboardVM.startTracking();
-                              }
-                            },
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 24),
-                    ],
-                  ),
+                child: AdaptiveLayout(
+                  phone: phoneBody,
+                  tablet: tabletBody,
                 ),
               ),
             ],
@@ -208,6 +294,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
     );
   }
+
 
   // Welcome widget with Tesla vehicle styling
   Widget _buildWelcomeCard(ThemeData theme) {
@@ -338,13 +425,43 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   // Telemetry Grid layouts (Garmin styled split values cards)
   Widget _buildStatsGrid(ThemeData theme) {
+    final dashboardVM = context.watch<DashboardViewModel>();
     final bool isDark = theme.brightness == Brightness.dark;
     final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
     final strokeColor = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
 
+    if (dashboardVM.isLoading) {
+      return Column(
+        children: [
+          Row(
+            children: const [
+              Expanded(child: ShimmerStatTile()),
+              SizedBox(width: 12),
+              Expanded(child: ShimmerStatTile()),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: const [
+              Expanded(child: ShimmerStatTile()),
+              SizedBox(width: 12),
+              Expanded(child: ShimmerStatTile()),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: const [
+              Expanded(child: ShimmerStatTile()),
+            ],
+          ),
+        ],
+      );
+    }
+
     return Column(
       children: [
         Row(
+
           children: [
             Expanded(
               child: Selector2<DashboardViewModel, SettingsViewModel, double>(

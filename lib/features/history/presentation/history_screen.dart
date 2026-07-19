@@ -8,6 +8,9 @@ import 'package:drive_tracker/models/ride.dart';
 import 'package:drive_tracker/widgets/shimmer_loader.dart';
 import 'package:drive_tracker/widgets/error_view.dart';
 import 'package:drive_tracker/widgets/empty_state_view.dart';
+import 'package:drive_tracker/widgets/adaptive_layout.dart';
+import 'package:drive_tracker/features/history/presentation/ride_details_screen.dart';
+
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -18,6 +21,7 @@ class HistoryScreen extends StatefulWidget {
 
 class _HistoryScreenState extends State<HistoryScreen> {
   final TextEditingController _searchController = TextEditingController();
+  int? _selectedRideId;
 
   @override
   void initState() {
@@ -47,6 +51,111 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final String velocityUnit = useMetric ? 'km/h' : 'mph';
     final String distLabel = useMetric ? 'km' : 'mi';
 
+    final Widget phoneBody = Column(
+      children: [
+        _buildSearchAndFiltersHeader(context, theme, historyVM),
+        Expanded(
+          child: historyVM.isLoading
+              ? const ShimmerHistoryList()
+              : historyVM.error != null
+                  ? AppErrorView(
+                      message: historyVM.error!,
+                      onRetry: historyVM.loadDrives,
+                    )
+                  : historyVM.filteredDrives.isEmpty
+                      ? AppEmptyView(
+                          icon: historyVM.searchQuery.isNotEmpty
+                              ? Icons.search_off_rounded
+                              : Icons.history_toggle_off_rounded,
+                          message: historyVM.searchQuery.isNotEmpty
+                              ? 'No Matching Rides Found'
+                              : 'No Rides Recorded Yet',
+                          subMessage: historyVM.searchQuery.isNotEmpty
+                              ? 'Try adjusting your search or filters.'
+                              : 'Start a drive from the Dashboard tab.',
+                        )
+                      : _buildGroupedDriveList(
+                          context,
+                          theme,
+                          historyVM.filteredDrives,
+                          distMulti,
+                          distLabel,
+                          velocityUnit,
+                          historyVM,
+                        ),
+        ),
+      ],
+    );
+
+    final filtered = historyVM.filteredDrives;
+    if (_selectedRideId != null && !filtered.any((e) => e.id == _selectedRideId)) {
+      _selectedRideId = null;
+    }
+    if (_selectedRideId == null && filtered.isNotEmpty) {
+      _selectedRideId = filtered.first.id;
+    }
+
+    final Widget tabletBody = Column(
+      children: [
+        _buildSearchAndFiltersHeader(context, theme, historyVM),
+        Expanded(
+          child: TwoColumnLayout(
+            leftFlex: 1,
+            rightFlex: 1,
+            showDivider: true,
+            left: historyVM.isLoading
+                ? const ShimmerHistoryList()
+                : historyVM.error != null
+                    ? AppErrorView(
+                        message: historyVM.error!,
+                        onRetry: historyVM.loadDrives,
+                      )
+                    : filtered.isEmpty
+                        ? AppEmptyView(
+                            icon: historyVM.searchQuery.isNotEmpty
+                                ? Icons.search_off_rounded
+                                : Icons.history_toggle_off_rounded,
+                            message: historyVM.searchQuery.isNotEmpty
+                                ? 'No Matching Rides Found'
+                                : 'No Rides Recorded Yet',
+                            subMessage: historyVM.searchQuery.isNotEmpty
+                                ? 'Try adjusting your search or filters.'
+                                : 'Start a drive from the Dashboard tab.',
+                          )
+                        : _buildGroupedDriveList(
+                            context,
+                            theme,
+                            filtered,
+                            distMulti,
+                            distLabel,
+                            velocityUnit,
+                            historyVM,
+                          ),
+            right: _selectedRideId != null
+                ? KeyedSubtree(
+                    key: ValueKey(_selectedRideId),
+                    child: RideDetailsScreen(
+                      driveId: _selectedRideId!,
+                      isEmbedded: true,
+                    ),
+                  )
+                : Scaffold(
+                    appBar: AppBar(
+                      automaticallyImplyLeading: false,
+                      title: const Text('Ride Details'),
+                    ),
+                    body: const Center(
+                      child: Text(
+                        'Select a ride to view metrics',
+                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+          ),
+        ),
+      ],
+    );
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Ride History'),
@@ -71,40 +180,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 : [const Color(0xFF0F172A), const Color(0xFF1E293B)],
           ),
         ),
-        child: Column(
-          children: [
-            _buildSearchAndFiltersHeader(context, theme, historyVM),
-            Expanded(
-              child: historyVM.isLoading
-                  ? const ShimmerHistoryList()
-                  : historyVM.error != null
-                      ? AppErrorView(
-                          message: historyVM.error!,
-                          onRetry: historyVM.loadDrives,
-                        )
-                      : historyVM.filteredDrives.isEmpty
-                          ? AppEmptyView(
-                              icon: historyVM.searchQuery.isNotEmpty
-                                  ? Icons.search_off_rounded
-                                  : Icons.history_toggle_off_rounded,
-                              message: historyVM.searchQuery.isNotEmpty
-                                  ? 'No Matching Rides Found'
-                                  : 'No Rides Recorded Yet',
-                              subMessage: historyVM.searchQuery.isNotEmpty
-                                  ? 'Try adjusting your search or filters.'
-                                  : 'Start a drive from the Dashboard tab.',
-                            )
-                          : _buildGroupedDriveList(
-                              context,
-                              theme,
-                              historyVM.filteredDrives,
-                              distMulti,
-                              distLabel,
-                              velocityUnit,
-                              historyVM,
-                            ),
-            ),
-          ],
+        child: AdaptiveLayout(
+          phone: phoneBody,
+          tablet: tabletBody,
         ),
       ),
     );
@@ -357,7 +435,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
               borderRadius: BorderRadius.circular(24),
               onTap: () {
                 if (drive.id != null) {
-                  context.push('/ride-details/${drive.id}');
+                  final isWide = MediaQuery.sizeOf(context).width >= 720;
+                  if (isWide) {
+                    setState(() {
+                      _selectedRideId = drive.id;
+                    });
+                  } else {
+                    context.push('/ride-details/${drive.id}');
+                  }
                 }
               },
               child: Padding(

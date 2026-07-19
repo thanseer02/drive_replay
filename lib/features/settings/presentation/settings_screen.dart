@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:drive_tracker/features/settings/viewmodel/settings_viewmodel.dart';
 import 'package:drive_tracker/features/history/viewmodel/history_viewmodel.dart';
+import 'package:drive_tracker/widgets/adaptive_layout.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -25,6 +26,345 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
     final strokeColor = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
+
+    final Widget phoneBody = ListView(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      children: [
+        const SizedBox(height: 8),
+
+        // Section: General Preferences
+        _buildSectionHeader(theme, 'General preferences'),
+        Card(
+          elevation: 0,
+          color: cardBg,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+            side: BorderSide(color: strokeColor),
+          ),
+          child: Column(
+            children: [
+              SwitchListTile(
+                value: settings.isDarkMode,
+                title: const Text('Dark Mode', style: TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: const Text('Adjust color themes for low light views'),
+                secondary: Icon(
+                  settings.isDarkMode ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+                  color: settings.isDarkMode ? Colors.indigoAccent : Colors.amber,
+                ),
+                onChanged: (val) => settings.toggleDarkMode(val),
+              ),
+              Divider(height: 1, indent: 64, color: strokeColor),
+              SwitchListTile(
+                value: settings.useMetric,
+                title: const Text('Use Metric Units', style: TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: Text(settings.useMetric
+                    ? 'Telemetry shown in Kilometers (km, km/h)'
+                    : 'Telemetry converted to Miles (mi, mph)'),
+                secondary: const Icon(Icons.tune_rounded, color: Colors.blueAccent),
+                onChanged: (val) => settings.toggleUseMetric(val),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 24),
+
+        // Section: Device Background & Power Settings (Tesla Style)
+        _buildSectionHeader(theme, 'Background & battery optimization'),
+        Card(
+          elevation: 0,
+          color: cardBg,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+            side: BorderSide(color: strokeColor),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(4.0),
+            child: SwitchListTile(
+              value: _batteryOptimizationIgnored,
+              activeThumbColor: theme.colorScheme.primary,
+              title: const Text('Exclude from Battery Optimization', style: TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: const Text('Enable unrestricted background performance to avoid ride data capture drops'),
+              secondary: Icon(
+                _batteryOptimizationIgnored ? Icons.battery_charging_full_rounded : Icons.battery_saver_rounded,
+                color: _batteryOptimizationIgnored ? const Color(0xFF10B981) : Colors.orangeAccent,
+              ),
+              onChanged: (val) {
+                setState(() => _batteryOptimizationIgnored = val);
+                _showToast(
+                  context,
+                  val
+                      ? 'Battery optimization disabled. App allowed to run untruncated.'
+                      : 'Battery optimization enabled (standard power policy).',
+                );
+              },
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 24),
+
+        // Section: Permission manager
+        _buildSectionHeader(theme, 'System permissions status'),
+        Card(
+          elevation: 0,
+          color: cardBg,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+            side: BorderSide(color: strokeColor),
+          ),
+          child: Column(
+            children: [
+              _buildPermissionTile(
+                title: 'GPS Location Services',
+                desc: 'Needed to log distances mock coordinates',
+                granted: _locationGranted,
+                onToggle: (val) {
+                  setState(() => _locationGranted = val);
+                  _showToast(context, val ? 'GPS Location Mock access permitted' : 'GPS Location access disabled');
+                },
+              ),
+              Divider(height: 1, indent: 64, color: strokeColor),
+              _buildPermissionTile(
+                title: 'System Notifications',
+                desc: 'Show dashboard record status in system drawers',
+                granted: _notificationsGranted,
+                onToggle: (val) {
+                  setState(() => _notificationsGranted = val);
+                  _showToast(context, val ? 'Notifications permitted' : 'Notifications disabled');
+                },
+              ),
+              Divider(height: 1, indent: 64, color: strokeColor),
+              _buildPermissionTile(
+                title: 'Physical Motion / Fitness Sensors',
+                desc: 'Allows tracking to pause automatically when stopping',
+                granted: _motionFitnessGranted,
+                onToggle: (val) {
+                  setState(() => _motionFitnessGranted = val);
+                  _showToast(context, val ? 'Fitness sensors tracking permitted' : 'Sensors tracking disabled');
+                },
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 24),
+
+        // Section: Maintenance
+        _buildSectionHeader(theme, 'Security & maintenance'),
+        Card(
+          elevation: 0,
+          color: cardBg,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+            side: BorderSide(color: strokeColor),
+          ),
+          child: ListTile(
+            leading: const Icon(Icons.backspace_rounded, color: Colors.redAccent),
+            title: const Text('Reset Application Database', style: TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: const Text('Erase all SQL telemetry logs and reset defaults'),
+            trailing: const Icon(Icons.chevron_right_rounded),
+            onTap: () => _confirmReset(context),
+          ),
+        ),
+
+        const SizedBox(height: 24),
+
+        // Section: App info (premium Garmin Connect design details)
+        _buildSectionHeader(theme, 'Vehicle Tracker Engine Details'),
+        Card(
+          elevation: 0,
+          color: cardBg,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+            side: BorderSide(color: strokeColor),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              children: [
+                _buildInfoRow('Engine Architecture', 'Clean + MVVM (Provider)'),
+                Divider(height: 20, color: strokeColor),
+                _buildInfoRow('Local Core DB', 'SQLite Persistent Cache'),
+                Divider(height: 20, color: strokeColor),
+                _buildInfoRow('Target Flutter Platform', 'Flutter 3.41.2 (FVM)'),
+                Divider(height: 20, color: strokeColor),
+                _buildInfoRow('Engine Release Version', '1.0.0 (Build 1)'),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 32),
+      ],
+    );
+
+    final Widget tabletBody = TwoColumnLayout(
+      showDivider: false,
+      leftFlex: 1.0,
+      rightFlex: 1.0,
+      left: ListView(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        children: [
+          const SizedBox(height: 8),
+          _buildSectionHeader(theme, 'General preferences'),
+          Card(
+            elevation: 0,
+            color: cardBg,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
+              side: BorderSide(color: strokeColor),
+            ),
+            child: Column(
+              children: [
+                SwitchListTile(
+                  value: settings.isDarkMode,
+                  title: const Text('Dark Mode', style: TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: const Text('Adjust color themes for low light views'),
+                  secondary: Icon(
+                    settings.isDarkMode ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+                    color: settings.isDarkMode ? Colors.indigoAccent : Colors.amber,
+                  ),
+                  onChanged: (val) => settings.toggleDarkMode(val),
+                ),
+                Divider(height: 1, indent: 64, color: strokeColor),
+                SwitchListTile(
+                  value: settings.useMetric,
+                  title: const Text('Use Metric Units', style: TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: Text(settings.useMetric
+                      ? 'Telemetry shown in Kilometers (km, km/h)'
+                      : 'Telemetry converted to Miles (mi, mph)'),
+                  secondary: const Icon(Icons.tune_rounded, color: Colors.blueAccent),
+                  onChanged: (val) => settings.toggleUseMetric(val),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          _buildSectionHeader(theme, 'Background & battery optimization'),
+          Card(
+            elevation: 0,
+            color: cardBg,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
+              side: BorderSide(color: strokeColor),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(4.0),
+              child: SwitchListTile(
+                value: _batteryOptimizationIgnored,
+                activeThumbColor: theme.colorScheme.primary,
+                title: const Text('Exclude from Battery Optimization', style: TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: const Text('Enable unrestricted background performance to avoid ride data capture drops'),
+                secondary: Icon(
+                  _batteryOptimizationIgnored ? Icons.battery_charging_full_rounded : Icons.battery_saver_rounded,
+                  color: _batteryOptimizationIgnored ? const Color(0xFF10B981) : Colors.orangeAccent,
+                ),
+                onChanged: (val) {
+                  setState(() => _batteryOptimizationIgnored = val);
+                  _showToast(
+                    context,
+                    val
+                        ? 'Battery optimization disabled. App allowed to run untruncated.'
+                        : 'Battery optimization enabled (standard power policy).',
+                  );
+                },
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+        ],
+      ),
+      right: ListView(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        children: [
+          const SizedBox(height: 8),
+          _buildSectionHeader(theme, 'System permissions status'),
+          Card(
+            elevation: 0,
+            color: cardBg,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
+              side: BorderSide(color: strokeColor),
+            ),
+            child: Column(
+              children: [
+                _buildPermissionTile(
+                  title: 'GPS Location Services',
+                  desc: 'Needed to log distances mock coordinates',
+                  granted: _locationGranted,
+                  onToggle: (val) {
+                    setState(() => _locationGranted = val);
+                    _showToast(context, val ? 'GPS Location Mock access permitted' : 'GPS Location access disabled');
+                  },
+                ),
+                Divider(height: 1, indent: 64, color: strokeColor),
+                _buildPermissionTile(
+                  title: 'System Notifications',
+                  desc: 'Show dashboard record status in system drawers',
+                  granted: _notificationsGranted,
+                  onToggle: (val) {
+                    setState(() => _notificationsGranted = val);
+                    _showToast(context, val ? 'Notifications permitted' : 'Notifications disabled');
+                  },
+                ),
+                Divider(height: 1, indent: 64, color: strokeColor),
+                _buildPermissionTile(
+                  title: 'Physical Motion / Fitness Sensors',
+                  desc: 'Allows tracking to pause automatically when stopping',
+                  granted: _motionFitnessGranted,
+                  onToggle: (val) {
+                    setState(() => _motionFitnessGranted = val);
+                    _showToast(context, val ? 'Fitness sensors tracking permitted' : 'Sensors tracking disabled');
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          _buildSectionHeader(theme, 'Security & maintenance'),
+          Card(
+            elevation: 0,
+            color: cardBg,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
+              side: BorderSide(color: strokeColor),
+            ),
+            child: ListTile(
+              leading: const Icon(Icons.backspace_rounded, color: Colors.redAccent),
+              title: const Text('Reset Application Database', style: TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: const Text('Erase all SQL telemetry logs and reset defaults'),
+              trailing: const Icon(Icons.chevron_right_rounded),
+              onTap: () => _confirmReset(context),
+            ),
+          ),
+          const SizedBox(height: 24),
+          _buildSectionHeader(theme, 'Vehicle Tracker Engine Details'),
+          Card(
+            elevation: 0,
+            color: cardBg,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
+              side: BorderSide(color: strokeColor),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                children: [
+                  _buildInfoRow('Engine Architecture', 'Clean + MVVM (Provider)'),
+                  Divider(height: 20, color: strokeColor),
+                  _buildInfoRow('Local Core DB', 'SQLite Persistent Cache'),
+                  Divider(height: 20, color: strokeColor),
+                  _buildInfoRow('Target Flutter Platform', 'Flutter 3.41.2 (FVM)'),
+                  Divider(height: 20, color: strokeColor),
+                  _buildInfoRow('Engine Release Version', '1.0.0 (Build 1)'),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 32),
+        ],
+      ),
+    );
 
     return Scaffold(
       body: Container(
@@ -67,175 +407,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
 
               Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  children: [
-                    const SizedBox(height: 8),
-
-                    // Section: General Preferences
-                    _buildSectionHeader(theme, 'General preferences'),
-                    Card(
-                      elevation: 0,
-                      color: cardBg,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        side: BorderSide(color: strokeColor),
-                      ),
-                      child: Column(
-                        children: [
-                          SwitchListTile(
-                            value: settings.isDarkMode,
-                            title: const Text('Dark Mode', style: TextStyle(fontWeight: FontWeight.bold)),
-                            subtitle: const Text('Adjust color themes for low light views'),
-                            secondary: Icon(
-                              settings.isDarkMode ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
-                              color: settings.isDarkMode ? Colors.indigoAccent : Colors.amber,
-                            ),
-                            onChanged: (val) => settings.toggleDarkMode(val),
-                          ),
-                          Divider(height: 1, indent: 64, color: strokeColor),
-                          SwitchListTile(
-                            value: settings.useMetric,
-                            title: const Text('Use Metric Units', style: TextStyle(fontWeight: FontWeight.bold)),
-                            subtitle: Text(settings.useMetric
-                                ? 'Telemetry shown in Kilometers (km, km/h)'
-                                : 'Telemetry converted to Miles (mi, mph)'),
-                            secondary: const Icon(Icons.tune_rounded, color: Colors.blueAccent),
-                            onChanged: (val) => settings.toggleUseMetric(val),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Section: Device Background & Power Settings (Tesla Style)
-                    _buildSectionHeader(theme, 'Background & battery optimization'),
-                    Card(
-                      elevation: 0,
-                      color: cardBg,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        side: BorderSide(color: strokeColor),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(4.0),
-                        child: SwitchListTile(
-                          value: _batteryOptimizationIgnored,
-                          activeThumbColor: theme.colorScheme.primary,
-                          title: const Text('Exclude from Battery Optimization', style: TextStyle(fontWeight: FontWeight.bold)),
-                          subtitle: const Text('Enable unrestricted background performance to avoid ride data capture drops'),
-                          secondary: Icon(
-                            _batteryOptimizationIgnored ? Icons.battery_charging_full_rounded : Icons.battery_saver_rounded,
-                            color: _batteryOptimizationIgnored ? const Color(0xFF10B981) : Colors.orangeAccent,
-                          ),
-                          onChanged: (val) {
-                            setState(() => _batteryOptimizationIgnored = val);
-                            _showToast(
-                              context,
-                              val
-                                  ? 'Battery optimization disabled. App allowed to run untruncated.'
-                                  : 'Battery optimization enabled (standard power policy).',
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Section: Permission manager
-                    _buildSectionHeader(theme, 'System permissions status'),
-                    Card(
-                      elevation: 0,
-                      color: cardBg,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        side: BorderSide(color: strokeColor),
-                      ),
-                      child: Column(
-                        children: [
-                          _buildPermissionTile(
-                            title: 'GPS Location Services',
-                            desc: 'Needed to log distances mock coordinates',
-                            granted: _locationGranted,
-                            onToggle: (val) {
-                              setState(() => _locationGranted = val);
-                              _showToast(context, val ? 'GPS Location Mock access permitted' : 'GPS Location access disabled');
-                            },
-                          ),
-                          Divider(height: 1, indent: 64, color: strokeColor),
-                          _buildPermissionTile(
-                            title: 'System Notifications',
-                            desc: 'Show dashboard record status in system drawers',
-                            granted: _notificationsGranted,
-                            onToggle: (val) {
-                              setState(() => _notificationsGranted = val);
-                              _showToast(context, val ? 'Notifications permitted' : 'Notifications disabled');
-                            },
-                          ),
-                          Divider(height: 1, indent: 64, color: strokeColor),
-                          _buildPermissionTile(
-                            title: 'Physical Motion / Fitness Sensors',
-                            desc: 'Allows tracking to pause automatically when stopping',
-                            granted: _motionFitnessGranted,
-                            onToggle: (val) {
-                              setState(() => _motionFitnessGranted = val);
-                              _showToast(context, val ? 'Fitness sensors tracking permitted' : 'Sensors tracking disabled');
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Section: Maintenance
-                    _buildSectionHeader(theme, 'Security & maintenance'),
-                    Card(
-                      elevation: 0,
-                      color: cardBg,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        side: BorderSide(color: strokeColor),
-                      ),
-                      child: ListTile(
-                        leading: const Icon(Icons.backspace_rounded, color: Colors.redAccent),
-                        title: const Text('Reset Application Database', style: TextStyle(fontWeight: FontWeight.bold)),
-                        subtitle: const Text('Erase all SQL telemetry logs and reset defaults'),
-                        trailing: const Icon(Icons.chevron_right_rounded),
-                        onTap: () => _confirmReset(context),
-                      ),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Section: App info (premium Garmin Connect design details)
-                    _buildSectionHeader(theme, 'Vehicle Tracker Engine Details'),
-                    Card(
-                      elevation: 0,
-                      color: cardBg,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        side: BorderSide(color: strokeColor),
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: Column(
-                          children: [
-                            _buildInfoRow('Engine Architecture', 'Clean + MVVM (Provider)'),
-                            Divider(height: 20, color: strokeColor),
-                            _buildInfoRow('Local Core DB', 'SQLite Persistent Cache'),
-                            Divider(height: 20, color: strokeColor),
-                            _buildInfoRow('Target Flutter Platform', 'Flutter 3.41.2 (FVM)'),
-                            Divider(height: 20, color: strokeColor),
-                            _buildInfoRow('Engine Release Version', '1.0.0 (Build 1)'),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                  ],
+                child: AdaptiveLayout(
+                  phone: phoneBody,
+                  tablet: tabletBody,
                 ),
               ),
             ],

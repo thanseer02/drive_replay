@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:drive_tracker/core/di.dart';
 import 'package:drive_tracker/database/db_helper.dart';
@@ -145,11 +146,19 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               ),
               const Spacer(flex: 2),
               SizedBox(
-                width: 40,
-                height: 40,
-                child: CircularProgressIndicator(
-                  strokeWidth: 3,
-                  valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.primary),
+                width: 60,
+                height: 60,
+                child: Lottie.asset(
+                  'assets/lottie/car_loading.json',
+                  width: 60,
+                  height: 60,
+                  fit: BoxFit.contain,
+                  errorBuilder: (ctx, err, stack) {
+                    return CircularProgressIndicator(
+                      strokeWidth: 3,
+                      valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.primary),
+                    );
+                  },
                 ),
               ),
               const SizedBox(height: 48),

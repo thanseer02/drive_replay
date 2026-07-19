@@ -19,7 +19,10 @@ final GoRouter appRouter = GoRouter(
   routes: <RouteBase>[
     GoRoute(
       path: '/splash',
-      builder: (BuildContext context, GoRouterState state) => const SplashScreen(),
+      pageBuilder: (BuildContext context, GoRouterState state) => buildCustomTransitionPage(
+        const SplashScreen(),
+        state,
+      ),
     ),
     GoRoute(
       path: '/ride-details/:id',
@@ -57,7 +60,10 @@ final GoRouter appRouter = GoRouter(
           routes: <RouteBase>[
             GoRoute(
               path: '/dashboard',
-              builder: (BuildContext context, GoRouterState state) => const DashboardScreen(),
+              pageBuilder: (BuildContext context, GoRouterState state) => buildCustomTransitionPage(
+                const DashboardScreen(),
+                state,
+              ),
             ),
           ],
         ),
@@ -66,7 +72,10 @@ final GoRouter appRouter = GoRouter(
           routes: <RouteBase>[
             GoRoute(
               path: '/history',
-              builder: (BuildContext context, GoRouterState state) => const HistoryScreen(),
+              pageBuilder: (BuildContext context, GoRouterState state) => buildCustomTransitionPage(
+                const HistoryScreen(),
+                state,
+              ),
             ),
           ],
         ),
@@ -75,7 +84,10 @@ final GoRouter appRouter = GoRouter(
           routes: <RouteBase>[
             GoRoute(
               path: '/settings',
-              builder: (BuildContext context, GoRouterState state) => const SettingsScreen(),
+              pageBuilder: (BuildContext context, GoRouterState state) => buildCustomTransitionPage(
+                const SettingsScreen(),
+                state,
+              ),
             ),
           ],
         ),
@@ -83,3 +95,19 @@ final GoRouter appRouter = GoRouter(
     ),
   ],
 );
+
+CustomTransitionPage<void> buildCustomTransitionPage(Widget child, GoRouterState state) {
+  return CustomTransitionPage<void>(
+    key: state.pageKey,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 280),
+    reverseTransitionDuration: const Duration(milliseconds: 240),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      return FadeTransition(
+        opacity: CurvedAnimation(parent: animation, curve: Curves.easeInOut),
+        child: child,
+      );
+    },
+  );
+}
+
