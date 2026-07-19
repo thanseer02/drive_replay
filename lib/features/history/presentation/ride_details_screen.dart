@@ -1,12 +1,13 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:go_router/go_router.dart';
 import 'package:drive_tracker/features/history/viewmodel/history_viewmodel.dart';
 import 'package:drive_tracker/features/settings/viewmodel/settings_viewmodel.dart';
 import 'package:drive_tracker/models/ride.dart';
+import 'package:drive_tracker/models/ride_location.dart';
 
-class RideDetailsScreen extends StatelessWidget {
+class RideDetailsScreen extends StatefulWidget {
   final int driveId;
 
   const RideDetailsScreen({
@@ -15,18 +16,23 @@ class RideDetailsScreen extends StatelessWidget {
   });
 
   @override
+  State<RideDetailsScreen> createState() => _RideDetailsScreenState();
+}
+
+class _RideDetailsScreenState extends State<RideDetailsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<HistoryViewModel>().loadRideDetails(widget.driveId);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final historyVM = context.watch<HistoryViewModel>();
     final settingsVM = context.watch<SettingsViewModel>();
-
-    // 1. Search for matching drive in histories
-    Ride? drive;
-    try {
-      drive = historyVM.drives.firstWhere((d) => d.id == driveId);
-    } catch (_) {
-      // If not loaded, or not found: let's try to search inside DB. Or fallback.
-    }
 
     // Unit settings
     final bool useMetric = settingsVM.useMetric;
@@ -34,34 +40,60 @@ class RideDetailsScreen extends StatelessWidget {
     final String velocityUnit = useMetric ? 'km/h' : 'mph';
     final String distLabel = useMetric ? 'km' : 'mi';
 
+    if (historyVM.isLoadingDetails) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Ride Metrics Summary')),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final drive = historyVM.selectedRide;
+
     if (drive == null) {
       return Scaffold(
         appBar: AppBar(title: const Text('Ride Details')),
-        body: const Center(child: Text('Drive log not found')),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text('Drive log not found or deleted'),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => context.pop(),
+                child: const Text('Go Back'),
+              ),
+            ],
+          ),
+        ),
       );
     }
 
     final double displayDistance = drive.distance * distMulti;
-    final double totalHours = drive.durationSeconds / 3600.0;
-    final double avgSpeed = totalHours > 0 ? (drive.distance / totalHours) : 0.0;
-    final double maxSpeed = avgSpeed * 1.35 + 10; // Synthetic max speed relative to average
-    
-    final double displayAvgSpeed = avgSpeed * distMulti;
-    final double displayMaxSpeed = maxSpeed * distMulti;
+    final double displayAvgSpeed = drive.averageSpeed * distMulti;
+    final double displayMaxSpeed = drive.maxSpeed * distMulti;
     
     final String dateString = DateFormat('EEEE, MMMM d, yyyy').format(drive.startTime);
     final String startStr = DateFormat('hh:mm:ss a').format(drive.startTime);
     final String endStr = DateFormat('hh:mm:ss a').format(drive.endTime ?? drive.startTime);
 
-    // Compute mock Driving vs Stopped ratios (approx 80/20 split based on avg speed)
-    final double drivingRatio = avgSpeed > 0 ? 0.78 + (min(avgSpeed, 80.0) / 80.0) * 0.15 : 0.0;
-    final double stoppedRatio = (1.0 - drivingRatio).clamp(0.05, 1.0);
-    final int drivingSeconds = (drive.durationSeconds * drivingRatio).round();
-    final int stoppedSeconds = (drive.durationSeconds * stoppedRatio).round();
+    // Compute Driving vs Stopped ratios based on actual database variables
+    final int totalSeconds = drive.durationSeconds;
+    final double drivingRatio = totalSeconds > 0 ? (drive.drivingTime / totalSeconds).clamp(0.0, 1.0) : 0.0;
+    final double stoppedRatio = totalSeconds > 0 ? (drive.stopTime / totalSeconds).clamp(0.0, 1.0) : 0.0;
+
+    final locations = drive.locations ?? [];
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Ride Metrics Summary'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.delete_forever_rounded),
+            color: Colors.redAccent,
+            tooltip: 'Delete Ride Log',
+            onPressed: () => _confirmDelete(context, historyVM, drive.id),
+          ),
+        ],
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -81,8 +113,8 @@ class RideDetailsScreen extends StatelessWidget {
 
             const SizedBox(height: 16),
 
-            // Tesla Mock GPS map trace layout card
-            _buildTeslaNavigationCard(theme, drive),
+            // Tesla GPS map trace layout card using real historical locations
+            _buildTeslaNavigationCard(theme, drive, locations),
 
             const SizedBox(height: 16),
 
@@ -92,12 +124,12 @@ class RideDetailsScreen extends StatelessWidget {
             const SizedBox(height: 16),
 
             // Driving vs Stopped Time split ratio progress bar
-            _buildTimeSplitCard(theme, drivingRatio, stoppedRatio, drivingSeconds, stoppedSeconds),
+            _buildTimeSplitCard(theme, drivingRatio, stoppedRatio, drive.drivingTime, drive.stopTime),
 
             const SizedBox(height: 16),
 
             // Speed Profile Timeline line chart
-            _buildSpeedProfileChart(theme, displayAvgSpeed, displayMaxSpeed, velocityUnit),
+            _buildSpeedProfileChart(theme, locations, displayAvgSpeed, displayMaxSpeed, velocityUnit),
 
             const SizedBox(height: 24),
           ],
@@ -193,8 +225,8 @@ class RideDetailsScreen extends StatelessWidget {
     );
   }
 
-  // Custom painted mock route container
-  Widget _buildTeslaNavigationCard(ThemeData theme, Ride drive) {
+  // Custom painted route container using genuine coordinates data points
+  Widget _buildTeslaNavigationCard(ThemeData theme, Ride drive, List<RideLocation> locations) {
     final bool isDark = theme.brightness == Brightness.dark;
     return Card(
       elevation: 0,
@@ -204,21 +236,36 @@ class RideDetailsScreen extends StatelessWidget {
         side: BorderSide(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
       ),
       child: Container(
-        height: 180,
+        height: 200,
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
         ),
         child: Stack(
           children: [
-            // Custom paint dot grid representing maps
-            CustomPaint(
-              size: const Size(double.infinity, 180),
-              painter: _MapTracePainter(
-                brightness: theme.brightness,
-                primaryColor: theme.colorScheme.primary,
-                secondaryColor: theme.colorScheme.secondary,
+            if (locations.isEmpty)
+              Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.map_rounded, size: 40, color: theme.colorScheme.onSurface.withOpacity(0.2)),
+                    const SizedBox(height: 8),
+                    Text(
+                      'No GPS tracks captured for this short trip.',
+                      style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.4)),
+                    ),
+                  ],
+                ),
+              )
+            else
+              CustomPaint(
+                size: const Size(double.infinity, 200),
+                painter: _MapTracePainter(
+                  locations: locations,
+                  brightness: theme.brightness,
+                  primaryColor: theme.colorScheme.primary,
+                  secondaryColor: theme.colorScheme.secondary,
+                ),
               ),
-            ),
             // Floating Route Marker badges
             Positioned(
               top: 16,
@@ -230,29 +277,30 @@ class RideDetailsScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
                 ),
-                child: const Row(
+                child: Row(
                   children: [
-                    Icon(Icons.map_rounded, size: 14, color: Colors.blueAccent),
+                    const Icon(Icons.map_rounded, size: 14, color: Colors.blueAccent),
                     const SizedBox(width: 6),
                     Text(
-                      'GPS Route Preview',
-                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                      locations.isNotEmpty ? 'GPS Route Trace (${locations.length} pts)' : 'No GPS Trace Map',
+                      style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
                     )
                   ],
                 ),
               ),
             ),
-            Positioned(
-              bottom: 16,
-              right: 16,
-              child: Row(
-                children: [
-                  _buildMapBadge('A', drive.startLocation, theme),
-                  const SizedBox(width: 8),
-                  _buildMapBadge('B', drive.endLocation, theme),
-                ],
-              ),
-            )
+            if (locations.isNotEmpty)
+              Positioned(
+                bottom: 16,
+                right: 16,
+                child: Row(
+                  children: [
+                    _buildMapBadge('Start', drive.startLocation, theme),
+                    const SizedBox(width: 8),
+                    _buildMapBadge('End', drive.endLocation, theme),
+                  ],
+                ),
+              )
           ],
         ),
       ),
@@ -272,9 +320,9 @@ class RideDetailsScreen extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 8,
-            backgroundColor: pin == 'A' ? theme.colorScheme.primary : Colors.redAccent,
+            backgroundColor: pin == 'Start' ? theme.colorScheme.primary : Colors.redAccent,
             child: Text(
-              pin,
+              pin.substring(0, 1),
               style: const TextStyle(fontSize: 8, color: Colors.white, fontWeight: FontWeight.bold),
             ),
           ),
@@ -288,7 +336,6 @@ class RideDetailsScreen extends StatelessWidget {
     );
   }
 
-  // Row and Grid statistic items
   Widget _buildTelemetryStatGrid(
     ThemeData theme,
     double distance,
@@ -312,7 +359,7 @@ class RideDetailsScreen extends StatelessWidget {
               child: _buildDetailsStatTile(
                 theme,
                 'DISTANCE',
-                '${distance.toStringAsFixed(1)}',
+                distance.toStringAsFixed(1),
                 distLabel,
                 Icons.alt_route_rounded,
                 Colors.blueAccent,
@@ -342,7 +389,7 @@ class RideDetailsScreen extends StatelessWidget {
               child: _buildDetailsStatTile(
                 theme,
                 'AVG VELOCITY',
-                '${avgSpeed.toStringAsFixed(0)}',
+                avgSpeed.toStringAsFixed(0),
                 speedLabel,
                 Icons.query_stats_rounded,
                 Colors.indigoAccent,
@@ -355,7 +402,7 @@ class RideDetailsScreen extends StatelessWidget {
               child: _buildDetailsStatTile(
                 theme,
                 'PEAK VELOCITY',
-                '${maxSpeed.toStringAsFixed(0)}',
+                maxSpeed.toStringAsFixed(0),
                 speedLabel,
                 Icons.electric_car_rounded,
                 Colors.orangeAccent,
@@ -430,7 +477,6 @@ class RideDetailsScreen extends StatelessWidget {
     );
   }
 
-  // Driving vs Stopped time indicator splits
   Widget _buildTimeSplitCard(
     ThemeData theme,
     double drivePct,
@@ -460,21 +506,26 @@ class RideDetailsScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            // Progress split bar
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
-              child: Container(
+              child: SizedBox(
                 height: 12,
                 child: Row(
                   children: [
-                    Expanded(
-                      flex: (drivePct * 100).round(),
-                      child: Container(color: const Color(0xFF10B981)),
-                    ),
-                    Expanded(
-                      flex: (stopPct * 100).round(),
-                      child: Container(color: Colors.orangeAccent),
-                    ),
+                    if (drivePct > 0)
+                      Expanded(
+                        flex: (drivePct * 100).round(),
+                        child: Container(color: const Color(0xFF10B981)),
+                      ),
+                    if (stopPct > 0)
+                      Expanded(
+                        flex: (stopPct * 100).round(),
+                        child: Container(color: Colors.orangeAccent),
+                      ),
+                    if (drivePct == 0 && stopPct == 0)
+                      Expanded(
+                        child: Container(color: Colors.grey.withOpacity(0.3)),
+                      ),
                   ],
                 ),
               ),
@@ -519,9 +570,9 @@ class RideDetailsScreen extends StatelessWidget {
     );
   }
 
-  // Speed Profile chart container (Tesla-styled outline curve)
   Widget _buildSpeedProfileChart(
     ThemeData theme,
+    List<RideLocation> locations,
     double avgSpeed,
     double maxSpeed,
     String unit,
@@ -557,11 +608,12 @@ class RideDetailsScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 20),
-            Container(
+            SizedBox(
               height: 120,
               width: double.infinity,
               child: CustomPaint(
                 painter: _SpeedGraphPainter(
+                  locations: locations,
                   avgSpeed: avgSpeed,
                   maxSpeed: maxSpeed,
                   primaryColor: theme.colorScheme.primary,
@@ -597,15 +649,52 @@ class RideDetailsScreen extends StatelessWidget {
     if (minutes > 0) return '${minutes}m ${remainder}s';
     return '${seconds}s';
   }
+
+  void _confirmDelete(BuildContext context, HistoryViewModel viewModel, int? driveId) {
+    if (driveId == null) return;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Trip?'),
+        content: const Text('This will delete this specific ride telemetry report from history permanently.'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx); // Close dialog
+              await viewModel.deleteDrive(driveId);
+              if (context.mounted) {
+                context.pop(); // Pop back to history log
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Trip deleted successfully'),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              }
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
-// Custom Painter draws a mockup GPS Route path matching modern vehicle trace UI
+// Custom Painter draws a mockup GPS Route path mapping real physical lat/long points
 class _MapTracePainter extends CustomPainter {
+  final List<RideLocation> locations;
   final Brightness brightness;
   final Color primaryColor;
   final Color secondaryColor;
 
   _MapTracePainter({
+    required this.locations,
     required this.brightness,
     required this.primaryColor,
     required this.secondaryColor,
@@ -628,22 +717,53 @@ class _MapTracePainter extends CustomPainter {
       canvas.drawLine(Offset(0, i), Offset(size.width, i), paintGrid);
     }
 
-    // Draw stylized curved road trace line
-    final path = Path()
-      ..moveTo(size.width * 0.15, size.height * 0.65)
-      ..cubicTo(
-        size.width * 0.35, size.height * 0.15,
-        size.width * 0.55, size.height * 0.95,
-        size.width * 0.85, size.height * 0.35,
-      );
+    if (locations.isEmpty) return;
+
+    // Projection calculation: determine bounds
+    double minLat = double.infinity;
+    double maxLat = -double.infinity;
+    double minLng = double.infinity;
+    double maxLng = -double.infinity;
+
+    for (var loc in locations) {
+      if (loc.latitude < minLat) minLat = loc.latitude;
+      if (loc.latitude > maxLat) maxLat = loc.latitude;
+      if (loc.longitude < minLng) minLng = loc.longitude;
+      if (loc.longitude > maxLng) maxLng = loc.longitude;
+    }
+
+    final double latRange = maxLat - minLat;
+    final double lngRange = maxLng - minLng;
+
+    final double padding = 28.0;
+    final double mapW = size.width - 2 * padding;
+    final double mapH = size.height - 2 * padding;
+
+    // Map each coordinate to canvas space
+    final List<Offset> points = [];
+    for (var loc in locations) {
+      // Scale lat and lng ranges proportionally to the layout box
+      final double x = padding + (latRange == 0 ? mapW / 2 : ((loc.latitude - minLat) / latRange) * mapW);
+      // Invert Y because latitude grows upwards while canvas Y coordinates grow downwards
+      final double y = padding + (lngRange == 0 ? mapH / 2 : (1.0 - ((loc.longitude - minLng) / lngRange)) * mapH);
+      points.add(Offset(x, y));
+    }
+
+    final path = Path();
+    if (points.isNotEmpty) {
+      path.moveTo(points.first.dx, points.first.dy);
+      for (int i = 1; i < points.length; i++) {
+        path.lineTo(points[i].dx, points[i].dy);
+      }
+    }
 
     // Glow under road line (dark mode helper)
-    if (brightness == Brightness.dark) {
+    if (brightness == Brightness.dark && points.isNotEmpty) {
       final shadowPaint = Paint()
-        ..color = primaryColor.withOpacity(0.2)
+        ..color = primaryColor.withOpacity(0.15)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 12
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
+        ..strokeWidth = 10
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5);
       canvas.drawPath(path, shadowPaint);
     }
 
@@ -653,39 +773,39 @@ class _MapTracePainter extends CustomPainter {
         colors: [primaryColor, secondaryColor],
       ).createShader(Offset.zero & size)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 5
-      ..strokeCap = StrokeCap.round;
+      ..strokeWidth = 4
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
 
     canvas.drawPath(path, roadPaint);
 
-    // Draw Start (Green) and End (Red Glow) circles overlay
-    final pinPaintStart = Paint()
-      ..color = primaryColor
-      ..style = PaintingStyle.fill;
+    // Draw start and end pin locations
+    if (points.length >= 2) {
+      final start = points.first;
+      final end = points.last;
 
-    final pinPaintEnd = Paint()
-      ..color = Colors.redAccent
-      ..style = PaintingStyle.fill;
+      canvas.drawCircle(start, 5, Paint()..color = primaryColor..style = PaintingStyle.fill);
+      canvas.drawCircle(start, 9, Paint()..color = primaryColor.withOpacity(0.3)..style = PaintingStyle.stroke..strokeWidth = 1.5);
 
-    canvas.drawCircle(Offset(size.width * 0.15, size.height * 0.65), 7, pinPaintStart);
-    canvas.drawCircle(Offset(size.width * 0.15, size.height * 0.65), 12, Paint()..color = primaryColor.withOpacity(0.3)..style = PaintingStyle.stroke..strokeWidth = 2);
-
-    canvas.drawCircle(Offset(size.width * 0.85, size.height * 0.35), 7, pinPaintEnd);
-    canvas.drawCircle(Offset(size.width * 0.85, size.height * 0.35), 12, Paint()..color = Colors.redAccent.withOpacity(0.3)..style = PaintingStyle.stroke..strokeWidth = 2);
+      canvas.drawCircle(end, 5, Paint()..color = Colors.redAccent..style = PaintingStyle.fill);
+      canvas.drawCircle(end, 9, Paint()..color = Colors.redAccent.withOpacity(0.3)..style = PaintingStyle.stroke..strokeWidth = 1.5);
+    }
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
 
-// Custom speed analysis profile chart painter (Garmin outlines)
+// Custom speed analysis profile chart painter (renders true dashboard speed traces)
 class _SpeedGraphPainter extends CustomPainter {
+  final List<RideLocation> locations;
   final double avgSpeed;
   final double maxSpeed;
   final Color primaryColor;
   final Brightness brightness;
 
   _SpeedGraphPainter({
+    required this.locations,
     required this.avgSpeed,
     required this.maxSpeed,
     required this.primaryColor,
@@ -708,29 +828,44 @@ class _SpeedGraphPainter extends CustomPainter {
     canvas.drawLine(Offset(0, height * 0.5), Offset(width, height * 0.5), gridPaint);
     canvas.drawLine(Offset(0, height * 0.75), Offset(width, height * 0.75), gridPaint);
 
-    // Build speed profile curve
     final path = Path()..moveTo(0, height);
-    
-    // Generate synthetic speed variations relative to averages
-    final List<Offset> points = [];
-    points.add(const Offset(0, 1.0)); // start slow
-    points.add(Offset(width * 0.15, 0.45)); // accelerate
-    points.add(Offset(width * 0.35, 0.3)); // speed up
-    
-    // Midpoint stop simulated
-    points.add(Offset(width * 0.5, 0.95)); // stop wait
-    points.add(Offset(width * 0.65, 0.2)); // peak speed
-    points.add(Offset(width * 0.85, 0.4)); // slow down
-    points.add(Offset(width, 1.0)); // end trip
-    
-    for (var pt in points) {
-      // Scale height: Y coordinates range from y=0 (maxSpeed) to y=height (0 speed)
-      final xVal = pt.dx;
-      // Map Y: pt.dy = 0 means max value, pt.dy = 1.0 means 0 value.
-      final yVal = height - (height * (1.0 - pt.dy)); 
-      path.lineTo(xVal, yVal);
+    final List<double> speeds = locations.map((loc) => loc.speed * 3.6).toList(); // convert to km/h
+
+    if (speeds.length > 1) {
+      final double stepX = width / (speeds.length - 1);
+      final double denominator = maxSpeed > 0 ? maxSpeed : 1.0;
+      for (int i = 0; i < speeds.length; i++) {
+        final double x = i * stepX;
+        final double speedRatio = (speeds[i] / denominator).clamp(0.0, 1.0);
+        final double y = height - (height * speedRatio * 0.85); // keep 15% padding top
+        if (i == 0) {
+          path.moveTo(x, y);
+        } else {
+          path.lineTo(x, y);
+        }
+      }
+    } else {
+      // Fallback synthetic graph if data path is empty
+      final List<Offset> points = [
+        const Offset(0.0, 1.0),
+        const Offset(0.15, 0.45),
+        const Offset(0.35, 0.3),
+        const Offset(0.5, 0.95),
+        const Offset(0.65, 0.2),
+        const Offset(0.85, 0.4),
+        const Offset(1.0, 1.0),
+      ];
+      for (int i = 0; i < points.length; i++) {
+        final x = points[i].dx * width;
+        final y = height - (height * (1.0 - points[i].dy));
+        if (i == 0) {
+          path.moveTo(x, y);
+        } else {
+          path.lineTo(x, y);
+        }
+      }
     }
-    
+
     // Draw shader area under curve
     final fillPath = Path.from(path)
       ..lineTo(width, height)
@@ -746,7 +881,6 @@ class _SpeedGraphPainter extends CustomPainter {
 
     canvas.drawPath(fillPath, fillPaint);
 
-    // Main line paint
     final linePaint = Paint()
       ..color = primaryColor
       ..style = PaintingStyle.stroke
@@ -761,14 +895,13 @@ class _SpeedGraphPainter extends CustomPainter {
       ..strokeWidth = 1.5
       ..style = PaintingStyle.stroke;
     
-    // Convert average speed ratio to Y
-    final double avgRatio = (avgSpeed / maxSpeed).clamp(0.1, 0.95);
-    final double avgY = height * (1.0 - avgRatio);
+    final double avgRatio = maxSpeed > 0 ? (avgSpeed / maxSpeed).clamp(0.1, 0.95) : 0.5;
+    final double avgY = height * (1.0 - avgRatio * 0.85);
     
-    // Draw dashed/solid average line
     canvas.drawLine(Offset(0, avgY), Offset(width, avgY), avgLine);
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
+

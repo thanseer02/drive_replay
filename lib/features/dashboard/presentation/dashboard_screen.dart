@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:drive_tracker/features/dashboard/viewmodel/dashboard_viewmodel.dart';
 import 'package:drive_tracker/features/settings/viewmodel/settings_viewmodel.dart';
 import 'package:drive_tracker/widgets/animated_number.dart';
+import 'package:drive_tracker/widgets/animated_duration.dart';
 import 'package:drive_tracker/widgets/speed_gauge.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -30,20 +31,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final dashboardVM = context.watch<DashboardViewModel>();
-    final settingsVM = context.watch<SettingsViewModel>();
-
-    // Unit configurations
-    final bool useMetric = settingsVM.useMetric;
-    final double distMulti = useMetric ? 1.0 : 0.621371;
-    final String velocityUnit = useMetric ? 'km/h' : 'mph';
-    final String distLabel = useMetric ? 'km' : 'mi';
-
-    // Interactive converted readouts
-    final double displayCurrentSpeed = dashboardVM.currentSpeed * distMulti;
-    final double displayMaxSpeed = dashboardVM.maxSpeed * distMulti;
-    final double displayAvgSpeed = dashboardVM.averageSpeed * distMulti;
-    final double displayDistance = dashboardVM.activeDistance * distMulti;
 
     return Scaffold(
       body: Container(
@@ -77,44 +64,54 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           ),
                         ),
                         const SizedBox(height: 4),
-                        Text(
-                          dashboardVM.isTracking ? 'Active Log' : 'Status: Ready',
-                          style: theme.textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                        Selector<DashboardViewModel, bool>(
+                          selector: (_, vm) => vm.isTracking,
+                          builder: (context, isTracking, _) {
+                            return Text(
+                              isTracking ? 'Active Log' : 'Status: Ready',
+                              style: theme.textTheme.headlineSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),
-                    if (dashboardVM.isTracking)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.redAccent.withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: 8,
-                              height: 8,
-                              decoration: const BoxDecoration(
-                                color: Colors.redAccent,
-                                shape: BoxShape.circle,
+                    Selector<DashboardViewModel, bool>(
+                      selector: (_, vm) => vm.isTracking,
+                      builder: (context, isTracking, _) {
+                        if (!isTracking) return const SizedBox.shrink();
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.redAccent.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: const BoxDecoration(
+                                  color: Colors.redAccent,
+                                  shape: BoxShape.circle,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 6),
-                            const Text(
-                              'REC',
-                              style: TextStyle(
-                                color: Colors.redAccent,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
-                              ),
-                            )
-                          ],
-                        ),
-                      ),
+                              const SizedBox(width: 6),
+                              const Text(
+                                'REC',
+                                style: TextStyle(
+                                  color: Colors.redAccent,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                              )
+                            ],
+                          ),
+                        );
+                      },
+                    ),
                   ],
                 ),
               ),
@@ -127,52 +124,77 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       const SizedBox(height: 10),
 
                       // Speed gauge or Welcome vehicle overview card
-                      if (dashboardVM.isTracking)
-                        SpeedGauge(
-                          speed: displayCurrentSpeed,
-                          maxSpeed: useMetric ? 160.0 : 100.0,
-                          unit: velocityUnit,
-                        )
-                      else
-                        _buildWelcomeCard(theme),
+                      Selector<DashboardViewModel, bool>(
+                        selector: (_, vm) => vm.isTracking,
+                        builder: (context, isTracking, _) {
+                          if (isTracking) {
+                            return Selector2<DashboardViewModel, SettingsViewModel, double>(
+                              selector: (_, vmDash, vmSet) => vmDash.currentSpeed * (vmSet.useMetric ? 1.0 : 0.621371),
+                              builder: (context, displayCurrentSpeed, _) {
+                                final useMetric = context.read<SettingsViewModel>().useMetric;
+                                return SpeedGauge(
+                                  speed: displayCurrentSpeed,
+                                  maxSpeed: useMetric ? 160.0 : 100.0,
+                                  unit: useMetric ? 'km/h' : 'mph',
+                                );
+                              },
+                            );
+                          } else {
+                            return _buildWelcomeCard(theme);
+                          }
+                        },
+                      ),
 
                       const SizedBox(height: 32),
 
                       // Telemetry Stats grid (Garmin/Google Fit styled compact grid)
-                      _buildStatsGrid(theme, dashboardVM, displayMaxSpeed, displayAvgSpeed, displayDistance, distLabel, velocityUnit),
+                      _buildStatsGrid(theme),
 
                       const SizedBox(height: 32),
 
                       // Location selectors (only shown when idling)
-                      if (!dashboardVM.isTracking)
-                        _buildLocationSelectors(theme),
+                      Selector<DashboardViewModel, bool>(
+                        selector: (_, vm) => vm.isTracking,
+                        builder: (context, isTracking, _) {
+                          if (!isTracking) {
+                            return _buildLocationSelectors(theme);
+                          }
+                          return const SizedBox.shrink();
+                        },
+                      ),
 
                       const SizedBox(height: 24),
 
                       // Large Premium Action Button
-                      _StartStopButton(
-                        isTracking: dashboardVM.isTracking,
-                        onPressed: () async {
-                          if (dashboardVM.isTracking) {
-                            final messenger = ScaffoldMessenger.of(context);
-                            final primaryColor = theme.colorScheme.primary;
-                            final savedDrive = await dashboardVM.stopTracking(
-                              _selectedStartLocation,
-                              _selectedEndLocation,
-                            );
-                            if (savedDrive != null) {
-                              messenger.showSnackBar(
-                                SnackBar(
-                                  content: Text('Drive saved successfully: ${savedDrive.notes}'),
-                                  behavior: SnackBarBehavior.floating,
-                                  backgroundColor: primaryColor,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                ),
-                              );
-                            }
-                          } else {
-                            dashboardVM.startTracking();
-                          }
+                      Selector<DashboardViewModel, bool>(
+                        selector: (_, vm) => vm.isTracking,
+                        builder: (context, isTracking, _) {
+                          return _StartStopButton(
+                            isTracking: isTracking,
+                            onPressed: () async {
+                              final dashboardVM = context.read<DashboardViewModel>();
+                              if (isTracking) {
+                                final messenger = ScaffoldMessenger.of(context);
+                                final primaryColor = theme.colorScheme.primary;
+                                final savedDrive = await dashboardVM.stopTracking(
+                                  _selectedStartLocation,
+                                  _selectedEndLocation,
+                                );
+                                if (savedDrive != null) {
+                                  messenger.showSnackBar(
+                                    SnackBar(
+                                      content: Text('Drive saved successfully: ${savedDrive.notes}'),
+                                      behavior: SnackBarBehavior.floating,
+                                      backgroundColor: primaryColor,
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    ),
+                                  );
+                                }
+                              } else {
+                                dashboardVM.startTracking();
+                              }
+                            },
+                          );
                         },
                       ),
                       const SizedBox(height: 24),
@@ -315,15 +337,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   // Telemetry Grid layouts (Garmin styled split values cards)
-  Widget _buildStatsGrid(
-    ThemeData theme,
-    DashboardViewModel viewModel,
-    double maxSpeed,
-    double avgSpeed,
-    double displayDistance,
-    String distLabel,
-    String speedLabel,
-  ) {
+  Widget _buildStatsGrid(ThemeData theme) {
     final bool isDark = theme.brightness == Brightness.dark;
     final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
     final strokeColor = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
@@ -333,28 +347,40 @@ class _DashboardScreenState extends State<DashboardScreen> {
         Row(
           children: [
             Expanded(
-              child: _buildMetricTile(
-                theme: theme,
-                title: 'DISTANCE',
-                value: displayDistance,
-                suffix: ' $distLabel',
-                icon: Icons.map_rounded,
-                iconColor: Colors.blueAccent,
-                cardBg: cardBg,
-                strokeColor: strokeColor,
+              child: Selector2<DashboardViewModel, SettingsViewModel, double>(
+                selector: (_, vmDash, vmSet) => vmDash.activeDistance * (vmSet.useMetric ? 1.0 : 0.621371),
+                builder: (context, displayDistance, _) {
+                  final useMetric = context.read<SettingsViewModel>().useMetric;
+                  return _buildMetricTile(
+                    theme: theme,
+                    title: 'DISTANCE',
+                    value: displayDistance,
+                    suffix: useMetric ? ' km' : ' mi',
+                    icon: Icons.map_rounded,
+                    iconColor: Colors.blueAccent,
+                    cardBg: cardBg,
+                    strokeColor: strokeColor,
+                  );
+                },
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: _buildMetricTile(
-                theme: theme,
-                title: 'MAX SPEED',
-                value: maxSpeed,
-                suffix: ' $speedLabel',
-                icon: Icons.speed_rounded,
-                iconColor: Colors.indigoAccent,
-                cardBg: cardBg,
-                strokeColor: strokeColor,
+              child: Selector2<DashboardViewModel, SettingsViewModel, double>(
+                selector: (_, vmDash, vmSet) => vmDash.maxSpeed * (vmSet.useMetric ? 1.0 : 0.621371),
+                builder: (context, displayMaxSpeed, _) {
+                  final useMetric = context.read<SettingsViewModel>().useMetric;
+                  return _buildMetricTile(
+                    theme: theme,
+                    title: 'MAX SPEED',
+                    value: displayMaxSpeed,
+                    suffix: useMetric ? ' km/h' : ' mph',
+                    icon: Icons.speed_rounded,
+                    iconColor: Colors.indigoAccent,
+                    cardBg: cardBg,
+                    strokeColor: strokeColor,
+                  );
+                },
               ),
             ),
           ],
@@ -363,26 +389,36 @@ class _DashboardScreenState extends State<DashboardScreen> {
         Row(
           children: [
             Expanded(
-              child: _buildTimerTile(
-                theme: theme,
-                title: 'DRIVING TIME',
-                seconds: viewModel.drivingTimeSeconds,
-                icon: Icons.timer_rounded,
-                iconColor: const Color(0xFF10B981),
-                cardBg: cardBg,
-                strokeColor: strokeColor,
+              child: Selector<DashboardViewModel, int>(
+                selector: (_, vm) => vm.drivingTimeSeconds,
+                builder: (context, seconds, _) {
+                  return _buildTimerTile(
+                    theme: theme,
+                    title: 'DRIVING TIME',
+                    seconds: seconds,
+                    icon: Icons.timer_rounded,
+                    iconColor: const Color(0xFF10B981),
+                    cardBg: cardBg,
+                    strokeColor: strokeColor,
+                  );
+                },
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: _buildTimerTile(
-                theme: theme,
-                title: 'STOPPED TIME',
-                seconds: viewModel.stoppedTimeSeconds,
-                icon: Icons.pause_circle_filled_rounded,
-                iconColor: Colors.orangeAccent,
-                cardBg: cardBg,
-                strokeColor: strokeColor,
+              child: Selector<DashboardViewModel, int>(
+                selector: (_, vm) => vm.stoppedTimeSeconds,
+                builder: (context, seconds, _) {
+                  return _buildTimerTile(
+                    theme: theme,
+                    title: 'STOPPED TIME',
+                    seconds: seconds,
+                    icon: Icons.pause_circle_filled_rounded,
+                    iconColor: Colors.orangeAccent,
+                    cardBg: cardBg,
+                    strokeColor: strokeColor,
+                  );
+                },
               ),
             ),
           ],
@@ -391,15 +427,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
         Row(
           children: [
             Expanded(
-              child: _buildMetricTile(
-                theme: theme,
-                title: 'AVERAGE SPEED',
-                value: avgSpeed,
-                suffix: ' $speedLabel',
-                icon: Icons.query_stats_rounded,
-                iconColor: Colors.tealAccent,
-                cardBg: cardBg,
-                strokeColor: strokeColor,
+              child: Selector2<DashboardViewModel, SettingsViewModel, double>(
+                selector: (_, vmDash, vmSet) => vmDash.averageSpeed * (vmSet.useMetric ? 1.0 : 0.621371),
+                builder: (context, displayAvgSpeed, _) {
+                  final useMetric = context.read<SettingsViewModel>().useMetric;
+                  return _buildMetricTile(
+                    theme: theme,
+                    title: 'AVERAGE SPEED',
+                    value: displayAvgSpeed,
+                    suffix: useMetric ? ' km/h' : ' mph',
+                    icon: Icons.query_stats_rounded,
+                    iconColor: Colors.tealAccent,
+                    cardBg: cardBg,
+                    strokeColor: strokeColor,
+                  );
+                },
               ),
             ),
           ],
@@ -466,8 +508,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     required Color cardBg,
     required Color strokeColor,
   }) {
-    final String formattedStr = _formatDurationSeconds(seconds);
-
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -493,8 +533,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          Text(
-            formattedStr,
+          AnimatedDuration(
+            seconds: seconds,
             style: theme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w900,
               fontSize: 20,
@@ -503,20 +543,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ],
       ),
     );
-  }
-
-  String _formatDurationSeconds(int totalSeconds) {
-    final int hours = totalSeconds ~/ 3600;
-    final int minutes = (totalSeconds % 3600) ~/ 60;
-    final int seconds = totalSeconds % 60;
-
-    if (hours > 0) {
-      return '${hours}h ${minutes}m ${seconds}s';
-    }
-    if (minutes > 0) {
-      return '${minutes}m ${seconds}s';
-    }
-    return '${seconds}s';
   }
 }
 
@@ -552,13 +578,19 @@ class _StartStopButtonState extends State<_StartStopButton> with SingleTickerPro
         curve: Curves.easeInOut,
       ),
     );
+
+    if (widget.isTracking) {
+      _animController.repeat(reverse: true);
+    }
   }
 
   @override
   void didUpdateWidget(covariant _StartStopButton oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.isTracking) {
-      _animController.repeat(reverse: true);
+      if (!_animController.isAnimating) {
+        _animController.repeat(reverse: true);
+      }
     } else {
       _animController.stop();
     }
@@ -642,3 +674,4 @@ class _StartStopButtonState extends State<_StartStopButton> with SingleTickerPro
     );
   }
 }
+

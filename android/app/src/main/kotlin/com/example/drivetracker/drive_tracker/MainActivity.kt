@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
 import androidx.annotation.NonNull
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.EventChannel
@@ -17,64 +18,141 @@ class MainActivity : FlutterActivity() {
     private val EVENT_CHANNEL = "com.example.drivetracker/tracking_events"
 
     private var eventSink: EventChannel.EventSink? = null
+    // Fix #5: telemetryReceiver is registered/unregistered in onResume/onPause
     private var telemetryReceiver: BroadcastReceiver? = null
+    private var isReceiverRegistered = false
 
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
 
-        // MethodChannel: Send start/stop command signals to native service
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CONTROL_CHANNEL).setMethodCallHandler { call, result ->
-            when (call.method) {
-                "startTracking" -> {
-                    startTrackingService()
-                    result.success(true)
-                }
-                "stopTracking" -> {
-                    stopTrackingService()
-                    result.success(true)
-                }
-                "isTracking" -> {
-                    result.success(TrackingService.isServiceRunning)
-                }
-                "getTelemetry" -> {
-                    val service = TrackingService.activeInstance
-                    if (service != null) {
-                        val data = mapOf(
-                            "isTracking" to true,
-                            "startTime" to service.getStartTime(),
-                            "currentSpeed" to service.getCurrentSpeedMps(),
-                            "maxSpeed" to service.getMaxSpeedMetersPerSec(),
-                            "averageSpeed" to service.getAverageSpeedMps(),
-                            "distance" to service.getAccumulatedDistanceMeters(),
-                            "drivingTime" to service.getDrivingTimeSeconds(),
-                            "stopTime" to service.getStoppedTimeSeconds()
-                        )
-                        result.success(data)
-                    } else {
-                        result.success(mapOf("isTracking" to false))
+        // MethodChannel: control the tracking service
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CONTROL_CHANNEL)
+            .setMethodCallHandler { call, result ->
+                when (call.method) {
+                    "startTracking" -> {
+                        startTrackingService()
+                        result.success(true)
                     }
+                    "stopTracking" -> {
+                        stopTrackingService()
+                        result.success(true)
+                    }
+                    "isTracking" -> {
+                        result.success(TrackingService.isServiceRunning)
+                    }
+                    "getTelemetry" -> {
+                        // Fix #4: access via WeakReference, no direct field read
+                        val service = TrackingService.activeInstance
+                        if (service != null) {
+                            result.success(mapOf(
+                                "isTracking" to true,
+                                "startTime" to service.getStartTime(),
+                                "currentSpeed" to service.getCurrentSpeedMps(),
+                                "maxSpeed" to service.getMaxSpeedMetersPerSec(),
+                                "averageSpeed" to service.getAverageSpeedMps(),
+                                "distance" to service.getAccumulatedDistanceMeters(),
+                                "drivingTime" to service.getDrivingTimeSeconds(),
+                                "stopTime" to service.getStoppedTimeSeconds()
+                            ))
+                        } else {
+                            result.success(mapOf("isTracking" to false))
+                        }
+                    }
+                    else -> result.notImplemented()
                 }
-                else -> {
-                    result.notImplemented()
+            }
+
+        // EventChannel: stream live telemetry to Flutter
+        EventChannel(flutterEngine.dartExecutor.binaryMessenger, EVENT_CHANNEL)
+            .setStreamHandler(object : EventChannel.StreamHandler {
+                override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+                    eventSink = events
+                    // Receiver registration is driven by onResume/onPause, not stream lifecycle
+                }
+                override fun onCancel(arguments: Any?) {
+                    eventSink = null
+                }
+            })
+    }
+
+    // Fix #5: Register receiver in onResume (not in stream handler)
+    override fun onResume() {
+        super.onResume()
+        registerTelemetryReceiver()
+    }
+
+    // Fix #5: Unregister in onPause to prevent Activity leak
+    override fun onPause() {
+        super.onPause()
+        unregisterTelemetryReceiver()
+    }
+
+    override fun onDestroy() {
+        unregisterTelemetryReceiver()
+        super.onDestroy()
+    }
+
+    // ─── Receiver ────────────────────────────────────────────────────────────
+
+    private fun buildTelemetryReceiver(): BroadcastReceiver {
+        return object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                intent ?: return
+                val sink = eventSink ?: return
+                when (intent.action) {
+                    TrackingService.BROADCAST_TELEMETRY -> {
+                        sink.success(mapOf(
+                            "type" to "telemetry",
+                            "currentSpeed" to intent.getDoubleExtra("currentSpeed", 0.0),
+                            "maxSpeed" to intent.getDoubleExtra("maxSpeed", 0.0),
+                            "averageSpeed" to intent.getDoubleExtra("averageSpeed", 0.0),
+                            "distance" to intent.getDoubleExtra("distance", 0.0),
+                            "drivingTime" to intent.getIntExtra("drivingTime", 0),
+                            "stopTime" to intent.getIntExtra("stopTime", 0),
+                            "heading" to intent.getDoubleExtra("heading", 0.0),
+                            "altitude" to intent.getDoubleExtra("altitude", 0.0)
+                        ))
+                    }
+                    TrackingService.BROADCAST_STOPPED -> {
+                        sink.success(mapOf(
+                            "type" to "stopped",
+                            "startTime" to intent.getLongExtra("startTime", 0L),
+                            "endTime" to intent.getLongExtra("endTime", 0L),
+                            "maxSpeed" to intent.getDoubleExtra("maxSpeed", 0.0),
+                            "averageSpeed" to intent.getDoubleExtra("averageSpeed", 0.0),
+                            "distance" to intent.getDoubleExtra("distance", 0.0),
+                            "drivingTime" to intent.getIntExtra("drivingTime", 0),
+                            "stopTime" to intent.getIntExtra("stopTime", 0)
+                        ))
+                    }
                 }
             }
         }
-
-        // EventChannel: Stream telemetry events dynamically
-        EventChannel(flutterEngine.dartExecutor.binaryMessenger, EVENT_CHANNEL).setStreamHandler(
-            object : EventChannel.StreamHandler {
-                override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
-                    eventSink = events
-                    registerTelemetryReceivers()
-                }
-
-                override fun onCancel(arguments: Any?) {
-                    unregisterTelemetryReceivers()
-                    eventSink = null
-                }
-            }
-        )
     }
+
+    private fun registerTelemetryReceiver() {
+        if (isReceiverRegistered) return
+        val receiver = buildTelemetryReceiver()
+        telemetryReceiver = receiver
+        val filter = IntentFilter().apply {
+            addAction(TrackingService.BROADCAST_TELEMETRY)
+            addAction(TrackingService.BROADCAST_STOPPED)
+        }
+        // Fix #12/#13: Use LocalBroadcastManager — internal only, no RECEIVER_EXPORTED needed
+        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter)
+        isReceiverRegistered = true
+    }
+
+    private fun unregisterTelemetryReceiver() {
+        if (!isReceiverRegistered) return
+        telemetryReceiver?.let {
+            LocalBroadcastManager.getInstance(this).unregisterReceiver(it)
+            telemetryReceiver = null
+        }
+        isReceiverRegistered = false
+    }
+
+    // ─── Service control ──────────────────────────────────────────────────────
 
     private fun startTrackingService() {
         val intent = Intent(this, TrackingService::class.java).apply {
@@ -92,71 +170,5 @@ class MainActivity : FlutterActivity() {
             action = TrackingService.ACTION_STOP
         }
         startService(intent)
-    }
-
-    private fun registerTelemetryReceivers() {
-        if (telemetryReceiver != null) return
-
-        telemetryReceiver = object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                intent?.let {
-                    val sink = eventSink ?: return@let
-                    when (it.action) {
-                        TrackingService.BROADCAST_TELEMETRY -> {
-                            val data = mapOf(
-                                "type" to "telemetry",
-                                "currentSpeed" to it.getDoubleExtra("currentSpeed", 0.0),
-                                "maxSpeed" to it.getDoubleExtra("maxSpeed", 0.0),
-                                "averageSpeed" to it.getDoubleExtra("averageSpeed", 0.0),
-                                "distance" to it.getDoubleExtra("distance", 0.0),
-                                "drivingTime" to it.getIntExtra("drivingTime", 0),
-                                "stopTime" to it.getIntExtra("stopTime", 0),
-                                "heading" to it.getDoubleExtra("heading", 0.0),
-                                "altitude" to it.getDoubleExtra("altitude", 0.0)
-                            )
-                            sink.success(data)
-                        }
-                        TrackingService.BROADCAST_STOPPED -> {
-                            val data = mapOf(
-                                "type" to "stopped",
-                                "historyJson" to it.getStringExtra("historyJson"),
-                                "startTime" to it.getLongExtra("startTime", 0L),
-                                "endTime" to it.getLongExtra("endTime", 0L),
-                                "maxSpeed" to it.getDoubleExtra("maxSpeed", 0.0),
-                                "averageSpeed" to it.getDoubleExtra("averageSpeed", 0.0),
-                                "distance" to it.getDoubleExtra("distance", 0.0),
-                                "drivingTime" to it.getIntExtra("drivingTime", 0),
-                                "stopTime" to it.getIntExtra("stopTime", 0)
-                            )
-                            sink.success(data)
-                        }
-                        else -> {}
-                    }
-                }
-            }
-        }
-
-        val filter = IntentFilter().apply {
-            addAction(TrackingService.BROADCAST_TELEMETRY)
-            addAction(TrackingService.BROADCAST_STOPPED)
-        }
-        
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(telemetryReceiver, filter, RECEIVER_EXPORTED)
-        } else {
-            registerReceiver(telemetryReceiver, filter)
-        }
-    }
-
-    private fun unregisterTelemetryReceivers() {
-        telemetryReceiver?.let {
-            unregisterReceiver(it)
-            telemetryReceiver = null
-        }
-    }
-
-    override fun onDestroy() {
-        unregisterTelemetryReceivers()
-        super.onDestroy()
     }
 }

@@ -15,7 +15,7 @@ final GlobalKey<NavigatorState> _settingsBranchKey = GlobalKey<NavigatorState>(d
 final GoRouter appRouter = GoRouter(
   navigatorKey: _rootNavigatorKey,
   initialLocation: '/splash',
-  debugLogDiagnostics: true,
+  debugLogDiagnostics: false,
   routes: <RouteBase>[
     GoRoute(
       path: '/splash',
@@ -24,10 +24,27 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/ride-details/:id',
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (BuildContext context, GoRouterState state) {
+      // Custom fade+slide transition for the ride details modal
+      pageBuilder: (BuildContext context, GoRouterState state) {
         final idStr = state.pathParameters['id'] ?? '';
         final id = int.tryParse(idStr) ?? 0;
-        return RideDetailsScreen(driveId: id);
+        return CustomTransitionPage<void>(
+          key: state.pageKey,
+          child: RideDetailsScreen(driveId: id),
+          transitionDuration: const Duration(milliseconds: 350),
+          reverseTransitionDuration: const Duration(milliseconds: 280),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            // Bottom-up slide + fade transition (like a modal sheet)
+            final slideAnim = Tween<Offset>(
+              begin: const Offset(0, 0.06),
+              end: Offset.zero,
+            ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic));
+            return FadeTransition(
+              opacity: animation,
+              child: SlideTransition(position: slideAnim, child: child),
+            );
+          },
+        );
       },
     ),
     StatefulShellRoute.indexedStack(
