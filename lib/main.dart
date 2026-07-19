@@ -11,6 +11,11 @@ import 'package:drive_tracker/features/history/viewmodel/history_viewmodel.dart'
 import 'package:drive_tracker/features/settings/viewmodel/settings_viewmodel.dart';
 import 'package:drive_tracker/router.dart';
 import 'package:drive_tracker/services/storage_service.dart';
+import 'package:drive_tracker/database/db_helper.dart';
+import 'package:drive_tracker/repositories/ride_repository.dart';
+import 'package:drive_tracker/repositories/ride_repository_impl.dart';
+import 'package:drive_tracker/services/permission_service.dart';
+
 
 // ─── Crash-safe global error boundary ─────────────────────────────────────
 void _handleFlutterError(FlutterErrorDetails details) {
@@ -56,6 +61,14 @@ void main() async {
   final prefs = await SharedPreferences.getInstance();
   final storageService = StorageService(prefs);
   ServiceLocator.register<StorageService>(storageService);
+
+  // Register core services early to prevent race conditions during ViewModel creation
+  final dbHelper = DBHelper.instance;
+  await dbHelper.database;
+  final rideRepository = RideRepositoryImpl(dbHelper);
+  ServiceLocator.register<RideRepository>(rideRepository);
+  ServiceLocator.register<PermissionService>(PermissionService());
+
 
   runZonedGuarded(
     () => runApp(
