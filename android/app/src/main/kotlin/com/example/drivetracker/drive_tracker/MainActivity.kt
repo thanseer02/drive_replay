@@ -36,6 +36,24 @@ class MainActivity : FlutterActivity() {
                 "isTracking" -> {
                     result.success(TrackingService.isServiceRunning)
                 }
+                "getTelemetry" -> {
+                    val service = TrackingService.activeInstance
+                    if (service != null) {
+                        val data = mapOf(
+                            "isTracking" to true,
+                            "startTime" to service.getStartTime(),
+                            "currentSpeed" to service.getCurrentSpeedMps(),
+                            "maxSpeed" to service.getMaxSpeedMetersPerSec(),
+                            "averageSpeed" to service.getAverageSpeedMps(),
+                            "distance" to service.getAccumulatedDistanceMeters(),
+                            "drivingTime" to service.getDrivingTimeSeconds(),
+                            "stopTime" to service.getStoppedTimeSeconds()
+                        )
+                        result.success(data)
+                    } else {
+                        result.success(mapOf("isTracking" to false))
+                    }
+                }
                 else -> {
                     result.notImplemented()
                 }

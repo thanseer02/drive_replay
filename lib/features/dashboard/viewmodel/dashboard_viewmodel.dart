@@ -1,10 +1,8 @@
 import 'dart:async';
-import 'dart:convert';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:drive_tracker/core/di.dart';
 import 'package:drive_tracker/models/ride.dart';
-import 'package:drive_tracker/models/ride_location.dart';
 import 'package:drive_tracker/repositories/ride_repository.dart';
 
 class DashboardViewModel extends ChangeNotifier {
@@ -59,9 +57,15 @@ class DashboardViewModel extends ChangeNotifier {
 
   Future<void> _checkServiceRunning() async {
     try {
-      final bool running = await _controlChannel.invokeMethod('isTracking');
-      if (running) {
+      final Map? telemetry = await _controlChannel.invokeMapMethod('getTelemetry');
+      if (telemetry != null && (telemetry['isTracking'] as bool? ?? false)) {
         _isTracking = true;
+        _currentSpeed = (telemetry['currentSpeed'] as num? ?? 0.0).toDouble() * 3.6;
+        _maxSpeed = (telemetry['maxSpeed'] as num? ?? 0.0).toDouble() * 3.6;
+        _activeDistance = (telemetry['distance'] as num? ?? 0.0).toDouble() / 1000.0;
+        _drivingTimeSeconds = telemetry['drivingTime'] as int? ?? 0;
+        _stoppedTimeSeconds = telemetry['stopTime'] as int? ?? 0;
+
         _startListeningToChannel();
         notifyListeners();
       }
@@ -165,37 +169,7 @@ class DashboardViewModel extends ChangeNotifier {
 
   Future<void> _saveRideFromEvent(Map event) async {
     try {
-      final ride = Ride(
-        startTime: DateTime.fromMillisecondsSinceEpoch(event['startTime'] as int),
-        endTime: DateTime.fromMillisecondsSinceEpoch(event['endTime'] as int),
-        maxSpeed: (event['maxSpeed'] as num).toDouble() * 3.6,
-        averageSpeed: (event['averageSpeed'] as num).toDouble() * 3.6,
-        distance: double.parse(((event['distance'] as num).toDouble() / 1000.0).toStringAsFixed(2)),
-        drivingTime: event['drivingTime'] as int,
-        stopTime: event['stopTime'] as int,
-        createdAt: DateTime.now(),
-      );
-
-      final rideId = await _rideRepository.addRide(ride);
-
-      final String? historyJson = event['historyJson'] as String?;
-      if (historyJson != null && historyJson.isNotEmpty) {
-        final List decoded = jsonDecode(historyJson) as List;
-        for (var p in decoded) {
-          if (p is Map) {
-            await _rideRepository.addRideLocation(RideLocation(
-              rideId: rideId,
-              latitude: (p['latitude'] as num).toDouble(),
-              longitude: (p['longitude'] as num).toDouble(),
-              speed: (p['speed'] as num).toDouble() * 3.6,
-              accuracy: (p['accuracy'] as num).toDouble(),
-              heading: (p['heading'] ?? 0.0 as num).toDouble(),
-              altitude: (p['altitude'] ?? 0.0 as num).toDouble(),
-              timestamp: DateTime.fromMillisecondsSinceEpoch(p['timestamp'] as int),
-            ));
-          }
-        }
-      }
+      // Telemetry metrics and locations are persisted directly in SQLite natively.
     } catch (_) {
       // Catch exceptions on DB transaction failures
     } finally {
