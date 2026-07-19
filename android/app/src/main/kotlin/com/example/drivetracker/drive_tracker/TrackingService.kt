@@ -103,6 +103,7 @@ class TrackingService : Service() {
 
         // Adaptive GPS interval thresholds (#9)
         private const val ADAPTIVE_STOP_THRESHOLD_SECONDS = 30
+        private const val TAG = "TrackingService"
     }
 
     // Getters for MethodChannel recovery (MainActivity.kt reads these on main thread — @Volatile guarantees safety)
@@ -220,6 +221,7 @@ class TrackingService : Service() {
         currentSpeedMps = 0.0
         traceLineCount = countTraceLines()
 
+        val distKm = accumulatedDistanceMeters / 1000.0
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             startForeground(
                 NOTIFICATION_ID,
@@ -637,7 +639,4 @@ class TrackingService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = null
 
-    private companion object {
-        private const val TAG = "TrackingService"
-    }
 }
