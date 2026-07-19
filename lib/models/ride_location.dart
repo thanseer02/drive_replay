@@ -5,6 +5,8 @@ class RideLocation {
   final double longitude;
   final double speed;
   final double accuracy;
+  final double heading;
+  final double altitude;
   final DateTime timestamp;
 
   RideLocation({
@@ -14,6 +16,8 @@ class RideLocation {
     required this.longitude,
     required this.speed,
     required this.accuracy,
+    required this.heading,
+    required this.altitude,
     required this.timestamp,
   });
 
@@ -25,6 +29,8 @@ class RideLocation {
       'longitude': longitude,
       'speed': speed,
       'accuracy': accuracy,
+      'heading': heading,
+      'altitude': altitude,
       'timestamp': timestamp.toIso8601String(),
     };
   }
@@ -37,6 +43,8 @@ class RideLocation {
       longitude: (map['longitude'] as num).toDouble(),
       speed: (map['speed'] as num).toDouble(),
       accuracy: (map['accuracy'] as num).toDouble(),
+      heading: (map['heading'] ?? 0.0 as num).toDouble(),
+      altitude: (map['altitude'] ?? 0.0 as num).toDouble(),
       timestamp: DateTime.parse(map['timestamp'] as String),
     );
   }

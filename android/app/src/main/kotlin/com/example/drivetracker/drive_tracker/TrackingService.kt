@@ -21,7 +21,7 @@ class TrackingService : Service() {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationCallback: LocationCallback
 
-    // Telemetry variables
+    // Telemetry tracking state variables
     private var isTracking = false
     private var startTimeMillis: Long = 0
     private var lastLocation: Location? = null
@@ -32,6 +32,11 @@ class TrackingService : Service() {
     private var stoppedTimeSeconds: Int = 0
     private var pointCount: Int = 0
     private var speedSumMetersPerSec: Double = 0.0
+
+    // Speed smoothing & drift filter variables
+    private var smoothedSpeed: Double = -1.0
+    private val MIN_SPEED_METERS_PER_SEC = 1.0 / 3.6 // 1 km/h threshold
+    private val SPEED_SMOOTHING_ALPHA = 0.3 // EMA alpha parameter
 
     // List of coordinates recorded
     private val locationHistory = mutableListOf<Map<String, Any>>()
@@ -86,6 +91,7 @@ class TrackingService : Service() {
         stoppedTimeSeconds = 0
         pointCount = 0
         speedSumMetersPerSec = 0.0
+        smoothedSpeed = -1.0
         lastLocation = null
         locationHistory.clear()
 
@@ -93,10 +99,10 @@ class TrackingService : Service() {
         val notification = buildNotification("Drive Tracker active", "Initializing GPS connection...")
         startForeground(NOTIFICATION_ID, notification)
 
-        // Setup Location Request
-        val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 2000L).apply {
+        // Setup Location Request to update every 1 second (High Accuracy)
+        val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000L).apply {
             setMinUpdateIntervalMillis(1000L)
-            setMinUpdateDistanceMeters(1.0f)
+            setMinUpdateDistanceMeters(0.0f)
         }.build()
 
         locationCallback = object : LocationCallback() {
@@ -119,15 +125,32 @@ class TrackingService : Service() {
     }
 
     private fun processNewLocation(location: Location) {
+        // 1. Ignore bad GPS points (accuracy worse than 30 meters)
+        if (location.accuracy > 30.0f) {
+            return
+        }
+
         val lastLoc = lastLocation
-        val now = System.currentTimeMillis()
 
+        // 2. Exponential Moving Average (EMA) speed smoothing
+        val rawSpeed = location.speed.toDouble()
+        val currentSpeed = if (rawSpeed < MIN_SPEED_METERS_PER_SEC) 0.0 else rawSpeed
+
+        smoothedSpeed = if (smoothedSpeed < 0.0) {
+            currentSpeed
+        } else {
+            (SPEED_SMOOTHING_ALPHA * currentSpeed) + ((1.0 - SPEED_SMOOTHING_ALPHA) * smoothedSpeed)
+        }
+
+        // 3. Ignore speeds under 1 km/h (treating them as 0.0 to prevent odometer drift)
+        val speedMps = if (smoothedSpeed < MIN_SPEED_METERS_PER_SEC) 0.0 else smoothedSpeed
+
+        // 4. Update travel time and offset odometer only if moving
         if (lastLoc != null) {
-            val distance = lastLoc.distanceTo(location)
-            accumulatedDistanceMeters += distance
-
             val timeDeltaSeconds = ((location.time - lastLoc.time) / 1000L).toInt().coerceAtLeast(0)
-            if (location.speed > 0.5f) {
+            if (speedMps >= MIN_SPEED_METERS_PER_SEC) {
+                val distance = lastLoc.distanceTo(location)
+                accumulatedDistanceMeters += distance
                 drivingTimeSeconds += timeDeltaSeconds
             } else {
                 stoppedTimeSeconds += timeDeltaSeconds
@@ -136,8 +159,7 @@ class TrackingService : Service() {
             startTimeMillis = location.time
         }
 
-        // Speed aggregates (Location speed is in m/s)
-        val speedMps = location.speed.toDouble()
+        // Speed aggregates
         if (speedMps > maxSpeedMetersPerSec) {
             maxSpeedMetersPerSec = speedMps
         }
@@ -146,24 +168,25 @@ class TrackingService : Service() {
 
         lastLocation = location
 
+        // Heading and Altitude values
+        val heading = if (location.hasBearing()) location.bearing.toDouble() else 0.0
+        val altitude = if (location.hasAltitude()) location.altitude else 0.0
+
         // Save coordinate fix to history
         val point = mapOf(
             "latitude" to location.latitude,
             "longitude" to location.longitude,
             "speed" to speedMps,
-            "accuracy" to location.accuracy,
+            "accuracy" to location.accuracy.toDouble(),
+            "heading" to heading,
+            "altitude" to altitude,
             "timestamp" to location.time
         )
         locationHistory.add(point)
 
-        // Calculate current metrics
+        // Calculate current metrics for notification displays
         val currentSpeedKmh = speedMps * 3.6
         val distanceKm = accumulatedDistanceMeters / 1000.0
-        val avgSpeedKmh = if (drivingTimeSeconds + stoppedTimeSeconds > 0) {
-            (accumulatedDistanceMeters / (drivingTimeSeconds + stoppedTimeSeconds)) * 3.6
-        } else {
-            0.0
-        }
 
         // Update Notification content
         val textContent = String.format(
@@ -182,7 +205,9 @@ class TrackingService : Service() {
             avgSpeedMps = if (drivingTimeSeconds + stoppedTimeSeconds > 0) accumulatedDistanceMeters / (drivingTimeSeconds + stoppedTimeSeconds) else 0.0,
             distanceMeters = accumulatedDistanceMeters,
             drivingSec = drivingTimeSeconds,
-            stoppedSec = stoppedTimeSeconds
+            stoppedSec = stoppedTimeSeconds,
+            heading = heading,
+            altitude = altitude
         )
     }
 
@@ -192,7 +217,9 @@ class TrackingService : Service() {
         avgSpeedMps: Double,
         distanceMeters: Double,
         drivingSec: Int,
-        stoppedSec: Int
+        stoppedSec: Int,
+        heading: Double,
+        altitude: Double
     ) {
         val intent = Intent(BROADCAST_TELEMETRY).apply {
             putExtra("currentSpeed", speedMps)
@@ -201,6 +228,8 @@ class TrackingService : Service() {
             putExtra("distance", distanceMeters)
             putExtra("drivingTime", drivingSec)
             putExtra("stopTime", stoppedSec)
+            putExtra("heading", heading)
+            putExtra("altitude", altitude)
         }
         sendBroadcast(intent)
     }
@@ -219,6 +248,8 @@ class TrackingService : Service() {
                 put("longitude", item["longitude"])
                 put("speed", item["speed"])
                 put("accuracy", item["accuracy"])
+                put("heading", item["heading"])
+                put("altitude", item["altitude"])
                 put("timestamp", item["timestamp"])
             }
             jsonArray.put(obj)

@@ -27,6 +27,7 @@ class DBHelper {
       version: AppConstants.dbVersion,
       onCreate: _onCreate,
       onConfigure: _onConfigure,
+      onUpgrade: _onUpgrade,
     );
   }
 
@@ -60,6 +61,8 @@ class DBHelper {
         longitude REAL NOT NULL,
         speed REAL NOT NULL,
         accuracy REAL NOT NULL,
+        heading REAL NOT NULL DEFAULT 0.0,
+        altitude REAL NOT NULL DEFAULT 0.0,
         timestamp TEXT NOT NULL,
         FOREIGN KEY (rideId) REFERENCES rides (id) ON DELETE CASCADE
       )
@@ -80,6 +83,13 @@ class DBHelper {
       'is_dark_mode': 0,
       'use_metric': 1,
     });
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute('ALTER TABLE ride_locations ADD COLUMN heading REAL NOT NULL DEFAULT 0.0');
+      await db.execute('ALTER TABLE ride_locations ADD COLUMN altitude REAL NOT NULL DEFAULT 0.0');
+    }
   }
 
   // ==========================================

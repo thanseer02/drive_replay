@@ -92,7 +92,9 @@ class MainActivity : FlutterActivity() {
                                 "averageSpeed" to it.getDoubleExtra("averageSpeed", 0.0),
                                 "distance" to it.getDoubleExtra("distance", 0.0),
                                 "drivingTime" to it.getIntExtra("drivingTime", 0),
-                                "stopTime" to it.getIntExtra("stopTime", 0)
+                                "stopTime" to it.getIntExtra("stopTime", 0),
+                                "heading" to it.getDoubleExtra("heading", 0.0),
+                                "altitude" to it.getDoubleExtra("altitude", 0.0)
                             )
                             sink.success(data)
                         }
