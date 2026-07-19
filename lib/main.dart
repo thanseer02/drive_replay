@@ -1,79 +1,56 @@
-import 'package:firebase_core/firebase_core.dart';
-import 'package:drive_replay/config/app_config.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import 'firebase_options.dart';
-
-import 'features/auth/view/splash_screen.dart';
-import 'routes/routes.dart';
-import 'utils/colors.dart';
-
-import 'features/auth/view_model/auth_viewmodel.dart';
-import 'features/trip_recording/view_model/trip_viewmodel.dart';
-import 'features/history/view_model/history_viewmodel.dart';
-import 'features/trip_recording/model/trip_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:drive_tracker/core/di.dart';
+import 'package:drive_tracker/core/theme.dart';
+import 'package:drive_tracker/features/dashboard/viewmodel/dashboard_viewmodel.dart';
+import 'package:drive_tracker/features/history/viewmodel/history_viewmodel.dart';
+import 'package:drive_tracker/features/settings/viewmodel/settings_viewmodel.dart';
+import 'package:drive_tracker/router.dart';
+import 'package:drive_tracker/services/storage_service.dart';
 
 void main() async {
+  // Ensure Flutter engine bindings are initialized before running setup
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  
-  // Lock app to portrait mode
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
-  
-  // Initialize Hive
-  await Hive.initFlutter(AppConfig.dbName);
-  
-  Hive.registerAdapter(TripModelAdapter());
-  await Hive.openBox<TripModel>('trips_box');
+  // Create temporary local storage instance pre-load to set initial theme
+  final prefs = await SharedPreferences.getInstance();
+  final storageService = StorageService(prefs);
+  ServiceLocator.register<StorageService>(storageService);
 
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AuthViewModel()),
-        ChangeNotifierProvider(create: (_) => TripViewModel()),
-        ChangeNotifierProvider(create: (_) => HistoryViewModel()),
+        ChangeNotifierProvider<SettingsViewModel>(
+          create: (_) => SettingsViewModel(),
+        ),
+        ChangeNotifierProvider<DashboardViewModel>(
+          create: (_) => DashboardViewModel(),
+        ),
+        ChangeNotifierProvider<HistoryViewModel>(
+          create: (_) => HistoryViewModel(),
+        ),
       ],
-      child: const DriveReplayApp(),
+      child: const DriveTrackerApp(),
     ),
   );
 }
 
-class DriveReplayApp extends StatelessWidget {
-  const DriveReplayApp({super.key});
+class DriveTrackerApp extends StatelessWidget {
+  const DriveTrackerApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ScreenUtilInit(
-      designSize: const Size(375, 812), // Standard mobile layout
-      minTextAdapt: true,
-      splitScreenMode: true,
-      builder: (context, child) {
-        return MaterialApp(
-          title: 'Drive Replay',
-          debugShowCheckedModeBanner: false,
-          theme: ThemeData(
-            primaryColor: AppColors.primary,
-            scaffoldBackgroundColor: AppColors.background,
-            colorScheme: const ColorScheme.dark(
-              primary: AppColors.primary,
-              secondary: AppColors.primaryLight,
-              surface: AppColors.surface,
-            ),
-            useMaterial3: true,
-          ),
-          initialRoute: SplashScreen.routeName,
-          routes: AppRouter.routes,
-        );
-      },
+    // Listen to changes in settings viewmodel to update theme dynamically
+    final settings = context.watch<SettingsViewModel>();
+
+    return MaterialApp.router(
+      title: 'Drive Tracker',
+      debugShowCheckedModeBanner: false,
+      themeMode: settings.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      routerConfig: appRouter,
     );
   }
 }

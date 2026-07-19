@@ -1,6 +1,6 @@
 {
-    "name": "drive_replay",
-    "short_name": "drive_replay",
+    "name": "drive_tracker",
+    "short_name": "drive_tracker",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
