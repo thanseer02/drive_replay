@@ -20,7 +20,7 @@ class SpeedGauge extends StatelessWidget {
     final primaryColor = theme.colorScheme.primary;
     final secondaryColor = theme.colorScheme.secondary;
 
-    return Container(
+    return SizedBox(
       width: 250,
       height: 250,
       child: Stack(
@@ -64,7 +64,7 @@ class SpeedGauge extends StatelessWidget {
                 style: theme.textTheme.labelMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                   letterSpacing: 2,
-                  color: theme.colorScheme.onSurface.withOpacity(0.5),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                 ),
               ),
             ],
@@ -128,7 +128,7 @@ class _GaugePainter extends CustomPainter {
       // Glow effect for dark mode
       if (brightness == Brightness.dark) {
         final shadowPaint = Paint()
-          ..color = primaryColor.withOpacity(0.3)
+          ..color = primaryColor.withValues(alpha: 0.3)
           ..style = PaintingStyle.stroke
           ..strokeWidth = 22
           ..strokeCap = StrokeCap.round

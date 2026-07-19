@@ -412,7 +412,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         button: true,
         child: Hero(
           tag: 'ride_card_${drive.id}',
-          flightShuttleBuilder: (_, animation, __, ___, ____) => FadeTransition(
+          flightShuttleBuilder: (_, animation, _, _, _) => FadeTransition(
             opacity: animation,
             child: Card(
               margin: EdgeInsets.zero,

@@ -61,7 +61,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
       // If permissions are not yet granted, request starting with a prominent disclosure
       if (!locationStatus.isGranted || !notificationStatus.isGranted) {
-        if (!mounted) return;
+        if (!context.mounted) return;
         
         final acceptDisclosure = await showDialog<bool>(
           context: context,
@@ -81,7 +81,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             await permissionService.requestBackgroundLocationPermission();
           }
         } else {
-          if (!mounted) return;
+          if (!context.mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Location tracking requires access to GPS coordinates.'),
@@ -95,7 +95,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       if (locationStatus.isGranted) {
         dashboardVM.startTracking();
       } else {
-        if (!mounted) return;
+        if (!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Location permissions denied. Please enable them in app settings.'),
@@ -304,7 +304,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         return Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: Colors.redAccent.withOpacity(0.15),
+                            color: Colors.redAccent.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Row(
@@ -370,7 +370,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: theme.colorScheme.primary.withOpacity(0.08),
+                color: theme.colorScheme.primary.withValues(alpha: 0.08),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -389,7 +389,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               'Select your travel route below and tap start to begin capturing telemetry variables.',
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.6),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                 height: 1.4,
               ),
             ),
@@ -651,7 +651,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.labelSmall?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.onSurface.withOpacity(0.5),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                     letterSpacing: 1.0,
                   ),
                 ),
@@ -704,7 +704,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.labelSmall?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.onSurface.withOpacity(0.5),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                     letterSpacing: 1.0,
                   ),
                 ),
@@ -798,14 +798,14 @@ class _StartStopButtonState extends State<_StartStopButton> with SingleTickerPro
             boxShadow: widget.isTracking
                 ? [
                     BoxShadow(
-                      color: buttonColor.withOpacity(0.3),
+                      color: buttonColor.withValues(alpha: 0.3),
                       blurRadius: 20 * _pulseAnimation.value,
                       spreadRadius: 4 * _pulseAnimation.value,
                     ),
                   ]
                 : [
                     BoxShadow(
-                      color: buttonColor.withOpacity(0.15),
+                      color: buttonColor.withValues(alpha: 0.15),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     )

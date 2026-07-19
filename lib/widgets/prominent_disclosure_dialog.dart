@@ -30,7 +30,7 @@ class ProminentDisclosureDialog extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withOpacity(0.15),
+                    color: theme.colorScheme.primary.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -57,7 +57,7 @@ class ProminentDisclosureDialog extends StatelessWidget {
             Text(
               'Drive Tracker collects location data to enable automatic street mapping, velocity trace calculations, and route logging even when the app is closed, running in the background, or when the screen is turned off.',
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.8),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
                 height: 1.5,
               ),
             ),
@@ -65,7 +65,7 @@ class ProminentDisclosureDialog extends StatelessWidget {
             Text(
               'This data is stored locally on your device in a secure database and is never shared with third parties.',
               style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.5),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                 height: 1.4,
               ),
             ),
@@ -79,7 +79,7 @@ class ProminentDisclosureDialog extends StatelessWidget {
                   onPressed: onDeny,
                   style: TextButton.styleFrom(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    foregroundColor: theme.colorScheme.onSurface.withOpacity(0.6),
+                    foregroundColor: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
                   child: const Text(
                     'No thanks',

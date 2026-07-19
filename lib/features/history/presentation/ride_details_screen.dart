@@ -194,7 +194,7 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
                 Text(
                   'ID: #${drive.id}',
                   style: theme.textTheme.labelMedium?.copyWith(
-                    color: theme.colorScheme.onSurface.withOpacity(0.4),
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
                   ),
                 ),
               ],
@@ -210,7 +210,7 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
                 Column(
                   children: [
                     Icon(Icons.trip_origin_rounded, color: theme.colorScheme.primary, size: 20),
-                    Container(width: 2, height: 30, color: Colors.grey.withOpacity(0.3)),
+                    Container(width: 2, height: 30, color: Colors.grey.withValues(alpha: 0.3)),
                     const Icon(Icons.navigation_rounded, color: Colors.redAccent, size: 20),
                   ],
                 ),
@@ -225,7 +225,7 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
                       ),
                       Text(
                         'Departed at $startStr',
-                        style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                        style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                       ),
                       const SizedBox(height: 16),
                       Text(
@@ -234,7 +234,7 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
                       ),
                       Text(
                         'Arrived at $endStr',
-                        style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+                        style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                       ),
                     ],
                   ),
@@ -269,11 +269,11 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.map_rounded, size: 40, color: theme.colorScheme.onSurface.withOpacity(0.2)),
+                    Icon(Icons.map_rounded, size: 40, color: theme.colorScheme.onSurface.withValues(alpha: 0.2)),
                     const SizedBox(height: 8),
                     Text(
                       'No GPS tracks captured for this short trip.',
-                      style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface.withOpacity(0.4)),
+                      style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface.withValues(alpha: 0.4)),
                     ),
                   ],
                 ),
@@ -299,7 +299,7 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF1E293B).withOpacity(0.85) : Colors.white.withOpacity(0.85),
+                  color: isDark ? const Color(0xFF1E293B).withValues(alpha: 0.85) : Colors.white.withValues(alpha: 0.85),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
                 ),
@@ -338,7 +338,7 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E293B).withOpacity(0.8) : Colors.white.withOpacity(0.8),
+        color: isDark ? const Color(0xFF1E293B).withValues(alpha: 0.8) : Colors.white.withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -470,7 +470,7 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
                 style: theme.textTheme.labelSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                   letterSpacing: 1.0,
-                  color: theme.colorScheme.onSurface.withOpacity(0.5),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                 ),
               ),
               Icon(icon, color: color, size: 18),
@@ -493,7 +493,7 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
                 unit,
                 style: theme.textTheme.bodySmall?.copyWith(
                   fontWeight: FontWeight.w500,
-                  color: theme.colorScheme.onSurface.withOpacity(0.5),
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                 ),
               ),
             ],
@@ -550,7 +550,7 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
                       ),
                     if (drivePct == 0 && stopPct == 0)
                       Expanded(
-                        child: Container(color: Colors.grey.withOpacity(0.3)),
+                        child: Container(color: Colors.grey.withValues(alpha: 0.3)),
                       ),
                   ],
                 ),
@@ -588,7 +588,7 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
             ),
             Text(
               desc,
-              style: TextStyle(fontSize: 10, color: theme.colorScheme.onSurface.withOpacity(0.5)),
+              style: TextStyle(fontSize: 10, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
             ),
           ],
         )
@@ -655,9 +655,9 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Start', style: TextStyle(fontSize: 10, color: theme.colorScheme.onSurface.withOpacity(0.4))),
+                Text('Start', style: TextStyle(fontSize: 10, color: theme.colorScheme.onSurface.withValues(alpha: 0.4))),
                 Text('Average speed: ${avgSpeed.toStringAsFixed(1)} $unit', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w500)),
-                Text('End', style: TextStyle(fontSize: 10, color: theme.colorScheme.onSurface.withOpacity(0.4))),
+                Text('End', style: TextStyle(fontSize: 10, color: theme.colorScheme.onSurface.withValues(alpha: 0.4))),
               ],
             )
           ],
@@ -670,7 +670,7 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
     final int hours = seconds ~/ 3600;
     final int minutes = (seconds % 3600) ~/ 60;
     if (hours > 0) return '${hours}h ${minutes}m';
-    return '${minutes} m';
+    return '$minutes m';
   }
 
   String _formatSeconds(int seconds) {
@@ -734,8 +734,8 @@ class _MapTracePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final paintGrid = Paint()
       ..color = brightness == Brightness.dark
-          ? Colors.white.withOpacity(0.04)
-          : Colors.black.withOpacity(0.04)
+          ? Colors.white.withValues(alpha: 0.04)
+          : Colors.black.withValues(alpha: 0.04)
       ..strokeWidth = 1;
 
     // Draw Grid background
@@ -790,7 +790,7 @@ class _MapTracePainter extends CustomPainter {
     // Glow under road line (dark mode helper)
     if (brightness == Brightness.dark && points.isNotEmpty) {
       final shadowPaint = Paint()
-        ..color = primaryColor.withOpacity(0.15)
+        ..color = primaryColor.withValues(alpha: 0.15)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 10
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5);
@@ -815,10 +815,10 @@ class _MapTracePainter extends CustomPainter {
       final end = points.last;
 
       canvas.drawCircle(start, 5, Paint()..color = primaryColor..style = PaintingStyle.fill);
-      canvas.drawCircle(start, 9, Paint()..color = primaryColor.withOpacity(0.3)..style = PaintingStyle.stroke..strokeWidth = 1.5);
+      canvas.drawCircle(start, 9, Paint()..color = primaryColor.withValues(alpha: 0.3)..style = PaintingStyle.stroke..strokeWidth = 1.5);
 
       canvas.drawCircle(end, 5, Paint()..color = Colors.redAccent..style = PaintingStyle.fill);
-      canvas.drawCircle(end, 9, Paint()..color = Colors.redAccent.withOpacity(0.3)..style = PaintingStyle.stroke..strokeWidth = 1.5);
+      canvas.drawCircle(end, 9, Paint()..color = Colors.redAccent.withValues(alpha: 0.3)..style = PaintingStyle.stroke..strokeWidth = 1.5);
     }
   }
 
@@ -851,7 +851,7 @@ class _SpeedGraphPainter extends CustomPainter {
 
     // Draw back gridlines
     final gridPaint = Paint()
-      ..color = brightness == Brightness.dark ? const Color(0xFF334155).withOpacity(0.2) : Colors.grey[300]!.withOpacity(0.5)
+      ..color = brightness == Brightness.dark ? const Color(0xFF334155).withValues(alpha: 0.2) : Colors.grey[300]!.withValues(alpha: 0.5)
       ..strokeWidth = 1;
     
     canvas.drawLine(Offset(0, height * 0.25), Offset(width, height * 0.25), gridPaint);
@@ -906,7 +906,7 @@ class _SpeedGraphPainter extends CustomPainter {
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [primaryColor.withOpacity(0.35), primaryColor.withOpacity(0.0)],
+        colors: [primaryColor.withValues(alpha: 0.35), primaryColor.withValues(alpha: 0.0)],
       ).createShader(Offset.zero & size);
 
     canvas.drawPath(fillPath, fillPaint);
@@ -921,7 +921,7 @@ class _SpeedGraphPainter extends CustomPainter {
 
     // Average Speed horizontal line
     final avgLine = Paint()
-      ..color = const Color(0xFF10B981).withOpacity(0.7)
+      ..color = const Color(0xFF10B981).withValues(alpha: 0.7)
       ..strokeWidth = 1.5
       ..style = PaintingStyle.stroke;
     

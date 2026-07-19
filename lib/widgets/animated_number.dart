@@ -40,7 +40,7 @@ class AnimatedNumber extends StatelessWidget {
                   style: TextStyle(
                     fontSize: (style?.fontSize ?? 14) * 0.55,
                     fontWeight: FontWeight.normal,
-                    color: (style?.color ?? Colors.white).withOpacity(0.6),
+                    color: (style?.color ?? Colors.white).withValues(alpha: 0.6),
                   ),
                 ),
             ],

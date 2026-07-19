@@ -123,7 +123,7 @@ class ShimmerHistoryList extends StatelessWidget {
     return ListView.builder(
       physics: const NeverScrollableScrollPhysics(),
       itemCount: count,
-      itemBuilder: (_, __) => const ShimmerCard(),
+      itemBuilder: (_, _) => const ShimmerCard(),
     );
   }
 }
