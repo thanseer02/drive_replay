@@ -1,12 +1,20 @@
 import 'dart:async';
-import 'dart:math';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:drive_tracker/core/di.dart';
 import 'package:drive_tracker/models/ride.dart';
+import 'package:drive_tracker/models/ride_location.dart';
 import 'package:drive_tracker/repositories/ride_repository.dart';
 
 class DashboardViewModel extends ChangeNotifier {
   final RideRepository _rideRepository = ServiceLocator.get<RideRepository>();
+
+  // Native channels. Match MainActivity.kt strings.
+  static const MethodChannel _controlChannel = MethodChannel('com.example.drivetracker/tracking_control');
+  static const EventChannel _eventChannel = EventChannel('com.example.drivetracker/tracking_events');
+
+  StreamSubscription? _trackingSubscription;
 
   List<Ride> _drives = [];
   bool _isLoading = false;
@@ -18,9 +26,6 @@ class DashboardViewModel extends ChangeNotifier {
   double _activeDistance = 0.0;
   int _drivingTimeSeconds = 0;
   int _stoppedTimeSeconds = 0;
-  
-  Timer? _ticker;
-  final Random _random = Random();
 
   List<Ride> get drives => _drives;
   bool get isLoading => _isLoading;
@@ -44,6 +49,23 @@ class DashboardViewModel extends ChangeNotifier {
   int get totalDurationSeconds => _drives.fold(0, (sum, drive) => sum + (drive.drivingTime + drive.stopTime));
   int get totalDrives => _drives.length;
 
+  DashboardViewModel() {
+    _checkServiceRunning();
+  }
+
+  Future<void> _checkServiceRunning() async {
+    try {
+      final bool running = await _controlChannel.invokeMethod('isTracking');
+      if (running) {
+        _isTracking = true;
+        _startListeningToChannel();
+        notifyListeners();
+      }
+    } catch (_) {
+      // Ignored
+    }
+  }
+
   Future<void> loadDashboardStats() async {
     _isLoading = true;
     notifyListeners();
@@ -58,78 +80,118 @@ class DashboardViewModel extends ChangeNotifier {
     }
   }
 
-  // Active tracking simulation commands
-  void startTracking() {
+  // Active tracking native client commands
+  Future<void> startTracking() async {
     if (_isTracking) return;
-    _isTracking = true;
-    _currentSpeed = 0.0;
-    _maxSpeed = 0.0;
-    _activeDistance = 0.0;
-    _drivingTimeSeconds = 0;
-    _stoppedTimeSeconds = 0;
+    try {
+      await _controlChannel.invokeMethod('startTracking');
+      _isTracking = true;
+      _currentSpeed = 0.0;
+      _maxSpeed = 0.0;
+      _activeDistance = 0.0;
+      _drivingTimeSeconds = 0;
+      _stoppedTimeSeconds = 0;
 
-    _ticker = Timer.periodic(const Duration(seconds: 1), (timer) {
-      _simulateTelemetryTick();
-    });
-
-    notifyListeners();
+      _startListeningToChannel();
+      notifyListeners();
+    } catch (_) {
+      // Handle error
+    }
   }
 
   Future<Ride?> stopTracking(String startLoc, String endLoc) async {
     if (!_isTracking) return null;
-    _isTracking = false;
-    _ticker?.cancel();
-    _currentSpeed = 0.0;
+    try {
+      await _controlChannel.invokeMethod('stopTracking');
+      
+      final ride = Ride(
+        startTime: DateTime.now().subtract(Duration(seconds: _drivingTimeSeconds + _stoppedTimeSeconds)),
+        endTime: DateTime.now(),
+        maxSpeed: maxSpeed,
+        averageSpeed: averageSpeed,
+        distance: double.parse(_activeDistance.toStringAsFixed(2)),
+        drivingTime: _drivingTimeSeconds,
+        stopTime: _stoppedTimeSeconds,
+        createdAt: DateTime.now(),
+      );
 
-    // Build the finished ride
-    final ride = Ride(
-      startTime: DateTime.now().subtract(Duration(seconds: _drivingTimeSeconds + _stoppedTimeSeconds)),
-      endTime: DateTime.now(),
-      maxSpeed: maxSpeed,
-      averageSpeed: averageSpeed,
-      distance: double.parse(_activeDistance.toStringAsFixed(2)),
-      drivingTime: _drivingTimeSeconds,
-      stopTime: _stoppedTimeSeconds,
-      createdAt: DateTime.now(),
-    );
-
-    // Save of the ride into DB
-    await _rideRepository.addRide(ride);
-    await loadDashboardStats();
-    
-    notifyListeners();
-    return ride;
+      _isTracking = false;
+      _currentSpeed = 0.0;
+      notifyListeners();
+      return ride;
+    } catch (_) {
+      return null;
+    }
   }
 
-  void _simulateTelemetryTick() {
-    // Under active simulation, speed fluctuates between 0 and 110 km/h
-    // 10% chance of stopping, 90% of moving
-    final double chance = _random.nextDouble();
+  void _startListeningToChannel() {
+    _trackingSubscription?.cancel();
+    _trackingSubscription = _eventChannel.receiveBroadcastStream().listen(
+      _onTrackingEvent,
+      onError: (err) {
+        // Stream listener warning handler
+      },
+    );
+  }
 
-    if (chance < 0.08) {
-      _currentSpeed = 0.0;
-    } else {
-      // Randomly accelerate or decelerate
-      if (_currentSpeed == 0.0) {
-        _currentSpeed = 15.0 + _random.nextDouble() * 20.0;
-      } else {
-        final change = -15.0 + _random.nextDouble() * 32.0;
-        _currentSpeed = (_currentSpeed + change).clamp(10.0, 115.0);
+  void _onTrackingEvent(dynamic event) {
+    if (event is Map) {
+      final type = event['type'];
+      if (type == 'telemetry') {
+        _currentSpeed = (event['currentSpeed'] as num).toDouble() * 3.6;
+        _maxSpeed = (event['maxSpeed'] as num).toDouble() * 3.6;
+        _activeDistance = (event['distance'] as num).toDouble() / 1000.0;
+        _drivingTimeSeconds = event['drivingTime'] as int;
+        _stoppedTimeSeconds = event['stopTime'] as int;
+        notifyListeners();
+      } else if (type == 'stopped') {
+        _isTracking = false;
+        _currentSpeed = 0.0;
+        _trackingSubscription?.cancel();
+        _trackingSubscription = null;
+
+        _saveRideFromEvent(event);
       }
     }
+  }
 
-    if (_currentSpeed > 0.0) {
-      _drivingTimeSeconds++;
-      // Distance added per second: speed in km/h divided by 3600 (seconds in hour)
-      _activeDistance += _currentSpeed / 3600.0;
-      if (_currentSpeed > _maxSpeed) {
-        _maxSpeed = _currentSpeed;
+  Future<void> _saveRideFromEvent(Map event) async {
+    try {
+      final ride = Ride(
+        startTime: DateTime.fromMillisecondsSinceEpoch(event['startTime'] as int),
+        endTime: DateTime.fromMillisecondsSinceEpoch(event['endTime'] as int),
+        maxSpeed: (event['maxSpeed'] as num).toDouble() * 3.6,
+        averageSpeed: (event['averageSpeed'] as num).toDouble() * 3.6,
+        distance: double.parse(((event['distance'] as num).toDouble() / 1000.0).toStringAsFixed(2)),
+        drivingTime: event['drivingTime'] as int,
+        stopTime: event['stopTime'] as int,
+        createdAt: DateTime.now(),
+      );
+
+      final rideId = await _rideRepository.addRide(ride);
+
+      final String? historyJson = event['historyJson'] as String?;
+      if (historyJson != null && historyJson.isNotEmpty) {
+        final List decoded = jsonDecode(historyJson) as List;
+        for (var p in decoded) {
+          if (p is Map) {
+            await _rideRepository.addRideLocation(RideLocation(
+              rideId: rideId,
+              latitude: (p['latitude'] as num).toDouble(),
+              longitude: (p['longitude'] as num).toDouble(),
+              speed: (p['speed'] as num).toDouble() * 3.6,
+              accuracy: (p['accuracy'] as num).toDouble(),
+              timestamp: DateTime.fromMillisecondsSinceEpoch(p['timestamp'] as int),
+            ));
+          }
+        }
       }
-    } else {
-      _stoppedTimeSeconds++;
+    } catch (_) {
+      // Catch exceptions on DB transaction failures
+    } finally {
+      await loadDashboardStats();
+      notifyListeners();
     }
-
-    notifyListeners();
   }
 
   Future<void> addMockDrive(Ride ride) async {
@@ -139,7 +201,7 @@ class DashboardViewModel extends ChangeNotifier {
 
   @override
   void dispose() {
-    _ticker?.cancel();
+    _trackingSubscription?.cancel();
     super.dispose();
   }
 }
