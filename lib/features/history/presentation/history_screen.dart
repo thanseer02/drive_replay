@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 import 'package:drive_tracker/features/history/viewmodel/history_viewmodel.dart';
 import 'package:drive_tracker/features/settings/viewmodel/settings_viewmodel.dart';
-import 'package:drive_tracker/models/drive.dart';
+import 'package:drive_tracker/models/ride.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -104,14 +104,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget _buildGroupedDriveList(
     BuildContext context,
     ThemeData theme,
-    List<Drive> drives,
+    List<Ride> drives,
     double distMulti,
     String distLabel,
     String speedLabel,
     HistoryViewModel viewModel,
   ) {
     // 1. Group drives by localized day codes
-    final Map<String, List<Drive>> grouped = {};
+    final Map<String, List<Ride>> grouped = {};
     for (var drive in drives) {
       final key = _getDateHeaderString(drive.startTime);
       if (!grouped.containsKey(key)) {
@@ -127,7 +127,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
       itemCount: keys.length,
       itemBuilder: (context, groupIndex) {
         final dateKey = keys[groupIndex];
-        final List<Drive> driveGroup = grouped[dateKey]!;
+        final List<Ride> driveGroup = grouped[dateKey]!;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -158,7 +158,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget _buildTeslaDriveCard(
     BuildContext context,
     ThemeData theme,
-    Drive drive,
+    Ride drive,
     double distMulti,
     String distLabel,
     String speedLabel,
@@ -174,7 +174,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final double avgSpeed = totalHours > 0 ? (drive.distance / totalHours) : 0.0;
     final displayAvgSpeed = avgSpeed * distMulti;
 
-    final String timeRange = '${DateFormat('hh:mm a').format(drive.startTime)} - ${DateFormat('hh:mm a').format(drive.endTime)}';
+    final String timeRange = '${DateFormat('hh:mm a').format(drive.startTime)} - ${DateFormat('hh:mm a').format(drive.endTime ?? drive.startTime)}';
     final String durationString = _formatSeconds(drive.durationSeconds);
 
     return Dismissible(

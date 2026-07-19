@@ -3,8 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:drive_tracker/core/di.dart';
 import 'package:drive_tracker/database/db_helper.dart';
-import 'package:drive_tracker/repositories/drive_repository.dart';
-import 'package:drive_tracker/repositories/drive_repository_impl.dart';
+import 'package:drive_tracker/repositories/ride_repository.dart';
+import 'package:drive_tracker/repositories/ride_repository_impl.dart';
 import 'package:drive_tracker/services/permission_service.dart';
 import 'package:drive_tracker/services/storage_service.dart';
 
@@ -50,8 +50,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     final dbHelper = DBHelper.instance;
     // Call database getter to trigger initialization
     await dbHelper.database;
-    final driveRepository = DriveRepositoryImpl(dbHelper);
-    ServiceLocator.register<DriveRepository>(driveRepository);
+    final rideRepository = RideRepositoryImpl(dbHelper);
+    ServiceLocator.register<RideRepository>(rideRepository);
 
     // 3. Register standard services
     ServiceLocator.register<PermissionService>(PermissionService());

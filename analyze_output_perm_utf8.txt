@@ -1,0 +1,55 @@
+﻿Analyzing drive_replay...                                       
+
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\dashboard\presentation\dashboard_screen.dart:92:51 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\dashboard\presentation\dashboard_screen.dart:210:50 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\dashboard\presentation\dashboard_screen.dart:229:52 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\dashboard\presentation\dashboard_screen.dart:438:54 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\dashboard\presentation\dashboard_screen.dart:488:54 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\dashboard\presentation\dashboard_screen.dart:588:42 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\dashboard\presentation\dashboard_screen.dart:595:42 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\history\presentation\history_screen.dart:76:48 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\history\presentation\history_screen.dart:82:48 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\history\presentation\history_screen.dart:95:50 - deprecated_member_use
+   info - Unnecessary use of 'toList' in a spread - lib\features\history\presentation\history_screen.dart:150:16 - unnecessary_to_list_in_spreads
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\history\presentation\history_screen.dart:257:60 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\history\presentation\history_screen.dart:320:52 - deprecated_member_use
+   info - Unnecessary braces in a string interpolation - lib\features\history\presentation\history_screen.dart:355:13 - unnecessary_brace_in_string_interps
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\history\presentation\ride_details_screen.dart:143:56 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\history\presentation\ride_details_screen.dart:159:72 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\history\presentation\ride_details_screen.dart:174:91 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\history\presentation\ride_details_screen.dart:183:91 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\history\presentation\ride_details_screen.dart:229:59 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\history\presentation\ride_details_screen.dart:229:92 - deprecated_member_use
+   info - Unnecessary 'const' keyword - lib\features\history\presentation\ride_details_screen.dart:236:21 - unnecessary_const
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\history\presentation\ride_details_screen.dart:267:49 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\history\presentation\ride_details_screen.dart:267:81 - deprecated_member_use
+   info - Unnecessary use of string interpolation - lib\features\history\presentation\ride_details_screen.dart:315:17 - unnecessary_string_interpolations
+   info - Unnecessary use of string interpolation - lib\features\history\presentation\ride_details_screen.dart:345:17 - unnecessary_string_interpolations
+   info - Unnecessary use of string interpolation - lib\features\history\presentation\ride_details_screen.dart:358:17 - unnecessary_string_interpolations
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\history\presentation\ride_details_screen.dart:400:54 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\history\presentation\ride_details_screen.dart:423:54 - deprecated_member_use
+   info - Use a 'SizedBox' to add whitespace to a layout - lib\features\history\presentation\ride_details_screen.dart:466:22 - sized_box_for_whitespace
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\history\presentation\ride_details_screen.dart:514:81 - deprecated_member_use
+   info - Use a 'SizedBox' to add whitespace to a layout - lib\features\history\presentation\ride_details_screen.dart:560:13 - sized_box_for_whitespace
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\history\presentation\ride_details_screen.dart:576:97 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\history\presentation\ride_details_screen.dart:578:95 - deprecated_member_use
+   info - Unnecessary braces in a string interpolation - lib\features\history\presentation\ride_details_screen.dart:591:13 - unnecessary_brace_in_string_interps
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\history\presentation\ride_details_screen.dart:618:26 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\history\presentation\ride_details_screen.dart:619:26 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\history\presentation\ride_details_screen.dart:643:32 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\history\presentation\ride_details_screen.dart:671:104 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\history\presentation\ride_details_screen.dart:674:108 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\history\presentation\ride_details_screen.dart:704:73 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\history\presentation\ride_details_screen.dart:704:110 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\history\presentation\ride_details_screen.dart:744:31 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\history\presentation\ride_details_screen.dart:744:63 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\history\presentation\ride_details_screen.dart:760:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\splash\splash_screen.dart:112:58 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\splash\splash_screen.dart:116:62 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\splash\splash_screen.dart:140:60 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\navigation_shell.dart:30:51 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\widgets\animated_number.dart:43:59 - deprecated_member_use
+   info - Use a 'SizedBox' to add whitespace to a layout - lib\widgets\speed_gauge.dart:23:12 - sized_box_for_whitespace
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\widgets\speed_gauge.dart:67:54 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\widgets\speed_gauge.dart:131:34 - deprecated_member_use
+

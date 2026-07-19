@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:drive_tracker/features/history/viewmodel/history_viewmodel.dart';
 import 'package:drive_tracker/features/settings/viewmodel/settings_viewmodel.dart';
-import 'package:drive_tracker/models/drive.dart';
+import 'package:drive_tracker/models/ride.dart';
 
 class RideDetailsScreen extends StatelessWidget {
   final int driveId;
@@ -21,7 +21,7 @@ class RideDetailsScreen extends StatelessWidget {
     final settingsVM = context.watch<SettingsViewModel>();
 
     // 1. Search for matching drive in histories
-    Drive? drive;
+    Ride? drive;
     try {
       drive = historyVM.drives.firstWhere((d) => d.id == driveId);
     } catch (_) {
@@ -51,7 +51,7 @@ class RideDetailsScreen extends StatelessWidget {
     
     final String dateString = DateFormat('EEEE, MMMM d, yyyy').format(drive.startTime);
     final String startStr = DateFormat('hh:mm:ss a').format(drive.startTime);
-    final String endStr = DateFormat('hh:mm:ss a').format(drive.endTime);
+    final String endStr = DateFormat('hh:mm:ss a').format(drive.endTime ?? drive.startTime);
 
     // Compute mock Driving vs Stopped ratios (approx 80/20 split based on avg speed)
     final double drivingRatio = avgSpeed > 0 ? 0.78 + (min(avgSpeed, 80.0) / 80.0) * 0.15 : 0.0;
@@ -108,7 +108,7 @@ class RideDetailsScreen extends StatelessWidget {
 
   Widget _buildTripHeaderCard(
     ThemeData theme,
-    Drive drive,
+    Ride drive,
     String dateString,
     String startStr,
     String endStr,
@@ -194,7 +194,7 @@ class RideDetailsScreen extends StatelessWidget {
   }
 
   // Custom painted mock route container
-  Widget _buildTeslaNavigationCard(ThemeData theme, Drive drive) {
+  Widget _buildTeslaNavigationCard(ThemeData theme, Ride drive) {
     final bool isDark = theme.brightness == Brightness.dark;
     return Card(
       elevation: 0,

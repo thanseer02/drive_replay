@@ -2,13 +2,13 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:drive_tracker/core/di.dart';
-import 'package:drive_tracker/models/drive.dart';
-import 'package:drive_tracker/repositories/drive_repository.dart';
+import 'package:drive_tracker/models/ride.dart';
+import 'package:drive_tracker/repositories/ride_repository.dart';
 
 class DashboardViewModel extends ChangeNotifier {
-  final DriveRepository _driveRepository = ServiceLocator.get<DriveRepository>();
+  final RideRepository _rideRepository = ServiceLocator.get<RideRepository>();
 
-  List<Drive> _drives = [];
+  List<Ride> _drives = [];
   bool _isLoading = false;
 
   // Active tracking state
@@ -22,7 +22,7 @@ class DashboardViewModel extends ChangeNotifier {
   Timer? _ticker;
   final Random _random = Random();
 
-  List<Drive> get drives => _drives;
+  List<Ride> get drives => _drives;
   bool get isLoading => _isLoading;
 
   // Telemetry getters
@@ -41,7 +41,7 @@ class DashboardViewModel extends ChangeNotifier {
 
   // General historical metrics
   double get totalDistance => _drives.fold(0.0, (sum, drive) => sum + drive.distance);
-  int get totalDurationSeconds => _drives.fold(0, (sum, drive) => sum + drive.durationSeconds);
+  int get totalDurationSeconds => _drives.fold(0, (sum, drive) => sum + (drive.drivingTime + drive.stopTime));
   int get totalDrives => _drives.length;
 
   Future<void> loadDashboardStats() async {
@@ -49,7 +49,7 @@ class DashboardViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _drives = await _driveRepository.getDrives();
+      _drives = await _rideRepository.getRides();
     } catch (e) {
       // Handle error
     } finally {
@@ -75,29 +75,30 @@ class DashboardViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<Drive?> stopTracking(String startLoc, String endLoc) async {
+  Future<Ride?> stopTracking(String startLoc, String endLoc) async {
     if (!_isTracking) return null;
     _isTracking = false;
     _ticker?.cancel();
     _currentSpeed = 0.0;
 
-    // Build the finished drive
-    final drive = Drive(
+    // Build the finished ride
+    final ride = Ride(
       startTime: DateTime.now().subtract(Duration(seconds: _drivingTimeSeconds + _stoppedTimeSeconds)),
       endTime: DateTime.now(),
-      durationSeconds: _drivingTimeSeconds + _stoppedTimeSeconds,
+      maxSpeed: maxSpeed,
+      averageSpeed: averageSpeed,
       distance: double.parse(_activeDistance.toStringAsFixed(2)),
-      startLocation: startLoc,
-      endLocation: endLoc,
-      notes: 'Logged ride: ${averageSpeed.toStringAsFixed(1)} avg speed, ${maxSpeed.toStringAsFixed(1)} max speed.',
+      drivingTime: _drivingTimeSeconds,
+      stopTime: _stoppedTimeSeconds,
+      createdAt: DateTime.now(),
     );
 
-    // Save of the drive into DB
-    await _driveRepository.addDrive(drive);
+    // Save of the ride into DB
+    await _rideRepository.addRide(ride);
     await loadDashboardStats();
     
     notifyListeners();
-    return drive;
+    return ride;
   }
 
   void _simulateTelemetryTick() {
@@ -131,8 +132,8 @@ class DashboardViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> addMockDrive(Drive drive) async {
-    await _driveRepository.addDrive(drive);
+  Future<void> addMockDrive(Ride ride) async {
+    await _rideRepository.addRide(ride);
     await loadDashboardStats();
   }
 

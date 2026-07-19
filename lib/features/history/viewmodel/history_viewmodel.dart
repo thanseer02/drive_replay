@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:drive_tracker/core/di.dart';
-import 'package:drive_tracker/models/drive.dart';
-import 'package:drive_tracker/repositories/drive_repository.dart';
+import 'package:drive_tracker/models/ride.dart';
+import 'package:drive_tracker/repositories/ride_repository.dart';
 
 class HistoryViewModel extends ChangeNotifier {
-  final DriveRepository _driveRepository = ServiceLocator.get<DriveRepository>();
+  final RideRepository _rideRepository = ServiceLocator.get<RideRepository>();
 
-  List<Drive> _drives = [];
+  List<Ride> _drives = [];
   bool _isLoading = false;
 
-  List<Drive> get drives => _drives;
+  List<Ride> get drives => _drives;
   bool get isLoading => _isLoading;
 
   Future<void> loadDrives() async {
@@ -17,7 +17,7 @@ class HistoryViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _drives = await _driveRepository.getDrives();
+      _drives = await _rideRepository.getRides();
     } catch (e) {
       // Handle error
     } finally {
@@ -27,17 +27,17 @@ class HistoryViewModel extends ChangeNotifier {
   }
 
   Future<void> deleteDrive(int id) async {
-    await _driveRepository.deleteDrive(id);
+    await _rideRepository.deleteRide(id);
     await loadDrives();
   }
 
   Future<void> clearHistory() async {
-    await _driveRepository.clearDrives();
+    await _rideRepository.clearRides();
     await loadDrives();
   }
 
-  Future<void> addMockDrive(Drive drive) async {
-    await _driveRepository.addDrive(drive);
+  Future<void> addMockDrive(Ride ride) async {
+    await _rideRepository.addRide(ride);
     await loadDrives();
   }
 }
