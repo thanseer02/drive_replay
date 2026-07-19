@@ -183,6 +183,11 @@ class DashboardViewModel extends ChangeNotifier {
     await loadDashboardStats();
   }
 
+  @visibleForTesting
+  void routeEventForTesting(dynamic event) {
+    _onTrackingEvent(event);
+  }
+
   @override
   void dispose() {
     _trackingSubscription?.cancel();

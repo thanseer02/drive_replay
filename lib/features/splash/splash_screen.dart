@@ -43,19 +43,25 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
   Future<void> _initializeApp() async {
     // 1. Initialize SharedPreferences & StorageService
-    final prefs = await SharedPreferences.getInstance();
-    final storageService = StorageService(prefs);
-    ServiceLocator.register<StorageService>(storageService);
+    if (!ServiceLocator.isRegistered<StorageService>()) {
+      final prefs = await SharedPreferences.getInstance();
+      final storageService = StorageService(prefs);
+      ServiceLocator.register<StorageService>(storageService);
+    }
 
     // 2. Initialize Core Database Helper & Repositories
-    final dbHelper = DBHelper.instance;
-    // Call database getter to trigger initialization
-    await dbHelper.database;
-    final rideRepository = RideRepositoryImpl(dbHelper);
-    ServiceLocator.register<RideRepository>(rideRepository);
+    if (!ServiceLocator.isRegistered<RideRepository>()) {
+      final dbHelper = DBHelper.instance;
+      // Call database getter to trigger initialization
+      await dbHelper.database;
+      final rideRepository = RideRepositoryImpl(dbHelper);
+      ServiceLocator.register<RideRepository>(rideRepository);
+    }
 
     // 3. Register standard services
-    ServiceLocator.register<PermissionService>(PermissionService());
+    if (!ServiceLocator.isRegistered<PermissionService>()) {
+      ServiceLocator.register<PermissionService>(PermissionService());
+    }
 
     // Artificial delay to ensure minimum splash time for micro-animations
     await Future.delayed(const Duration(milliseconds: 2000));

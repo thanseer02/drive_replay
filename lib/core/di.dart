@@ -6,6 +6,11 @@ class ServiceLocator {
     _services[T] = service;
   }
 
+  // Check if service is registered
+  static bool isRegistered<T extends Object>() {
+    return _services.containsKey(T);
+  }
+
   // Retrieve service
   static T get<T extends Object>() {
     final service = _services[T];

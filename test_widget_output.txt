@@ -1,0 +1,32 @@
+00:00 +0: loading D:/my projects/drive_replay/test/app_lifecycle_test.dart
+00:00 +0: D:/my projects/drive_replay/test/app_lifecycle_test.dart: (setUpAll)
+00:00 +0: D:/my projects/drive_replay/test/permission_flow_test.dart: Permission Prominent Disclosure Dialog Tests Renders all disclosure text and handles callbacks
+00:00 +1: D:/my projects/drive_replay/test/permission_flow_test.dart: Permission Prominent Disclosure Dialog Tests Renders all disclosure text and handles callbacks
+00:00 +1 -1: D:/my projects/drive_replay/test/permission_flow_test.dart: Permission Prominent Disclosure Dialog Tests Renders all disclosure text and handles callbacks
+00:00 +1 -1: D:/my projects/drive_replay/test/app_lifecycle_test.dart: App Lifecycle & Process Recreation Tests Moving app background/foreground state handles listeners streams clean [E]
+  Expected: true
+    Actual: <false>
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test\app_lifecycle_test.dart 95:7                   main.<fn>.<fn>
+  
+00:00 +1 -1: D:/my projects/drive_replay/test/permission_flow_test.dart: Permission Prominent Disclosure Dialog Tests Renders all disclosure text and handles callbacks
+00:01 +2 -1: D:/my projects/drive_replay/test/permission_flow_test.dart: Permission Prominent Disclosure Dialog Tests Renders all disclosure text and handles callbacks
+00:01 +3 -1: D:/my projects/drive_replay/test/permission_flow_test.dart: Permission Prominent Disclosure Dialog Tests Renders all disclosure text and handles callbacks
+00:01 +4 -1: D:/my projects/drive_replay/test/permission_flow_test.dart: Permission Prominent Disclosure Dialog Tests Renders all disclosure text and handles callbacks
+00:01 +5 -1: D:/my projects/drive_replay/test/permission_flow_test.dart: Permission Prominent Disclosure Dialog Tests Renders all disclosure text and handles callbacks
+00:01 +6 -1: D:/my projects/drive_replay/test/screen_widget_test.dart: Screen Widget Tests SplashScreen layout structure mounts correctly
+00:02 +7 -1: D:/my projects/drive_replay/test/screen_widget_test.dart: Screen Widget Tests DashboardScreen renders elements correctly when idle
+00:02 +8 -1: D:/my projects/drive_replay/test/screen_widget_test.dart: Screen Widget Tests SettingsScreen displays preference elements
+00:02 +9 -1: D:/my projects/drive_replay/test/screen_widget_test.dart: Screen Widget Tests SettingsScreen displays preference elements
+00:02 +10 -1: D:/my projects/drive_replay/test/screen_widget_test.dart: Screen Widget Tests SettingsScreen displays preference elements
+00:02 +11 -1: D:/my projects/drive_replay/test/screen_widget_test.dart: Screen Widget Tests SettingsScreen displays preference elements
+00:02 +12 -1: D:/my projects/drive_replay/test/screen_widget_test.dart: Screen Widget Tests SettingsScreen displays preference elements
+00:02 +13 -1: D:/my projects/drive_replay/test/screen_widget_test.dart: (tearDownAll)
+00:03 +13 -1: D:/my projects/drive_replay/test/unit_ride_calculations_test.dart: Ride Calculations and Serialization Tests Ride model property calculations
+00:03 +14 -1: D:/my projects/drive_replay/test/unit_ride_calculations_test.dart: Ride Calculations and Serialization Tests Ride copyWith behavior
+00:03 +15 -1: D:/my projects/drive_replay/test/unit_ride_calculations_test.dart: Ride Calculations and Serialization Tests Ride mapping serialization and deserialization
+00:04 +16 -1: D:/my projects/drive_replay/test/unit_ride_calculations_test.dart: RideLocation Serialization Tests RideLocation properties and serialization
+00:04 +17 -1: D:/my projects/drive_replay/test/widget_test.dart: Drive Tracker initial setup smoke test
+00:04 +18 -1: Some tests failed.
