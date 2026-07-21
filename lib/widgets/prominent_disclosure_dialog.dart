@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:drive_tracker/themes/app_text_styles.dart';
 
 class ProminentDisclosureDialog extends StatelessWidget {
   final VoidCallback onAccept;
@@ -83,7 +84,7 @@ class ProminentDisclosureDialog extends StatelessWidget {
                   ),
                   child: const Text(
                     'No thanks',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: AppTextStyles.tsw700,
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -100,7 +101,7 @@ class ProminentDisclosureDialog extends StatelessWidget {
                   ),
                   child: const Text(
                     'Accept',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: AppTextStyles.tsw700,
                   ),
                 ),
               ],

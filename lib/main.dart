@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:ui';
+import 'package:drive_tracker/themes/app_text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -117,7 +118,7 @@ class _AppCrashFallback extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return  MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         backgroundColor: Color(0xFF0F172A),
@@ -141,7 +142,7 @@ class _AppCrashFallback extends StatelessWidget {
                 SizedBox(height: 12),
                 Text(
                   'Please restart the app. If the problem persists, contact support.',
-                  style: TextStyle(color: Color(0xFF94A3B8), fontSize: 15),
+                  style: AppTextStyles.ts15w400.copyWith(color: const Color(0xFF94A3B8)),
                   textAlign: TextAlign.center,
                 ),
               ],

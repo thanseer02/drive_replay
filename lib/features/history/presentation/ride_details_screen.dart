@@ -7,6 +7,7 @@ import 'package:drive_tracker/features/settings/viewmodel/settings_viewmodel.dar
 import 'package:drive_tracker/models/ride.dart';
 import 'package:drive_tracker/models/ride_location.dart';
 import 'package:drive_tracker/widgets/shimmer_loader.dart';
+import 'package:drive_tracker/themes/app_text_styles.dart';
 
 class RideDetailsScreen extends StatefulWidget {
   final int driveId;
@@ -64,7 +65,7 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
               body: const Center(
                 child: Text(
                   'Select a ride to view metrics',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                  style: AppTextStyles.ts15w700,
                 ),
               ),
             )
@@ -221,20 +222,20 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
                     children: [
                       Text(
                         drive.startLocation,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        style: AppTextStyles.ts16w700,
                       ),
                       Text(
                         'Departed at $startStr',
-                        style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
+                        style: AppTextStyles.ts12w400.copyWith(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                       ),
                       const SizedBox(height: 16),
                       Text(
                         drive.endLocation,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        style: AppTextStyles.ts16w700,
                       ),
                       Text(
                         'Arrived at $endStr',
-                        style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
+                        style: AppTextStyles.ts12w400.copyWith(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
                       ),
                     ],
                   ),
@@ -309,7 +310,7 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
                     const SizedBox(width: 6),
                     Text(
                       locations.isNotEmpty ? 'GPS Route Trace (${locations.length} pts)' : 'No GPS Trace Map',
-                      style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                      style: AppTextStyles.ts10w700,
                     )
                   ],
                 ),
@@ -349,13 +350,13 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
             backgroundColor: pin == 'Start' ? theme.colorScheme.primary : Colors.redAccent,
             child: Text(
               pin.substring(0, 1),
-              style: const TextStyle(fontSize: 8, color: Colors.white, fontWeight: FontWeight.bold),
+              style: AppTextStyles.ts8w700.copyWith(color: Colors.white),
             ),
           ),
           const SizedBox(width: 4),
           Text(
             label,
-            style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w500),
+            style: AppTextStyles.ts9w500,
           )
         ],
       ),
@@ -584,11 +585,11 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
           children: [
             Text(
               title,
-              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+              style: AppTextStyles.ts11w700,
             ),
             Text(
               desc,
-              style: TextStyle(fontSize: 10, color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
+              style: AppTextStyles.ts10w400.copyWith(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
             ),
           ],
         )
@@ -629,7 +630,7 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
                 ),
                 Text(
                   'Peak: ${maxSpeed.toStringAsFixed(0)} $unit',
-                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                  style: AppTextStyles.ts11w700,
                 ),
               ],
             ),
@@ -655,9 +656,9 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Start', style: TextStyle(fontSize: 10, color: theme.colorScheme.onSurface.withValues(alpha: 0.4))),
-                Text('Average speed: ${avgSpeed.toStringAsFixed(1)} $unit', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w500)),
-                Text('End', style: TextStyle(fontSize: 10, color: theme.colorScheme.onSurface.withValues(alpha: 0.4))),
+                Text('Start', style: AppTextStyles.ts10w400.copyWith(color: theme.colorScheme.onSurface.withValues(alpha: 0.4))),
+                Text('Average speed: ${avgSpeed.toStringAsFixed(1)} $unit', style: AppTextStyles.ts10w500),
+                Text('End', style: AppTextStyles.ts10w400.copyWith(color: theme.colorScheme.onSurface.withValues(alpha: 0.4))),
               ],
             )
           ],

@@ -11,6 +11,7 @@ import 'package:drive_tracker/services/permission_service.dart';
 import 'package:drive_tracker/core/di.dart';
 import 'package:drive_tracker/widgets/prominent_disclosure_dialog.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:drive_tracker/themes/app_text_styles.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -431,7 +432,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Start Point', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
+                      const Text('Start Point', style: AppTextStyles.ts12w500),
                       DropdownButton<String>(
                         value: _selectedStartLocation,
                         isExpanded: true,
@@ -454,7 +455,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('End Point', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
+                      const Text('End Point', style: AppTextStyles.ts12w500),
                       DropdownButton<String>(
                         value: _selectedEndLocation,
                         isExpanded: true,

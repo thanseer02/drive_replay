@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:drive_tracker/features/settings/viewmodel/settings_viewmodel.dart';
 import 'package:drive_tracker/features/history/viewmodel/history_viewmodel.dart';
 import 'package:drive_tracker/widgets/adaptive_layout.dart';
+import 'package:drive_tracker/themes/app_text_styles.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -49,7 +50,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 value: settings.isDarkMode,
                 title: const Text(
                   'Dark Mode',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: AppTextStyles.tsw700,
                 ),
                 subtitle: const Text('Adjust color themes for low light views'),
                 secondary: Icon(
@@ -67,7 +68,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 value: settings.useMetric,
                 title: const Text(
                   'Use Metric Units',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: AppTextStyles.tsw700,
                 ),
                 subtitle: Text(
                   settings.useMetric
@@ -102,7 +103,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               activeThumbColor: theme.colorScheme.primary,
               title: const Text(
                 'Exclude from Battery Optimization',
-                style: TextStyle(fontWeight: FontWeight.bold),
+                style: AppTextStyles.tsw700,
               ),
               subtitle: const Text(
                 'Enable unrestricted background performance to avoid ride data capture drops',
@@ -205,7 +206,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             title: const Text(
               'Reset Application Database',
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: AppTextStyles.tsw700,
             ),
             subtitle: const Text(
               'Erase all SQL telemetry logs and reset defaults',
@@ -270,7 +271,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   value: settings.isDarkMode,
                   title: const Text(
                     'Dark Mode',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: AppTextStyles.tsw700,
                   ),
                   subtitle: const Text(
                     'Adjust color themes for low light views',
@@ -290,7 +291,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   value: settings.useMetric,
                   title: const Text(
                     'Use Metric Units',
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    style: AppTextStyles.tsw700,
                   ),
                   subtitle: Text(
                     settings.useMetric
@@ -322,7 +323,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 activeThumbColor: theme.colorScheme.primary,
                 title: const Text(
                   'Exclude from Battery Optimization',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: AppTextStyles.tsw700,
                 ),
                 subtitle: const Text(
                   'Enable unrestricted background performance to avoid ride data capture drops',
@@ -427,7 +428,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               title: const Text(
                 'Reset Application Database',
-                style: TextStyle(fontWeight: FontWeight.bold),
+                style: AppTextStyles.tsw700,
               ),
               subtitle: const Text(
                 'Erase all SQL telemetry logs and reset defaults',
@@ -546,7 +547,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }) {
     return SwitchListTile(
       value: granted,
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+      title: Text(title, style: AppTextStyles.tsw700),
       subtitle: Text(desc),
       secondary: Icon(
         granted ? Icons.verified_user_rounded : Icons.gpp_maybe_rounded,
@@ -563,10 +564,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         Flexible(
           child: Text(
             label,
-            style: const TextStyle(fontWeight: FontWeight.w500),
+            style: AppTextStyles.tsw500,
           ),
         ),
-        Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+        Text(value, style: AppTextStyles.tsw700),
       ],
     );
   }

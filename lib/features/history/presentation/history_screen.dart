@@ -10,6 +10,7 @@ import 'package:drive_tracker/widgets/error_view.dart';
 import 'package:drive_tracker/widgets/empty_state_view.dart';
 import 'package:drive_tracker/widgets/adaptive_layout.dart';
 import 'package:drive_tracker/features/history/presentation/ride_details_screen.dart';
+import 'package:drive_tracker/themes/app_text_styles.dart';
 
 
 class HistoryScreen extends StatefulWidget {
@@ -147,7 +148,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     body: const Center(
                       child: Text(
                         'Select a ride to view metrics',
-                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                        style: AppTextStyles.ts15w700,
                       ),
                     ),
                   ),
@@ -537,7 +538,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         ),
         const SizedBox(height: 4),
         Text(value,
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+            style: AppTextStyles.ts13w700),
       ],
     );
   }
