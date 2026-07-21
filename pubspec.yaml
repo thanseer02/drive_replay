@@ -30,7 +30,12 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
+  
+  dynamic_app_icon:
+    git:
+      url: https://github.com/thanseer02/dynamic_app_icon.git
+      ref: main
+      path: dynamic_app_icon
   provider: ^6.1.2
   go_router: ^14.2.0
   # Local database
@@ -49,6 +54,7 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   device_info_plus: ^13.2.0
+
 
 dev_dependencies:
   flutter_test:

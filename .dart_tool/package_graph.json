@@ -9,6 +9,7 @@
       "dependencies": [
         "cupertino_icons",
         "device_info_plus",
+        "dynamic_app_icon",
         "flutter",
         "go_router",
         "intl",
@@ -194,6 +195,14 @@
         "collection",
         "flutter",
         "nested"
+      ]
+    },
+    {
+      "name": "dynamic_app_icon",
+      "version": "0.0.1",
+      "dependencies": [
+        "flutter",
+        "plugin_platform_interface"
       ]
     },
     {
@@ -616,6 +625,13 @@
       ]
     },
     {
+      "name": "plugin_platform_interface",
+      "version": "2.1.8",
+      "dependencies": [
+        "meta"
+      ]
+    },
+    {
       "name": "sky_engine",
       "version": "0.0.0",
       "dependencies": []
@@ -711,13 +727,6 @@
       "version": "0.1.2",
       "dependencies": [
         "ffi"
-      ]
-    },
-    {
-      "name": "plugin_platform_interface",
-      "version": "2.1.8",
-      "dependencies": [
-        "meta"
       ]
     },
     {

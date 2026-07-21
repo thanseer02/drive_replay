@@ -25,7 +25,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final bool isDark = theme.brightness == Brightness.dark;
 
     final cardBg = isDark ? const Color(0xFF1E293B) : Colors.white;
-    final strokeColor = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0);
+    final strokeColor = isDark
+        ? const Color(0xFF334155)
+        : const Color(0xFFE2E8F0);
 
     final Widget phoneBody = ListView(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -45,22 +47,37 @@ class _SettingsScreenState extends State<SettingsScreen> {
             children: [
               SwitchListTile(
                 value: settings.isDarkMode,
-                title: const Text('Dark Mode', style: TextStyle(fontWeight: FontWeight.bold)),
+                title: const Text(
+                  'Dark Mode',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
                 subtitle: const Text('Adjust color themes for low light views'),
                 secondary: Icon(
-                  settings.isDarkMode ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
-                  color: settings.isDarkMode ? Colors.indigoAccent : Colors.amber,
+                  settings.isDarkMode
+                      ? Icons.dark_mode_rounded
+                      : Icons.light_mode_rounded,
+                  color: settings.isDarkMode
+                      ? Colors.indigoAccent
+                      : Colors.amber,
                 ),
                 onChanged: (val) => settings.toggleDarkMode(val),
               ),
               Divider(height: 1, indent: 64, color: strokeColor),
               SwitchListTile(
                 value: settings.useMetric,
-                title: const Text('Use Metric Units', style: TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: Text(settings.useMetric
-                    ? 'Telemetry shown in Kilometers (km, km/h)'
-                    : 'Telemetry converted to Miles (mi, mph)'),
-                secondary: const Icon(Icons.tune_rounded, color: Colors.blueAccent),
+                title: const Text(
+                  'Use Metric Units',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text(
+                  settings.useMetric
+                      ? 'Telemetry shown in Kilometers (km, km/h)'
+                      : 'Telemetry converted to Miles (mi, mph)',
+                ),
+                secondary: const Icon(
+                  Icons.tune_rounded,
+                  color: Colors.blueAccent,
+                ),
                 onChanged: (val) => settings.toggleUseMetric(val),
               ),
             ],
@@ -83,11 +100,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: SwitchListTile(
               value: _batteryOptimizationIgnored,
               activeThumbColor: theme.colorScheme.primary,
-              title: const Text('Exclude from Battery Optimization', style: TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: const Text('Enable unrestricted background performance to avoid ride data capture drops'),
+              title: const Text(
+                'Exclude from Battery Optimization',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: const Text(
+                'Enable unrestricted background performance to avoid ride data capture drops',
+              ),
               secondary: Icon(
-                _batteryOptimizationIgnored ? Icons.battery_charging_full_rounded : Icons.battery_saver_rounded,
-                color: _batteryOptimizationIgnored ? const Color(0xFF10B981) : Colors.orangeAccent,
+                _batteryOptimizationIgnored
+                    ? Icons.battery_charging_full_rounded
+                    : Icons.battery_saver_rounded,
+                color: _batteryOptimizationIgnored
+                    ? const Color(0xFF10B981)
+                    : Colors.orangeAccent,
               ),
               onChanged: (val) {
                 setState(() => _batteryOptimizationIgnored = val);
@@ -121,7 +147,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 granted: _locationGranted,
                 onToggle: (val) {
                   setState(() => _locationGranted = val);
-                  _showToast(context, val ? 'GPS Location Mock access permitted' : 'GPS Location access disabled');
+                  _showToast(
+                    context,
+                    val
+                        ? 'GPS Location Mock access permitted'
+                        : 'GPS Location access disabled',
+                  );
                 },
               ),
               Divider(height: 1, indent: 64, color: strokeColor),
@@ -131,7 +162,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 granted: _notificationsGranted,
                 onToggle: (val) {
                   setState(() => _notificationsGranted = val);
-                  _showToast(context, val ? 'Notifications permitted' : 'Notifications disabled');
+                  _showToast(
+                    context,
+                    val ? 'Notifications permitted' : 'Notifications disabled',
+                  );
                 },
               ),
               Divider(height: 1, indent: 64, color: strokeColor),
@@ -141,7 +175,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 granted: _motionFitnessGranted,
                 onToggle: (val) {
                   setState(() => _motionFitnessGranted = val);
-                  _showToast(context, val ? 'Fitness sensors tracking permitted' : 'Sensors tracking disabled');
+                  _showToast(
+                    context,
+                    val
+                        ? 'Fitness sensors tracking permitted'
+                        : 'Sensors tracking disabled',
+                  );
                 },
               ),
             ],
@@ -160,9 +199,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
             side: BorderSide(color: strokeColor),
           ),
           child: ListTile(
-            leading: const Icon(Icons.backspace_rounded, color: Colors.redAccent),
-            title: const Text('Reset Application Database', style: TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: const Text('Erase all SQL telemetry logs and reset defaults'),
+            leading: const Icon(
+              Icons.backspace_rounded,
+              color: Colors.redAccent,
+            ),
+            title: const Text(
+              'Reset Application Database',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: const Text(
+              'Erase all SQL telemetry logs and reset defaults',
+            ),
             trailing: const Icon(Icons.chevron_right_rounded),
             onTap: () => _confirmReset(context),
           ),
@@ -187,7 +234,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Divider(height: 20, color: strokeColor),
                 _buildInfoRow('Local Core DB', 'SQLite Persistent Cache'),
                 Divider(height: 20, color: strokeColor),
-                _buildInfoRow('Target Flutter Platform', 'Flutter 3.41.2 (FVM)'),
+                _buildInfoRow(
+                  'Target Flutter Platform',
+                  'Flutter 3.41.2 (FVM)',
+                ),
                 Divider(height: 20, color: strokeColor),
                 _buildInfoRow('Engine Release Version', '1.0.0 (Build 1)'),
               ],
@@ -218,22 +268,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 SwitchListTile(
                   value: settings.isDarkMode,
-                  title: const Text('Dark Mode', style: TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: const Text('Adjust color themes for low light views'),
+                  title: const Text(
+                    'Dark Mode',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: const Text(
+                    'Adjust color themes for low light views',
+                  ),
                   secondary: Icon(
-                    settings.isDarkMode ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
-                    color: settings.isDarkMode ? Colors.indigoAccent : Colors.amber,
+                    settings.isDarkMode
+                        ? Icons.dark_mode_rounded
+                        : Icons.light_mode_rounded,
+                    color: settings.isDarkMode
+                        ? Colors.indigoAccent
+                        : Colors.amber,
                   ),
                   onChanged: (val) => settings.toggleDarkMode(val),
                 ),
                 Divider(height: 1, indent: 64, color: strokeColor),
                 SwitchListTile(
                   value: settings.useMetric,
-                  title: const Text('Use Metric Units', style: TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text(settings.useMetric
-                      ? 'Telemetry shown in Kilometers (km, km/h)'
-                      : 'Telemetry converted to Miles (mi, mph)'),
-                  secondary: const Icon(Icons.tune_rounded, color: Colors.blueAccent),
+                  title: const Text(
+                    'Use Metric Units',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(
+                    settings.useMetric
+                        ? 'Telemetry shown in Kilometers (km, km/h)'
+                        : 'Telemetry converted to Miles (mi, mph)',
+                  ),
+                  secondary: const Icon(
+                    Icons.tune_rounded,
+                    color: Colors.blueAccent,
+                  ),
                   onChanged: (val) => settings.toggleUseMetric(val),
                 ),
               ],
@@ -253,11 +320,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: SwitchListTile(
                 value: _batteryOptimizationIgnored,
                 activeThumbColor: theme.colorScheme.primary,
-                title: const Text('Exclude from Battery Optimization', style: TextStyle(fontWeight: FontWeight.bold)),
-                subtitle: const Text('Enable unrestricted background performance to avoid ride data capture drops'),
+                title: const Text(
+                  'Exclude from Battery Optimization',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: const Text(
+                  'Enable unrestricted background performance to avoid ride data capture drops',
+                ),
                 secondary: Icon(
-                  _batteryOptimizationIgnored ? Icons.battery_charging_full_rounded : Icons.battery_saver_rounded,
-                  color: _batteryOptimizationIgnored ? const Color(0xFF10B981) : Colors.orangeAccent,
+                  _batteryOptimizationIgnored
+                      ? Icons.battery_charging_full_rounded
+                      : Icons.battery_saver_rounded,
+                  color: _batteryOptimizationIgnored
+                      ? const Color(0xFF10B981)
+                      : Colors.orangeAccent,
                 ),
                 onChanged: (val) {
                   setState(() => _batteryOptimizationIgnored = val);
@@ -294,7 +370,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   granted: _locationGranted,
                   onToggle: (val) {
                     setState(() => _locationGranted = val);
-                    _showToast(context, val ? 'GPS Location Mock access permitted' : 'GPS Location access disabled');
+                    _showToast(
+                      context,
+                      val
+                          ? 'GPS Location Mock access permitted'
+                          : 'GPS Location access disabled',
+                    );
                   },
                 ),
                 Divider(height: 1, indent: 64, color: strokeColor),
@@ -304,7 +385,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   granted: _notificationsGranted,
                   onToggle: (val) {
                     setState(() => _notificationsGranted = val);
-                    _showToast(context, val ? 'Notifications permitted' : 'Notifications disabled');
+                    _showToast(
+                      context,
+                      val
+                          ? 'Notifications permitted'
+                          : 'Notifications disabled',
+                    );
                   },
                 ),
                 Divider(height: 1, indent: 64, color: strokeColor),
@@ -314,7 +400,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   granted: _motionFitnessGranted,
                   onToggle: (val) {
                     setState(() => _motionFitnessGranted = val);
-                    _showToast(context, val ? 'Fitness sensors tracking permitted' : 'Sensors tracking disabled');
+                    _showToast(
+                      context,
+                      val
+                          ? 'Fitness sensors tracking permitted'
+                          : 'Sensors tracking disabled',
+                    );
                   },
                 ),
               ],
@@ -330,9 +421,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
               side: BorderSide(color: strokeColor),
             ),
             child: ListTile(
-              leading: const Icon(Icons.backspace_rounded, color: Colors.redAccent),
-              title: const Text('Reset Application Database', style: TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: const Text('Erase all SQL telemetry logs and reset defaults'),
+              leading: const Icon(
+                Icons.backspace_rounded,
+                color: Colors.redAccent,
+              ),
+              title: const Text(
+                'Reset Application Database',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: const Text(
+                'Erase all SQL telemetry logs and reset defaults',
+              ),
               trailing: const Icon(Icons.chevron_right_rounded),
               onTap: () => _confirmReset(context),
             ),
@@ -350,11 +449,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
               padding: const EdgeInsets.all(20.0),
               child: Column(
                 children: [
-                  _buildInfoRow('Engine Architecture', 'Clean + MVVM (Provider)'),
+                  _buildInfoRow(
+                    'Engine Architecture',
+                    'Clean + MVVM (Provider)',
+                  ),
                   Divider(height: 20, color: strokeColor),
                   _buildInfoRow('Local Core DB', 'SQLite Persistent Cache'),
                   Divider(height: 20, color: strokeColor),
-                  _buildInfoRow('Target Flutter Platform', 'Flutter 3.41.2 (FVM)'),
+                  _buildInfoRow(
+                    'Target Flutter Platform',
+                    'Flutter 3.41.2 (FVM)',
+                  ),
                   Divider(height: 20, color: strokeColor),
                   _buildInfoRow('Engine Release Version', '1.0.0 (Build 1)'),
                 ],
@@ -383,7 +488,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             children: [
               // Premium Title Header
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 16,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -407,10 +515,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
 
               Expanded(
-                child: AdaptiveLayout(
-                  phone: phoneBody,
-                  tablet: tabletBody,
-                ),
+                child: AdaptiveLayout(phone: phoneBody, tablet: tabletBody),
               ),
             ],
           ),
@@ -455,14 +560,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: const TextStyle(fontWeight: FontWeight.w500),
+        Flexible(
+          child: Text(
+            label,
+            style: const TextStyle(fontWeight: FontWeight.w500),
+          ),
         ),
-        Text(
-          value,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
+        Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
       ],
     );
   }
@@ -483,12 +587,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   void _confirmReset(BuildContext context) {
     final historyVM = context.read<HistoryViewModel>();
-    
+
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Purge Database?'),
-        content: const Text('This deletes all recorded telemetry drives from the SQLite tables. You cannot revert this operation.'),
+        content: const Text(
+          'This deletes all recorded telemetry drives from the SQLite tables. You cannot revert this operation.',
+        ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         actions: [
           TextButton(
@@ -503,8 +609,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
               settings.toggleDarkMode(false);
               settings.toggleUseMetric(true);
               Navigator.pop(ctx);
-              
-              _showToast(context, 'SQLite database Tables purged. Reverted settings to system defaults.');
+
+              _showToast(
+                context,
+                'SQLite database Tables purged. Reverted settings to system defaults.',
+              );
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Purge Database'),
