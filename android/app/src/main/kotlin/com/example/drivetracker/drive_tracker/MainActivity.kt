@@ -110,6 +110,7 @@ class MainActivity : FlutterActivity() {
                                 "distance" to intent.getDoubleExtra("distance", 0.0),
                                 "drivingTime" to intent.getIntExtra("drivingTime", 0),
                                 "stopTime" to intent.getIntExtra("stopTime", 0),
+                                "acceleration" to intent.getDoubleExtra("acceleration", 0.0),
                                 "heading" to intent.getDoubleExtra("heading", 0.0),
                                 "altitude" to intent.getDoubleExtra("altitude", 0.0)
                             ))

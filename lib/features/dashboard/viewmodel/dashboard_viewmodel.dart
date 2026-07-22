@@ -22,6 +22,7 @@ class DashboardViewModel extends ChangeNotifier {
   double _currentSpeed = 0.0;
   double _maxSpeed = 0.0;
   double _activeDistance = 0.0;
+  double _acceleration = 0.0;
   double _heading = 0.0;
   double _altitude = 0.0;
   int _drivingTimeSeconds = 0;
@@ -35,6 +36,7 @@ class DashboardViewModel extends ChangeNotifier {
   double get currentSpeed => _currentSpeed;
   double get maxSpeed => _maxSpeed;
   double get activeDistance => _activeDistance;
+  double get acceleration => _acceleration;
   double get heading => _heading;
   double get altitude => _altitude;
   int get drivingTimeSeconds => _drivingTimeSeconds;
@@ -97,6 +99,7 @@ class DashboardViewModel extends ChangeNotifier {
       _currentSpeed = 0.0;
       _maxSpeed = 0.0;
       _activeDistance = 0.0;
+      _acceleration = 0.0;
       _heading = 0.0;
       _altitude = 0.0;
       _drivingTimeSeconds = 0;
@@ -151,6 +154,7 @@ class DashboardViewModel extends ChangeNotifier {
         _currentSpeed = (event['currentSpeed'] as num).toDouble() * 3.6;
         _maxSpeed = (event['maxSpeed'] as num).toDouble() * 3.6;
         _activeDistance = (event['distance'] as num).toDouble() / 1000.0;
+        _acceleration = (event['acceleration'] ?? 0.0 as num).toDouble();
         _drivingTimeSeconds = event['drivingTime'] as int;
         _stoppedTimeSeconds = event['stopTime'] as int;
         _heading = (event['heading'] ?? 0.0 as num).toDouble();

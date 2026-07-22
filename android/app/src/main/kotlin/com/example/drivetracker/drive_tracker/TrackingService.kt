@@ -41,6 +41,7 @@ class TrackingService : Service() {
 
     private var accumulatedDistanceMeters: Double = 0.0
     private var maxSpeedMetersPerSec: Double = 0.0
+    private var currentAccelerationMps2: Double = 0.0
     private var drivingTimeSeconds: Int = 0
     private var stoppedTimeSeconds: Int = 0
 
@@ -112,6 +113,7 @@ class TrackingService : Service() {
     fun getMaxSpeedMetersPerSec(): Double = maxSpeedMetersPerSec
     fun getAverageSpeedMps(): Double = if (drivingTimeSeconds > 0) accumulatedDistanceMeters / drivingTimeSeconds else 0.0
     fun getAccumulatedDistanceMeters(): Double = accumulatedDistanceMeters
+    fun getCurrentAccelerationMps2(): Double = currentAccelerationMps2
     fun getDrivingTimeSeconds(): Int = drivingTimeSeconds
     fun getStoppedTimeSeconds(): Int = stoppedTimeSeconds
 
@@ -291,7 +293,6 @@ class TrackingService : Service() {
         } else {
             if (isVehicleStopped) {
                 isVehicleStopped = false
-                lastLocation = null
                 continuousStoppedSeconds = 0
                 // Restore high-accuracy GPS if we had dropped to balanced (#9)
                 switchGpsAccuracy(highAccuracy = true)
@@ -330,6 +331,7 @@ class TrackingService : Service() {
             putExtra("distance", accumulatedDistanceMeters)
             putExtra("drivingTime", drivingTimeSeconds)
             putExtra("stopTime", stoppedTimeSeconds)
+            putExtra("acceleration", currentAccelerationMps2)
         }
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
@@ -337,18 +339,54 @@ class TrackingService : Service() {
     // ─── Location processing ────────────────────────────────────────────────
 
     private fun processNewLocation(location: Location) {
-        // Filter bad GPS accuracy
-        if (location.accuracy > 30.0f) return
+        Log.d(TAG, "processNewLocation: lat=${location.latitude}, lng=${location.longitude}, acc=${location.accuracy}, hasSpeed=${location.hasSpeed()}, speed=${location.speed}")
 
-        val rawSpeed = location.speed.toDouble()
+        // Filter bad GPS accuracy
+        if (location.accuracy > 30.0f) {
+            Log.d(TAG, "Ignoring location due to poor accuracy")
+            return
+        }
+
+        var rawSpeed = 0.0
+        if (location.hasSpeed() && location.speed > 0) {
+            rawSpeed = location.speed.toDouble()
+        } else if (lastLocation != null) {
+            val dist = lastLocation!!.distanceTo(location).toDouble()
+            val timeDiffSecs = (location.time - lastLocation!!.time) / 1000.0
+            if (timeDiffSecs > 0) {
+                rawSpeed = dist / timeDiffSecs
+            }
+        }
+        
+        Log.d(TAG, "Raw speed calculated as: $rawSpeed m/s")
+
+        val prevSpeed = currentSpeedMps
+
         smoothedSpeed = if (smoothedSpeed < 0.0) rawSpeed
         else (SPEED_SMOOTHING_ALPHA * rawSpeed) + ((1.0 - SPEED_SMOOTHING_ALPHA) * smoothedSpeed)
 
         currentSpeedMps = smoothedSpeed
 
-        if (!isVehicleStopped && lastLocation != null) {
-            accumulatedDistanceMeters += lastLocation!!.distanceTo(location)
+        // Calculate acceleration
+        if (lastLocation != null) {
+            val timeDiffSecs = (location.time - lastLocation!!.time) / 1000.0
+            if (timeDiffSecs > 0) {
+                currentAccelerationMps2 = (currentSpeedMps - prevSpeed) / timeDiffSecs
+            } else {
+                currentAccelerationMps2 = 0.0
+            }
         }
+
+        // Distance accumulation unconditionally when moving or above threshold
+        if (lastLocation != null) {
+            val dist = lastLocation!!.distanceTo(location).toDouble()
+            // To avoid GPS drift while stationary, only accumulate if dist > 1m or speed is significant
+            if (dist > 1.0 || currentSpeedMps >= MOVING_SPEED_THRESHOLD_MPS) {
+                accumulatedDistanceMeters += dist
+                Log.d(TAG, "Accumulated distance by $dist. Total: $accumulatedDistanceMeters")
+            }
+        }
+
         if (currentSpeedMps > maxSpeedMetersPerSec) maxSpeedMetersPerSec = currentSpeedMps
 
         lastLocation = location
@@ -591,6 +629,7 @@ class TrackingService : Service() {
 
     private fun resetTelemetryState() {
         accumulatedDistanceMeters = 0.0; maxSpeedMetersPerSec = 0.0
+        currentAccelerationMps2 = 0.0
         drivingTimeSeconds = 0; stoppedTimeSeconds = 0
         smoothedSpeed = -1.0; currentSpeedMps = 0.0
         isVehicleStopped = true; consecutiveStoppedSeconds = 0
