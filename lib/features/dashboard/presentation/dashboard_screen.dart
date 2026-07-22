@@ -20,10 +20,7 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  String _selectedStartLocation = 'Home';
-  String _selectedEndLocation = 'Office';
-
-  final List<String> _locations = ['Home', 'Office', 'Gym', 'Supermarket', 'Airport', 'Coffee Shop', 'Client Office'];
+  String _selectedActivityType = 'driving';
 
   @override
   void initState() {
@@ -39,14 +36,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
     if (isTracking) {
       final messenger = ScaffoldMessenger.of(context);
       final primaryColor = theme.colorScheme.primary;
-      final savedDrive = await dashboardVM.stopTracking(
-        _selectedStartLocation,
-        _selectedEndLocation,
-      );
+      final savedDrive = await dashboardVM.stopTracking();
       if (savedDrive != null) {
         messenger.showSnackBar(
           SnackBar(
-            content: Text('Drive saved successfully: ${savedDrive.notes}'),
+            content: Text('Activity saved successfully: ${savedDrive.activityType.toUpperCase()}'),
             behavior: SnackBarBehavior.floating,
             backgroundColor: primaryColor,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -93,7 +87,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       }
 
       if (locationStatus.isGranted) {
-        dashboardVM.startTracking();
+        dashboardVM.startTracking(_selectedActivityType);
       } else {
         if (!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
@@ -399,7 +393,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  // Location configuration selectors
+  // Activity configuration selectors
   Widget _buildLocationSelectors(ThemeData theme) {
     final bool isDark = theme.brightness == Brightness.dark;
     return Card(
@@ -417,7 +411,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'ROUTE SETUP MOCK',
+              'ACTIVITY SETUP',
               style: theme.textTheme.labelSmall?.copyWith(
                 fontWeight: FontWeight.bold,
                 letterSpacing: 1.5,
@@ -431,44 +425,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Start Point', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
+                      const Text('Select Mode', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
                       DropdownButton<String>(
-                        value: _selectedStartLocation,
+                        value: _selectedActivityType,
                         isExpanded: true,
                         underline: const SizedBox(),
-                        items: _locations.map((loc) {
-                          return DropdownMenuItem(value: loc, child: Text(loc));
-                        }).toList(),
+                        items: const [
+                          DropdownMenuItem(value: 'driving', child: Text('🚗 Driving')),
+                          DropdownMenuItem(value: 'walking', child: Text('🚶 Walking')),
+                        ],
                         onChanged: (val) {
-                          if (val != null) setState(() => _selectedStartLocation = val);
+                          if (val != null) setState(() => _selectedActivityType = val);
                         },
                       ),
                     ],
                   ),
                 ),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 12.0),
-                  child: Icon(Icons.arrow_forward_rounded, color: Colors.grey),
-                ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text('End Point', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
-                      DropdownButton<String>(
-                        value: _selectedEndLocation,
-                        isExpanded: true,
-                        underline: const SizedBox(),
-                        items: _locations.map((loc) {
-                          return DropdownMenuItem(value: loc, child: Text(loc));
-                        }).toList(),
-                        onChanged: (val) {
-                          if (val != null) setState(() => _selectedEndLocation = val);
-                        },
-                      ),
-                    ],
-                  ),
-                )
               ],
             ),
           ],

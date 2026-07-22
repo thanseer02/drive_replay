@@ -1,6 +1,3 @@
-import 'package:drive_tracker/repositories/ride_repository.dart';
-import 'package:drive_tracker/repositories/activity_repository.dart';
-
 class ServiceLocator {
   static final Map<Type, Object> _services = {};
 

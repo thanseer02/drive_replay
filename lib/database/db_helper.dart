@@ -264,13 +264,16 @@ class DBHelper {
     );
   }
 
-  Future<int> deleteActivity(int id) async {
+  Future<void> deleteActivity(int id) async {
     final db = await database;
-    return await db.delete(
-      'activities',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    await db.delete('activity_locations', where: 'activityId = ?', whereArgs: [id]);
+    await db.delete('activities', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<int> clearAllActivities() async {
+    final db = await database;
+    await db.delete('activity_locations');
+    return await db.delete('activities');
   }
 
   Future<List<ActivityModel>> getAllActivities() async {

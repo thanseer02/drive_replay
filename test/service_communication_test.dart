@@ -3,49 +3,35 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:drive_tracker/core/di.dart';
 import 'package:drive_tracker/services/storage_service.dart';
-import 'package:drive_tracker/repositories/ride_repository.dart';
+import 'package:drive_tracker/models/activity_model.dart';
+import 'package:drive_tracker/repositories/activity_repository.dart';
 import 'package:drive_tracker/features/dashboard/viewmodel/dashboard_viewmodel.dart';
-import 'package:drive_tracker/models/ride.dart';
-import 'package:drive_tracker/models/ride_location.dart';
-import 'package:drive_tracker/models/settings_model.dart';
 
 // Fake implementations for Mocking
-class FakeRideRepository implements RideRepository {
-  List<Ride> rides = [];
+class FakeActivityRepository implements ActivityRepository {
+  List<ActivityModel> activities = [];
 
   @override
-  Future<List<Ride>> getRides() async => rides;
+  Future<List<ActivityModel>> getActivities() async => activities;
   @override
-  Future<Ride?> getRide(int id) async => null;
+  Future<ActivityModel?> getActivityDetails(int id) async => null;
   @override
-  Future<int> addRide(Ride ride) async {
-    rides.add(ride);
-    return 1;
+  Future<void> addActivity(ActivityModel activity) async {
+    activities.add(activity);
   }
   @override
-  Future<int> updateRide(Ride ride) async => 1;
+  Future<void> deleteActivity(int id) async {}
   @override
-  Future<int> deleteRide(int id) async => 1;
-  @override
-  Future<int> clearRides() async {
-    rides.clear();
-    return 1;
+  Future<void> clearActivities() async {
+    activities.clear();
   }
-  @override
-  Future<int> addRideLocation(RideLocation location) async => 1;
-  @override
-  Future<List<RideLocation>> getLocationsForRide(int rideId) async => [];
-  @override
-  Future<SettingsModel> getSettings() async => SettingsModel(isDarkMode: false, useMetric: true);
-  @override
-  Future<int> updateSettings(SettingsModel settings) async => 1;
 }
 
 void main() {
   const controlChannel = MethodChannel('com.example.drivetracker/tracking_control');
   const eventChannel = MethodChannel('com.example.drivetracker/tracking_events');
 
-  late FakeRideRepository fakeRepo;
+  late FakeActivityRepository fakeRepo;
   late DashboardViewModel viewModel;
 
   setUpAll(() {
@@ -58,8 +44,8 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     ServiceLocator.register<StorageService>(StorageService(prefs));
     
-    fakeRepo = FakeRideRepository();
-    ServiceLocator.register<RideRepository>(fakeRepo);
+    fakeRepo = FakeActivityRepository();
+    ServiceLocator.register<ActivityRepository>(fakeRepo);
 
     // Mock initial state for VM boot check
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
@@ -105,7 +91,7 @@ void main() {
 
       expect(viewModel.isTracking, isFalse);
       
-      await viewModel.startTracking();
+      await viewModel.startTracking("driving");
       
       expect(controlInvoked, isTrue);
       expect(viewModel.isTracking, isTrue);
@@ -123,20 +109,20 @@ void main() {
       });
 
       // Force mock tracking active
-      await viewModel.startTracking();
+      await viewModel.startTracking("driving");
       expect(viewModel.isTracking, isTrue);
 
-      final ride = await viewModel.stopTracking('Home', 'Office');
+      final savedRide = await viewModel.stopTracking();
       
       expect(controlStopInvoked, isTrue);
       expect(viewModel.isTracking, isFalse);
-      expect(ride, isNotNull);
+      expect(savedRide, isNotNull);
     });
   });
 
   group('EventChannel Flow & Telemetry Updates', () {
     test('Simulated native telemetry events propagate correctly to viewModel', () async {
-      await viewModel.startTracking();
+      await viewModel.startTracking("driving");
 
       // Trigger telemetry updates via mock invocation of VM listener method
       viewModel.onListenEventForTesting({
@@ -160,7 +146,7 @@ void main() {
     });
 
     test('Simulated native stop event triggers clean stop and VM saves data', () async {
-      await viewModel.startTracking();
+      await viewModel.startTracking("driving");
       expect(viewModel.isTracking, isTrue);
 
       // Trigger tracking stopped natively

@@ -19,4 +19,8 @@ class ActivityRepository {
   Future<void> deleteActivity(int id) async {
     await _dbHelper.deleteActivity(id);
   }
+
+  Future<void> clearActivities() async {
+    await _dbHelper.clearAllActivities();
+  }
 }

@@ -4,8 +4,8 @@ import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 import 'package:drive_tracker/features/history/viewmodel/history_viewmodel.dart';
 import 'package:drive_tracker/features/settings/viewmodel/settings_viewmodel.dart';
-import 'package:drive_tracker/models/ride.dart';
-import 'package:drive_tracker/models/ride_location.dart';
+import 'package:drive_tracker/models/activity_model.dart';
+import 'package:drive_tracker/models/activity_location.dart';
 import 'package:drive_tracker/widgets/shimmer_loader.dart';
 
 class RideDetailsScreen extends StatefulWidget {
@@ -95,8 +95,8 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
     final String endStr = DateFormat('hh:mm:ss a').format(drive.endTime ?? drive.startTime);
 
     // Compute Driving vs Stopped ratios based on actual database variables
-    final int totalSeconds = drive.durationSeconds;
-    final double drivingRatio = totalSeconds > 0 ? (drive.drivingTime / totalSeconds).clamp(0.0, 1.0) : 0.0;
+    final int totalSeconds = drive.duration;
+    final double drivingRatio = totalSeconds > 0 ? ((drive.duration - drive.stopTime) / totalSeconds).clamp(0.0, 1.0) : 0.0;
     final double stoppedRatio = totalSeconds > 0 ? (drive.stopTime / totalSeconds).clamp(0.0, 1.0) : 0.0;
 
     final locations = drive.locations ?? [];
@@ -125,12 +125,12 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
           const SizedBox(height: 16),
 
           // Performance Statistics Row Grid
-          _buildTelemetryStatGrid(theme, displayDistance, distLabel, displayAvgSpeed, displayMaxSpeed, velocityUnit, drive.durationSeconds),
+          _buildTelemetryStatGrid(theme, displayDistance, distLabel, displayAvgSpeed, displayMaxSpeed, velocityUnit, drive.duration),
 
           const SizedBox(height: 16),
 
           // Driving vs Stopped Time split ratio progress bar
-          _buildTimeSplitCard(theme, drivingRatio, stoppedRatio, drive.drivingTime, drive.stopTime),
+          _buildTimeSplitCard(theme, drivingRatio, stoppedRatio, drive.duration - drive.stopTime, drive.stopTime),
 
           const SizedBox(height: 16),
 
@@ -162,7 +162,7 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
 
   Widget _buildTripHeaderCard(
     ThemeData theme,
-    Ride drive,
+    ActivityModel drive,
     String dateString,
     String startStr,
     String endStr,
@@ -219,9 +219,9 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        drive.startLocation,
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      const Text(
+                        'Start',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                       ),
                       Text(
                         'Departed at $startStr',
@@ -229,7 +229,7 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        drive.endLocation,
+                        'End',
                         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                       ),
                       Text(
@@ -248,7 +248,7 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
   }
 
   // Custom painted route container using genuine coordinates data points
-  Widget _buildTeslaNavigationCard(ThemeData theme, Ride drive, List<RideLocation> locations) {
+  Widget _buildTeslaNavigationCard(ThemeData theme, ActivityModel drive, List<ActivityLocation> locations) {
     final bool isDark = theme.brightness == Brightness.dark;
     return Card(
       elevation: 0,
@@ -280,7 +280,7 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
               )
             else
               Semantics(
-                label: 'Map visualization showing path of the ride from ${drive.startLocation} to ${drive.endLocation}',
+                label: 'Map visualization showing path of the ride',
                 value: '${locations.length} total GPS path trace points recorded.',
                 child: CustomPaint(
                   size: const Size(double.infinity, 200),
@@ -321,9 +321,9 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
                 right: 16,
                 child: Row(
                   children: [
-                    _buildMapBadge('Start', drive.startLocation, theme),
+                    _buildMapBadge('Start', 'Start', theme),
                     const SizedBox(width: 8),
-                    _buildMapBadge('End', drive.endLocation, theme),
+                    _buildMapBadge('End', 'End', theme),
                   ],
                 ),
               )
@@ -598,7 +598,7 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
 
   Widget _buildSpeedProfileChart(
     ThemeData theme,
-    List<RideLocation> locations,
+    List<ActivityLocation> locations,
     double avgSpeed,
     double maxSpeed,
     String unit,
@@ -718,7 +718,7 @@ class _RideDetailsScreenState extends State<RideDetailsScreen> {
 
 // Custom Painter draws a mockup GPS Route path mapping real physical lat/long points
 class _MapTracePainter extends CustomPainter {
-  final List<RideLocation> locations;
+  final List<ActivityLocation> locations;
   final Brightness brightness;
   final Color primaryColor;
   final Color secondaryColor;
@@ -828,7 +828,7 @@ class _MapTracePainter extends CustomPainter {
 
 // Custom speed analysis profile chart painter (renders true dashboard speed traces)
 class _SpeedGraphPainter extends CustomPainter {
-  final List<RideLocation> locations;
+  final List<ActivityLocation> locations;
   final double avgSpeed;
   final double maxSpeed;
   final Color primaryColor;

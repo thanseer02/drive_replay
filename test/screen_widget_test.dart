@@ -5,10 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:drive_tracker/core/di.dart';
 import 'package:drive_tracker/services/storage_service.dart';
 import 'package:drive_tracker/services/permission_service.dart';
-import 'package:drive_tracker/repositories/ride_repository.dart';
-import 'package:drive_tracker/models/ride.dart';
-import 'package:drive_tracker/models/ride_location.dart';
-import 'package:drive_tracker/models/settings_model.dart';
+import 'package:drive_tracker/models/activity_model.dart';
+import 'package:drive_tracker/repositories/activity_repository.dart';
 import 'package:drive_tracker/features/settings/viewmodel/settings_viewmodel.dart';
 import 'package:drive_tracker/features/dashboard/viewmodel/dashboard_viewmodel.dart';
 import 'package:drive_tracker/features/history/viewmodel/history_viewmodel.dart';
@@ -20,27 +18,17 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:go_router/go_router.dart';
 
 // Fake implementations for Mocking
-class FakeRideRepository implements RideRepository {
+class FakeActivityRepository implements ActivityRepository {
   @override
-  Future<List<Ride>> getRides() async => [];
+  Future<List<ActivityModel>> getActivities() async => [];
   @override
-  Future<Ride?> getRide(int id) async => null;
+  Future<ActivityModel?> getActivityDetails(int id) async => null;
   @override
-  Future<int> addRide(Ride ride) async => 1;
+  Future<void> addActivity(ActivityModel activity) async {}
   @override
-  Future<int> updateRide(Ride ride) async => 1;
+  Future<void> deleteActivity(int id) async {}
   @override
-  Future<int> deleteRide(int id) async => 1;
-  @override
-  Future<int> clearRides() async => 1;
-  @override
-  Future<int> addRideLocation(RideLocation location) async => 1;
-  @override
-  Future<List<RideLocation>> getLocationsForRide(int rideId) async => [];
-  @override
-  Future<SettingsModel> getSettings() async => SettingsModel(isDarkMode: false, useMetric: true);
-  @override
-  Future<int> updateSettings(SettingsModel settings) async => 1;
+  Future<void> clearActivities() async {}
 }
 
 class FakePermissionService extends PermissionService {
@@ -66,7 +54,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
     ServiceLocator.register<StorageService>(StorageService(prefs));
-    ServiceLocator.register<RideRepository>(FakeRideRepository());
+    ServiceLocator.register<ActivityRepository>(FakeActivityRepository());
     ServiceLocator.register<PermissionService>(FakePermissionService());
 
     // Mock native method calls to prevent MissingPluginException

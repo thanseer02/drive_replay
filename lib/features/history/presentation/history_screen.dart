@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 import 'package:drive_tracker/features/history/viewmodel/history_viewmodel.dart';
 import 'package:drive_tracker/features/settings/viewmodel/settings_viewmodel.dart';
-import 'package:drive_tracker/models/ride.dart';
+import 'package:drive_tracker/models/activity_model.dart';
 import 'package:drive_tracker/widgets/shimmer_loader.dart';
 import 'package:drive_tracker/widgets/error_view.dart';
 import 'package:drive_tracker/widgets/empty_state_view.dart';
@@ -312,13 +312,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget _buildGroupedDriveList(
     BuildContext context,
     ThemeData theme,
-    List<Ride> drives,
+    List<ActivityModel> drives,
     double distMulti,
     String distLabel,
     String speedLabel,
     HistoryViewModel viewModel,
   ) {
-    final Map<String, List<Ride>> grouped = {};
+    final Map<String, List<ActivityModel>> grouped = {};
     for (final drive in drives) {
       final key = _getDateHeaderString(drive.startTime);
       grouped.putIfAbsent(key, () => []).add(drive);
@@ -360,7 +360,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget _buildDriveCard(
     BuildContext context,
     ThemeData theme,
-    Ride drive,
+    ActivityModel drive,
     double distMulti,
     String distLabel,
     String speedLabel,
@@ -375,7 +375,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final displayMaxSpeed = drive.maxSpeed * distMulti;
     final timeRange =
         '${DateFormat('hh:mm a').format(drive.startTime)} – ${DateFormat('hh:mm a').format(drive.endTime ?? drive.startTime)}';
-    final durationString = _formatSeconds(drive.durationSeconds);
+    final durationString = _formatSeconds(drive.duration);
     final cardDate = DateFormat('MMM d, yyyy').format(drive.startTime);
 
     return Dismissible(
