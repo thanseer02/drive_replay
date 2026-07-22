@@ -23,6 +23,7 @@
         "sqflite"
       ],
       "devDependencies": [
+        "dynamic_app_icon_cli",
         "flutter_launcher_icons",
         "flutter_lints",
         "flutter_test",
@@ -73,6 +74,15 @@
         "stream_channel",
         "test_api",
         "vector_math"
+      ]
+    },
+    {
+      "name": "dynamic_app_icon_cli",
+      "version": "0.0.1",
+      "dependencies": [
+        "args",
+        "icon_generator",
+        "path"
       ]
     },
     {
@@ -354,6 +364,14 @@
         "stream_channel",
         "string_scanner",
         "term_glyph"
+      ]
+    },
+    {
+      "name": "icon_generator",
+      "version": "0.0.1",
+      "dependencies": [
+        "image",
+        "path"
       ]
     },
     {

@@ -4,6 +4,7 @@ import 'package:drive_tracker/features/settings/viewmodel/settings_viewmodel.dar
 import 'package:drive_tracker/features/history/viewmodel/history_viewmodel.dart';
 import 'package:drive_tracker/widgets/adaptive_layout.dart';
 import 'package:drive_tracker/themes/app_text_styles.dart';
+import 'package:drive_tracker/features/settings/presentation/widgets/app_icon_section.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -215,6 +216,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onTap: () => _confirmReset(context),
           ),
         ),
+
+        const SizedBox(height: 24),
+
+        // Section: Change App Icon
+        const AppIconSection(),
 
         const SizedBox(height: 24),
 
@@ -437,6 +443,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onTap: () => _confirmReset(context),
             ),
           ),
+          const SizedBox(height: 24),
+          
+          const AppIconSection(),
+          
           const SizedBox(height: 24),
           _buildSectionHeader(theme, 'Vehicle Tracker Engine Details'),
           Card(

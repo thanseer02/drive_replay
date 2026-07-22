@@ -57,6 +57,11 @@ dependencies:
 
 
 dev_dependencies:
+  dynamic_app_icon_cli:
+    git:
+      url: https://github.com/thanseer02/dynamic_app_icon.git
+      ref: main
+      path: dynamic_app_icon_cli
   flutter_test:
     sdk: flutter
   flutter_launcher_icons: ^0.14.4
@@ -87,6 +92,7 @@ flutter:
 
   assets:
     - assets/lottie/
+    - assets/app_icons/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
