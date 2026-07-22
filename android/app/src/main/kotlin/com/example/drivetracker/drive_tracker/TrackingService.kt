@@ -61,6 +61,7 @@ class TrackingService : Service() {
     // Getters for MainActivity
     fun getStartTime(): Long = startTimeMillis
     fun getActivityType(): String = activityType
+    fun getLatestTelemetry(): Map<String, Any> = currentTracker?.tick() ?: emptyMap()
 
     override fun onCreate() {
         super.onCreate()
@@ -101,6 +102,7 @@ class TrackingService : Service() {
     }
 
     private fun startTracking(type: String) {
+        Log.d("TrackerTrace", "[TrackingService] startTracking: type=$type")
         isServiceRunning = true
         activeInstance = this
         isTracking = true
@@ -161,9 +163,10 @@ class TrackingService : Service() {
 
     private fun tickTelemetry() {
         val stats = currentTracker?.tick() ?: return
-
+        
         val distanceMeters = stats["distance"] as? Double ?: 0.0
         val currentSpeedMps = stats["currentSpeed"] as? Double ?: 0.0
+        Log.d("TrackerTrace", "[TrackingService] tickTelemetry: speed=$currentSpeedMps, dist=$distanceMeters")
         
         val distanceKm = distanceMeters / 1000.0
         val currentSpeedKmh = currentSpeedMps * 3.6
@@ -188,6 +191,7 @@ class TrackingService : Service() {
                 }
             }
         }
+        Log.d("TrackerTrace", "[TrackingService] Broadcasting telemetry to LocalBroadcastManager")
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
 
@@ -359,6 +363,17 @@ class TrackingService : Service() {
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setCategory(NotificationCompat.CATEGORY_SERVICE)
             .build()
+    }
+
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                CHANNEL_ID,
+                "Tracking Service Channel",
+                NotificationManager.IMPORTANCE_LOW
+            )
+            getSystemService(NotificationManager::class.java)?.createNotificationChannel(channel)
+        }
     }
 
     override fun onBind(intent: Intent?): IBinder? = null

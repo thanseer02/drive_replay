@@ -166,6 +166,7 @@ class DashboardViewModel extends ChangeNotifier {
     if (event is Map) {
       final type = event['type'];
       if (type == 'telemetry') {
+        debugPrint("[TrackerTrace] [Flutter] Received telemetry event from EventChannel. currentSpeed=${event['currentSpeed']}, dist=${event['distance']}, stopTime=${event['stopTime']}");
         _activityType = event['activityType'] as String? ?? 'driving';
         _currentSpeed = (event['currentSpeed'] as num? ?? 0.0).toDouble() * 3.6;
         _maxSpeed = (event['maxSpeed'] as num? ?? 0.0).toDouble() * 3.6;

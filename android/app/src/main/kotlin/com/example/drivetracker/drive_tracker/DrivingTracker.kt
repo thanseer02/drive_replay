@@ -44,6 +44,7 @@ class DrivingTracker(private val context: Context, private val bgLooper: Looper)
 
     @SuppressLint("MissingPermission")
     override fun start() {
+        Log.d("TrackerTrace", "[DrivingTracker] start() called")
         resetState()
         openTraceWriter(append = false)
         startGps(highAccuracy = true)
@@ -98,10 +99,13 @@ class DrivingTracker(private val context: Context, private val bgLooper: Looper)
         }
 
         if (isVehicleStopped && continuousStoppedSeconds == ADAPTIVE_STOP_THRESHOLD_SECONDS) {
+            Log.d("TrackerTrace", "[DrivingTracker] Switching to low accuracy GPS (ADAPTIVE_STOP_THRESHOLD_SECONDS reached)")
             startGps(highAccuracy = false)
         }
 
         val avgSpeedMps = if (drivingTimeSeconds > 0) accumulatedDistanceMeters / drivingTimeSeconds else 0.0
+
+        Log.d("TrackerTrace", "[DrivingTracker] tick() stats: currentSpeed=$currentSpeedMps, maxSpeed=$maxSpeedMetersPerSec, avgSpeed=$avgSpeedMps, dist=$accumulatedDistanceMeters, drivingTime=$drivingTimeSeconds, stopTime=$stoppedTimeSeconds, isStopped=$isVehicleStopped")
 
         return mapOf(
             "currentSpeed" to currentSpeedMps,
@@ -126,12 +130,17 @@ class DrivingTracker(private val context: Context, private val bgLooper: Looper)
             setMinUpdateDistanceMeters(0f)
         }.build()
 
-        if (currentLocationRequest?.priority == request.priority) return
+        if (currentLocationRequest?.priority == request.priority) {
+            Log.d("TrackerTrace", "[DrivingTracker] startGps: Priority unchanged, skipping")
+            return
+        }
         currentLocationRequest = request
+        Log.d("TrackerTrace", "[DrivingTracker] startGps: requestLocationUpdates (interval=$interval)")
 
         locationCallback?.let { fusedLocationClient.removeLocationUpdates(it) }
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(result: LocationResult) {
+                Log.d("TrackerTrace", "[DrivingTracker] onLocationResult: ${result.locations.size} locations received")
                 result.locations.forEach { processNewLocation(it) }
             }
         }
@@ -139,24 +148,36 @@ class DrivingTracker(private val context: Context, private val bgLooper: Looper)
     }
 
     private fun processNewLocation(location: Location) {
-        if (location.accuracy > 30.0f) return
+        Log.d("TrackerTrace", "[DrivingTracker] processNewLocation: lat=${location.latitude}, lng=${location.longitude}, speed=${location.speed}, acc=${location.accuracy}, time=${location.time}")
+        // Relax accuracy threshold to allow for mock locations and urban canyons
+        if (location.hasAccuracy() && location.accuracy > 100.0f) {
+            Log.d("TrackerTrace", "[DrivingTracker] processNewLocation: REJECTED due to poor accuracy (${location.accuracy} > 100)")
+            return
+        }
 
         var rawSpeed = 0.0
         if (location.hasSpeed() && location.speed > 0) {
             rawSpeed = location.speed.toDouble()
+            Log.d("TrackerTrace", "[DrivingTracker] processNewLocation: Using GPS rawSpeed=$rawSpeed")
         } else if (lastLocation != null) {
             val dist = lastLocation!!.distanceTo(location).toDouble()
-            val timeDiffSecs = (location.time - lastLocation!!.time) / 1000.0
+            val timeDiffNanos = location.elapsedRealtimeNanos - lastLocation!!.elapsedRealtimeNanos
+            val timeDiffSecs = timeDiffNanos / 1_000_000_000.0
             if (timeDiffSecs > 0) rawSpeed = dist / timeDiffSecs
+            Log.d("TrackerTrace", "[DrivingTracker] processNewLocation: Using fallback rawSpeed=$rawSpeed (dist=$dist, timeDiffSecs=$timeDiffSecs)")
+        } else {
+            Log.d("TrackerTrace", "[DrivingTracker] processNewLocation: No speed available, and no lastLocation to calculate.")
         }
 
         val prevSpeed = currentSpeedMps
         smoothedSpeed = if (smoothedSpeed < 0.0) rawSpeed
         else (SPEED_SMOOTHING_ALPHA * rawSpeed) + ((1.0 - SPEED_SMOOTHING_ALPHA) * smoothedSpeed)
         currentSpeedMps = smoothedSpeed
+        Log.d("TrackerTrace", "[DrivingTracker] processNewLocation: smoothedSpeed=$smoothedSpeed (currentSpeedMps=$currentSpeedMps)")
 
         if (lastLocation != null) {
-            val timeDiffSecs = (location.time - lastLocation!!.time) / 1000.0
+            val timeDiffNanos = location.elapsedRealtimeNanos - lastLocation!!.elapsedRealtimeNanos
+            val timeDiffSecs = timeDiffNanos / 1_000_000_000.0
             currentAccelerationMps2 = if (timeDiffSecs > 0) (currentSpeedMps - prevSpeed) / timeDiffSecs else 0.0
         }
 

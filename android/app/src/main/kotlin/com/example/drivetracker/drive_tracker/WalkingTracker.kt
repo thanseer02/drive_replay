@@ -9,6 +9,7 @@ import android.hardware.SensorManager
 import android.location.Location
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import com.google.android.gms.location.*
 import org.json.JSONObject
 import java.io.BufferedWriter
@@ -49,10 +50,14 @@ class WalkingTracker(private val context: Context, private val bgLooper: Looper)
 
     @SuppressLint("MissingPermission")
     override fun start() {
+        Log.d("TrackerTrace", "[WalkingTracker] start() called")
         resetState()
         openTraceWriter(append = false)
         startGps()
-        startSensors()
+        stepSensor?.let {
+            Log.d("TrackerTrace", "[WalkingTracker] Registering step sensor listener")
+            sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_UI, Handler(bgLooper))
+        } ?: Log.w("TrackerTrace", "[WalkingTracker] Step sensor not available on this device!")
     }
 
     @SuppressLint("MissingPermission")
@@ -114,6 +119,8 @@ class WalkingTracker(private val context: Context, private val bgLooper: Looper)
         // Pace: min/km
         val pace = if (currentSpeedMps > 0.0) (1000.0 / currentSpeedMps) / 60.0 else 0.0
 
+        Log.d("TrackerTrace", "[WalkingTracker] tick() stats: currentSpeed=$currentSpeedMps, maxSpeed=$maxSpeedMetersPerSec, avgSpeed=$avgSpeedMps, dist=$accumulatedDistanceMeters, walkingTime=$walkingTimeSeconds, stopTime=$stoppedTimeSeconds, isStopped=$isWalkingStopped, steps=$totalSteps, cadence=$cadence, calories=$calories, pace=$pace")
+
         return mapOf(
             "currentSpeed" to currentSpeedMps,
             "maxSpeed" to maxSpeedMetersPerSec,
@@ -137,12 +144,17 @@ class WalkingTracker(private val context: Context, private val bgLooper: Looper)
             setMinUpdateDistanceMeters(1f) // 1 meter for walking
         }.build()
 
-        if (currentLocationRequest?.priority == request.priority) return
+        if (currentLocationRequest?.priority == request.priority) {
+            Log.d("TrackerTrace", "[WalkingTracker] startGps: Priority unchanged, skipping")
+            return
+        }
         currentLocationRequest = request
+        Log.d("TrackerTrace", "[WalkingTracker] startGps: requestLocationUpdates")
 
         locationCallback?.let { fusedLocationClient.removeLocationUpdates(it) }
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(result: LocationResult) {
+                Log.d("TrackerTrace", "[WalkingTracker] onLocationResult: ${result.locations.size} locations received")
                 result.locations.forEach { processNewLocation(it) }
             }
         }
@@ -176,22 +188,34 @@ class WalkingTracker(private val context: Context, private val bgLooper: Looper)
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 
     private fun processNewLocation(location: Location) {
-        if (location.accuracy > 30.0f) return
+        Log.d("TrackerTrace", "[WalkingTracker] processNewLocation: lat=${location.latitude}, lng=${location.longitude}, speed=${location.speed}, acc=${location.accuracy}, time=${location.time}")
+        // Relax accuracy threshold to allow for mock locations and urban canyons
+        if (location.hasAccuracy() && location.accuracy > 100.0f) {
+            Log.d("TrackerTrace", "[WalkingTracker] processNewLocation: REJECTED due to poor accuracy (${location.accuracy} > 100)")
+            return
+        }
 
         var rawSpeed = 0.0
         if (location.hasSpeed() && location.speed > 0) {
             rawSpeed = location.speed.toDouble()
+            Log.d("TrackerTrace", "[WalkingTracker] processNewLocation: Using GPS rawSpeed=$rawSpeed")
         } else if (lastLocation != null) {
             val dist = lastLocation!!.distanceTo(location).toDouble()
-            val timeDiffSecs = (location.time - lastLocation!!.time) / 1000.0
+            val timeDiffNanos = location.elapsedRealtimeNanos - lastLocation!!.elapsedRealtimeNanos
+            val timeDiffSecs = timeDiffNanos / 1_000_000_000.0
             if (timeDiffSecs > 0) rawSpeed = dist / timeDiffSecs
+            Log.d("TrackerTrace", "[WalkingTracker] processNewLocation: Using fallback rawSpeed=$rawSpeed (dist=$dist, timeDiffSecs=$timeDiffSecs)")
+        } else {
+            Log.d("TrackerTrace", "[WalkingTracker] processNewLocation: No speed available, and no lastLocation to calculate.")
         }
 
         val prevSpeed = currentSpeedMps
         currentSpeedMps = rawSpeed
+        Log.d("TrackerTrace", "[WalkingTracker] processNewLocation: currentSpeedMps=$currentSpeedMps")
 
         if (lastLocation != null) {
-            val timeDiffSecs = (location.time - lastLocation!!.time) / 1000.0
+            val timeDiffNanos = location.elapsedRealtimeNanos - lastLocation!!.elapsedRealtimeNanos
+            val timeDiffSecs = timeDiffNanos / 1_000_000_000.0
             currentAccelerationMps2 = if (timeDiffSecs > 0) (currentSpeedMps - prevSpeed) / timeDiffSecs else 0.0
         }
 

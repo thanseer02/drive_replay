@@ -14,6 +14,7 @@ import 'package:drive_tracker/services/storage_service.dart';
 import 'package:drive_tracker/database/db_helper.dart';
 import 'package:drive_tracker/repositories/ride_repository.dart';
 import 'package:drive_tracker/repositories/ride_repository_impl.dart';
+import 'package:drive_tracker/repositories/activity_repository.dart';
 import 'package:drive_tracker/services/permission_service.dart';
 
 
@@ -67,9 +68,8 @@ void main() async {
   await dbHelper.database;
   final rideRepository = RideRepositoryImpl(dbHelper);
   ServiceLocator.register<RideRepository>(rideRepository);
+  ServiceLocator.register<ActivityRepository>(ActivityRepository());
   ServiceLocator.register<PermissionService>(PermissionService());
-
-
   runZonedGuarded(
     () => runApp(
       MultiProvider(

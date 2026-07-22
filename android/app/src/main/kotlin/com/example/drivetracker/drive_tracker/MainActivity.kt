@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
+import android.util.Log
 import androidx.annotation.NonNull
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import io.flutter.embedding.android.FlutterActivity
@@ -45,17 +46,11 @@ class MainActivity : FlutterActivity() {
                         // Fix #4: access via WeakReference, no direct field read
                         val service = TrackingService.activeInstance
                         if (service != null) {
-                            result.success(mapOf(
-                                "isTracking" to true,
-                                "startTime" to service.getStartTime(),
-                                "currentSpeed" to service.getCurrentSpeedMps(),
-                                "maxSpeed" to service.getMaxSpeedMetersPerSec(),
-                                "averageSpeed" to service.getAverageSpeedMps(),
-                                "distance" to service.getAccumulatedDistanceMeters(),
-                                "drivingTime" to service.getDrivingTimeSeconds(),
-                                "stopTime" to service.getStoppedTimeSeconds(),
-                                "activityType" to service.getActivityType()
-                            ))
+                            val stats = service.getLatestTelemetry().toMutableMap()
+                            stats["isTracking"] = true
+                            stats["startTime"] = service.getStartTime()
+                            stats["activityType"] = service.getActivityType()
+                            result.success(stats)
                         } else {
                             result.success(mapOf("isTracking" to false))
                         }
@@ -100,9 +95,14 @@ class MainActivity : FlutterActivity() {
         return object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 intent ?: return
-                val sink = eventSink ?: return
+                val sink = eventSink
+                if (sink == null) {
+                    Log.w("TrackerTrace", "[MainActivity] Telemetry received but eventSink is null!")
+                    return
+                }
                 when (intent.action) {
                     TrackingService.BROADCAST_TELEMETRY -> {
+                        Log.d("TrackerTrace", "[MainActivity] BROADCAST_TELEMETRY received, pushing to EventChannel sink...")
                         runOnUiThread {
                             sink.success(mapOf(
                                 "type" to "telemetry",
