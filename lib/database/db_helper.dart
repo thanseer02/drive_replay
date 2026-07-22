@@ -4,6 +4,8 @@ import 'package:sqflite/sqflite.dart';
 import 'package:drive_tracker/core/constants.dart';
 import 'package:drive_tracker/models/ride.dart';
 import 'package:drive_tracker/models/ride_location.dart';
+import 'package:drive_tracker/models/activity_model.dart';
+import 'package:drive_tracker/models/activity_location.dart';
 import 'package:drive_tracker/models/settings_model.dart';
 
 class DBHelper {
@@ -68,6 +70,42 @@ class DBHelper {
       )
     ''');
 
+    // Create activities table
+    await db.execute('''
+      CREATE TABLE activities (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        activityType TEXT NOT NULL,
+        startTime TEXT NOT NULL,
+        endTime TEXT,
+        maxSpeed REAL NOT NULL,
+        averageSpeed REAL NOT NULL,
+        distance REAL NOT NULL,
+        duration INTEGER NOT NULL,
+        stopTime INTEGER NOT NULL,
+        steps INTEGER NOT NULL DEFAULT 0,
+        calories REAL NOT NULL DEFAULT 0.0,
+        pace REAL NOT NULL DEFAULT 0.0,
+        cadence REAL NOT NULL DEFAULT 0.0,
+        createdAt TEXT NOT NULL
+      )
+    ''');
+
+    // Create activity_locations table
+    await db.execute('''
+      CREATE TABLE activity_locations (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        activityId INTEGER NOT NULL,
+        latitude REAL NOT NULL,
+        longitude REAL NOT NULL,
+        speed REAL NOT NULL,
+        accuracy REAL NOT NULL,
+        heading REAL NOT NULL DEFAULT 0.0,
+        altitude REAL NOT NULL DEFAULT 0.0,
+        timestamp TEXT NOT NULL,
+        FOREIGN KEY (activityId) REFERENCES activities (id) ON DELETE CASCADE
+      )
+    ''');
+
     // 3. Create settings table
     await db.execute('''
       CREATE TABLE settings (
@@ -89,6 +127,43 @@ class DBHelper {
     if (oldVersion < 2) {
       await db.execute('ALTER TABLE ride_locations ADD COLUMN heading REAL NOT NULL DEFAULT 0.0');
       await db.execute('ALTER TABLE ride_locations ADD COLUMN altitude REAL NOT NULL DEFAULT 0.0');
+    }
+    if (oldVersion < 3) {
+      // Create activities table
+      await db.execute('''
+        CREATE TABLE activities (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          activityType TEXT NOT NULL,
+          startTime TEXT NOT NULL,
+          endTime TEXT,
+          maxSpeed REAL NOT NULL,
+          averageSpeed REAL NOT NULL,
+          distance REAL NOT NULL,
+          duration INTEGER NOT NULL,
+          stopTime INTEGER NOT NULL,
+          steps INTEGER NOT NULL DEFAULT 0,
+          calories REAL NOT NULL DEFAULT 0.0,
+          pace REAL NOT NULL DEFAULT 0.0,
+          cadence REAL NOT NULL DEFAULT 0.0,
+          createdAt TEXT NOT NULL
+        )
+      ''');
+
+      // Create activity_locations table
+      await db.execute('''
+        CREATE TABLE activity_locations (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          activityId INTEGER NOT NULL,
+          latitude REAL NOT NULL,
+          longitude REAL NOT NULL,
+          speed REAL NOT NULL,
+          accuracy REAL NOT NULL,
+          heading REAL NOT NULL DEFAULT 0.0,
+          altitude REAL NOT NULL DEFAULT 0.0,
+          timestamp TEXT NOT NULL,
+          FOREIGN KEY (activityId) REFERENCES activities (id) ON DELETE CASCADE
+        )
+      ''');
     }
   }
 
@@ -167,6 +242,68 @@ class DBHelper {
       orderBy: 'timestamp ASC',
     );
     return List.generate(maps.length, (i) => RideLocation.fromMap(maps[i]));
+  }
+
+  // ==========================================
+  // ACTIVITY OPERATIONS
+  // ==========================================
+
+  Future<int> insertActivity(ActivityModel activity) async {
+    final db = await database;
+    return await db.insert('activities', activity.toMap());
+  }
+
+  Future<int> updateActivity(ActivityModel activity) async {
+    if (activity.id == null) return 0;
+    final db = await database;
+    return await db.update(
+      'activities',
+      activity.toMap(),
+      where: 'id = ?',
+      whereArgs: [activity.id],
+    );
+  }
+
+  Future<int> deleteActivity(int id) async {
+    final db = await database;
+    return await db.delete(
+      'activities',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<List<ActivityModel>> getAllActivities() async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'activities',
+      orderBy: 'startTime DESC',
+    );
+    return List.generate(maps.length, (i) => ActivityModel.fromMap(maps[i]));
+  }
+
+  Future<ActivityModel?> getActivity(int id) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'activities',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+    if (maps.isEmpty) return null;
+    
+    final locations = await getLocationsForActivity(id);
+    return ActivityModel.fromMap(maps.first, locations: locations);
+  }
+
+  Future<List<ActivityLocation>> getLocationsForActivity(int activityId) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'activity_locations',
+      where: 'activityId = ?',
+      whereArgs: [activityId],
+      orderBy: 'timestamp ASC',
+    );
+    return List.generate(maps.length, (i) => ActivityLocation.fromMap(maps[i]));
   }
 
   // ==========================================

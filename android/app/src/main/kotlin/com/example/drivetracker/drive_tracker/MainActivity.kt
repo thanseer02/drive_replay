@@ -30,7 +30,8 @@ class MainActivity : FlutterActivity() {
             .setMethodCallHandler { call, result ->
                 when (call.method) {
                     "startTracking" -> {
-                        startTrackingService()
+                        val activityType = call.argument<String>("activityType") ?: "driving"
+                        startTrackingService(activityType)
                         result.success(true)
                     }
                     "stopTracking" -> {
@@ -52,7 +53,8 @@ class MainActivity : FlutterActivity() {
                                 "averageSpeed" to service.getAverageSpeedMps(),
                                 "distance" to service.getAccumulatedDistanceMeters(),
                                 "drivingTime" to service.getDrivingTimeSeconds(),
-                                "stopTime" to service.getStoppedTimeSeconds()
+                                "stopTime" to service.getStoppedTimeSeconds(),
+                                "activityType" to service.getActivityType()
                             ))
                         } else {
                             result.success(mapOf("isTracking" to false))
@@ -111,6 +113,11 @@ class MainActivity : FlutterActivity() {
                                 "drivingTime" to intent.getIntExtra("drivingTime", 0),
                                 "stopTime" to intent.getIntExtra("stopTime", 0),
                                 "acceleration" to intent.getDoubleExtra("acceleration", 0.0),
+                                "steps" to intent.getIntExtra("steps", 0),
+                                "calories" to intent.getDoubleExtra("calories", 0.0),
+                                "pace" to intent.getDoubleExtra("pace", 0.0),
+                                "cadence" to intent.getDoubleExtra("cadence", 0.0),
+                                "activityType" to intent.getStringExtra("activityType"),
                                 "heading" to intent.getDoubleExtra("heading", 0.0),
                                 "altitude" to intent.getDoubleExtra("altitude", 0.0)
                             ))
@@ -126,7 +133,12 @@ class MainActivity : FlutterActivity() {
                                 "averageSpeed" to intent.getDoubleExtra("averageSpeed", 0.0),
                                 "distance" to intent.getDoubleExtra("distance", 0.0),
                                 "drivingTime" to intent.getIntExtra("drivingTime", 0),
-                                "stopTime" to intent.getIntExtra("stopTime", 0)
+                                "stopTime" to intent.getIntExtra("stopTime", 0),
+                                "steps" to intent.getIntExtra("steps", 0),
+                                "calories" to intent.getDoubleExtra("calories", 0.0),
+                                "pace" to intent.getDoubleExtra("pace", 0.0),
+                                "cadence" to intent.getDoubleExtra("cadence", 0.0),
+                                "activityType" to intent.getStringExtra("activityType")
                             ))
                         }
                     }
@@ -159,9 +171,10 @@ class MainActivity : FlutterActivity() {
 
     // ─── Service control ──────────────────────────────────────────────────────
 
-    private fun startTrackingService() {
+    private fun startTrackingService(activityType: String) {
         val intent = Intent(this, TrackingService::class.java).apply {
             action = TrackingService.ACTION_START
+            putExtra("activityType", activityType)
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(intent)
