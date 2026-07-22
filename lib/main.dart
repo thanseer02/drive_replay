@@ -9,6 +9,7 @@ import 'package:drive_tracker/core/theme.dart';
 import 'package:drive_tracker/features/dashboard/viewmodel/dashboard_viewmodel.dart';
 import 'package:drive_tracker/features/history/viewmodel/history_viewmodel.dart';
 import 'package:drive_tracker/features/settings/viewmodel/settings_viewmodel.dart';
+import 'package:drive_tracker/features/logs/services/log_service.dart';
 import 'package:drive_tracker/router.dart';
 import 'package:drive_tracker/services/storage_service.dart';
 import 'package:drive_tracker/database/db_helper.dart';
@@ -82,6 +83,9 @@ void main() async {
           ),
           ChangeNotifierProvider<HistoryViewModel>(
             create: (_) => HistoryViewModel(),
+          ),
+          ChangeNotifierProvider<LogService>(
+            create: (_) => LogService(),
           ),
         ],
         child: const DriveTrackerApp(),

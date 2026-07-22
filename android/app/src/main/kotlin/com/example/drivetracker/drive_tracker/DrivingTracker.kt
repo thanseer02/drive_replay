@@ -141,17 +141,22 @@ class DrivingTracker(private val context: Context, private val bgLooper: Looper)
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(result: LocationResult) {
                 Log.d("TrackerTrace", "[DrivingTracker] onLocationResult: ${result.locations.size} locations received")
+                (context as? TrackingService)?.sendRawEvent("gps", "GPS", "onLocationResult: ${result.locations.size} locations received")
                 result.locations.forEach { processNewLocation(it) }
             }
         }
         fusedLocationClient.requestLocationUpdates(request, locationCallback!!, bgLooper)
+        (context as? TrackingService)?.sendRawEvent("system", "LOCATION", "Requested GPS Updates (highAccuracy=$highAccuracy)")
     }
 
     private fun processNewLocation(location: Location) {
-        Log.d("TrackerTrace", "[DrivingTracker] processNewLocation: lat=${location.latitude}, lng=${location.longitude}, speed=${location.speed}, acc=${location.accuracy}, time=${location.time}")
+        val msg = "lat=${location.latitude.toFloat()}, lng=${location.longitude.toFloat()}, speed=${location.speed}, acc=${location.accuracy}"
+        Log.d("TrackerTrace", "[DrivingTracker] processNewLocation: $msg, time=${location.time}")
+        (context as? TrackingService)?.sendRawEvent("gps", "LOCATION", "Raw Fix: $msg")
         // Relax accuracy threshold to allow for mock locations and urban canyons
         if (location.hasAccuracy() && location.accuracy > 100.0f) {
             Log.d("TrackerTrace", "[DrivingTracker] processNewLocation: REJECTED due to poor accuracy (${location.accuracy} > 100)")
+            (context as? TrackingService)?.sendRawEvent("gps", "LOCATION", "REJECTED Fix (acc > 100m): ${location.accuracy}m", "warning")
             return
         }
 

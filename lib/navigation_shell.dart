@@ -117,6 +117,33 @@ class _TabletShell extends StatelessWidget {
   }
 }
 
+// ─── Shared Navigation Rail Items ──────────────────────────────────────────
+
+List<NavigationRailDestination> _railDestinations(Color primaryColor) {
+  return [
+    NavigationRailDestination(
+      icon: const Icon(Icons.space_dashboard_outlined),
+      selectedIcon: Icon(Icons.space_dashboard, color: primaryColor),
+      label: const Text('Dashboard'),
+    ),
+    NavigationRailDestination(
+      icon: const Icon(Icons.map_outlined),
+      selectedIcon: Icon(Icons.map, color: primaryColor),
+      label: const Text('History'),
+    ),
+    NavigationRailDestination(
+      icon: const Icon(Icons.settings_outlined),
+      selectedIcon: Icon(Icons.settings, color: primaryColor),
+      label: const Text('Settings'),
+    ),
+    NavigationRailDestination(
+      icon: const Icon(Icons.terminal_outlined),
+      selectedIcon: Icon(Icons.terminal, color: primaryColor),
+      label: const Text('Logs'),
+    ),
+  ];
+}
+
 // ─── Shared destinations ──────────────────────────────────────────────────
 
 List<Widget> _destinations(Color primaryColor) {
@@ -138,6 +165,12 @@ List<Widget> _destinations(Color primaryColor) {
       selectedIcon: Icon(Icons.settings, color: primaryColor),
       label: 'Settings',
       tooltip: 'Settings',
+    ),
+    NavigationDestination(
+      icon: const Icon(Icons.terminal_outlined),
+      selectedIcon: Icon(Icons.terminal, color: primaryColor),
+      label: 'Logs',
+      tooltip: 'Logs',
     ),
   ];
 }

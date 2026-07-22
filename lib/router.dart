@@ -5,12 +5,14 @@ import 'package:drive_tracker/features/dashboard/presentation/dashboard_screen.d
 import 'package:drive_tracker/features/history/presentation/history_screen.dart';
 import 'package:drive_tracker/features/settings/presentation/settings_screen.dart';
 import 'package:drive_tracker/features/history/presentation/ride_details_screen.dart';
+import 'package:drive_tracker/features/logs/presentation/logs_screen.dart';
 import 'package:drive_tracker/navigation_shell.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 final GlobalKey<NavigatorState> _dashboardBranchKey = GlobalKey<NavigatorState>(debugLabel: 'dashboardBranch');
 final GlobalKey<NavigatorState> _historyBranchKey = GlobalKey<NavigatorState>(debugLabel: 'historyBranch');
 final GlobalKey<NavigatorState> _settingsBranchKey = GlobalKey<NavigatorState>(debugLabel: 'settingsBranch');
+final GlobalKey<NavigatorState> _logsBranchKey = GlobalKey<NavigatorState>(debugLabel: 'logsBranch');
 
 final GoRouter appRouter = GoRouter(
   navigatorKey: _rootNavigatorKey,
@@ -86,6 +88,18 @@ final GoRouter appRouter = GoRouter(
               path: '/settings',
               pageBuilder: (BuildContext context, GoRouterState state) => buildCustomTransitionPage(
                 const SettingsScreen(),
+                state,
+              ),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          navigatorKey: _logsBranchKey,
+          routes: <RouteBase>[
+            GoRoute(
+              path: '/logs',
+              pageBuilder: (BuildContext context, GoRouterState state) => buildCustomTransitionPage(
+                const LogsScreen(),
                 state,
               ),
             ),

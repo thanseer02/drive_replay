@@ -40,6 +40,7 @@ class TrackingService : Service() {
 
         const val BROADCAST_TELEMETRY = "com.example.drivetracker.TELEMETRY_UPDATE"
         const val BROADCAST_STOPPED = "com.example.drivetracker.TRACKING_STOPPED"
+        const val BROADCAST_RAW_EVENT = "com.example.drivetracker.RAW_EVENT"
 
         @Volatile var isServiceRunning = false
 
@@ -62,6 +63,16 @@ class TrackingService : Service() {
     fun getStartTime(): Long = startTimeMillis
     fun getActivityType(): String = activityType
     fun getLatestTelemetry(): Map<String, Any> = currentTracker?.tick() ?: emptyMap()
+
+    fun sendRawEvent(type: String, category: String, message: String, level: String = "info") {
+        val intent = Intent(BROADCAST_RAW_EVENT).apply {
+            putExtra("type", type)
+            putExtra("category", category)
+            putExtra("message", message)
+            putExtra("level", level)
+        }
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -103,6 +114,7 @@ class TrackingService : Service() {
 
     private fun startTracking(type: String) {
         Log.d("TrackerTrace", "[TrackingService] startTracking: type=$type")
+        sendRawEvent("system", "SERVICE", "TrackingService startTracking (type=$type)")
         isServiceRunning = true
         activeInstance = this
         isTracking = true
@@ -198,6 +210,7 @@ class TrackingService : Service() {
     private fun stopTracking() {
         if (!isTracking) return
         isTracking = false
+        sendRawEvent("system", "SERVICE", "TrackingService stopTracking")
 
         stopTelemetryTicker()
         currentTracker?.stop()

@@ -17,8 +17,10 @@ class MainActivity : FlutterActivity() {
 
     private val CONTROL_CHANNEL = "com.example.drivetracker/tracking_control"
     private val EVENT_CHANNEL = "com.example.drivetracker/tracking_events"
+    private val RAW_EVENT_CHANNEL = "com.example.drivetracker/raw_events"
 
     private var eventSink: EventChannel.EventSink? = null
+    private var rawEventSink: EventChannel.EventSink? = null
     // Fix #5: telemetryReceiver is registered/unregistered in onResume/onPause
     private var telemetryReceiver: BroadcastReceiver? = null
     private var isReceiverRegistered = false
@@ -64,10 +66,20 @@ class MainActivity : FlutterActivity() {
             .setStreamHandler(object : EventChannel.StreamHandler {
                 override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
                     eventSink = events
-                    // Receiver registration is driven by onResume/onPause, not stream lifecycle
                 }
                 override fun onCancel(arguments: Any?) {
                     eventSink = null
+                }
+            })
+
+        // EventChannel: stream raw events to Flutter
+        EventChannel(flutterEngine.dartExecutor.binaryMessenger, RAW_EVENT_CHANNEL)
+            .setStreamHandler(object : EventChannel.StreamHandler {
+                override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+                    rawEventSink = events
+                }
+                override fun onCancel(arguments: Any?) {
+                    rawEventSink = null
                 }
             })
     }
@@ -142,6 +154,19 @@ class MainActivity : FlutterActivity() {
                             ))
                         }
                     }
+                    TrackingService.BROADCAST_RAW_EVENT -> {
+                        val rSink = rawEventSink
+                        if (rSink != null) {
+                            runOnUiThread {
+                                rSink.success(mapOf(
+                                    "type" to intent.getStringExtra("type"),
+                                    "category" to intent.getStringExtra("category"),
+                                    "message" to intent.getStringExtra("message"),
+                                    "level" to intent.getStringExtra("level")
+                                ))
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -154,6 +179,7 @@ class MainActivity : FlutterActivity() {
         val filter = IntentFilter().apply {
             addAction(TrackingService.BROADCAST_TELEMETRY)
             addAction(TrackingService.BROADCAST_STOPPED)
+            addAction(TrackingService.BROADCAST_RAW_EVENT)
         }
         // Fix #12/#13: Use LocalBroadcastManager — internal only, no RECEIVER_EXPORTED needed
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver, filter)

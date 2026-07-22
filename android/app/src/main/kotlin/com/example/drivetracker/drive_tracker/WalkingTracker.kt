@@ -155,10 +155,12 @@ class WalkingTracker(private val context: Context, private val bgLooper: Looper)
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(result: LocationResult) {
                 Log.d("TrackerTrace", "[WalkingTracker] onLocationResult: ${result.locations.size} locations received")
+                (context as? TrackingService)?.sendRawEvent("gps", "GPS", "onLocationResult: ${result.locations.size} locations received")
                 result.locations.forEach { processNewLocation(it) }
             }
         }
         fusedLocationClient.requestLocationUpdates(request, locationCallback!!, bgLooper)
+        (context as? TrackingService)?.sendRawEvent("system", "LOCATION", "Requested GPS Updates (Walking)")
     }
 
     private fun startSensors() {
@@ -169,29 +171,28 @@ class WalkingTracker(private val context: Context, private val bgLooper: Looper)
 
     override fun onSensorChanged(event: SensorEvent?) {
         if (event?.sensor?.type == Sensor.TYPE_STEP_COUNTER) {
-            val currentSteps = event.values[0].toInt()
+            val steps = event.values[0].toInt()
             if (initialStepCount < 0) {
-                initialStepCount = currentSteps
+                initialStepCount = steps
             }
-            totalSteps += (currentSteps - initialStepCount)
-            initialStepCount = currentSteps
-            
-            // If we are getting steps but GPS says we aren't moving, override speed heuristically?
-            // A typical step is ~0.76 meters.
-            if (isWalkingStopped && totalSteps > 0) {
-                isWalkingStopped = false
-                currentSpeedMps = 1.0 // 1 m/s heuristic when walking without GPS ping
+            val currentSteps = steps - initialStepCount
+            if (currentSteps > totalSteps) {
+                totalSteps = currentSteps
             }
+            (context as? TrackingService)?.sendRawEvent("sensor", "STEP", "Steps: $totalSteps")
         }
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 
     private fun processNewLocation(location: Location) {
-        Log.d("TrackerTrace", "[WalkingTracker] processNewLocation: lat=${location.latitude}, lng=${location.longitude}, speed=${location.speed}, acc=${location.accuracy}, time=${location.time}")
+        val msg = "lat=${location.latitude.toFloat()}, lng=${location.longitude.toFloat()}, speed=${location.speed}, acc=${location.accuracy}"
+        Log.d("TrackerTrace", "[WalkingTracker] processNewLocation: $msg, time=${location.time}")
+        (context as? TrackingService)?.sendRawEvent("gps", "LOCATION", "Raw Fix: $msg")
         // Relax accuracy threshold to allow for mock locations and urban canyons
         if (location.hasAccuracy() && location.accuracy > 100.0f) {
             Log.d("TrackerTrace", "[WalkingTracker] processNewLocation: REJECTED due to poor accuracy (${location.accuracy} > 100)")
+            (context as? TrackingService)?.sendRawEvent("gps", "LOCATION", "REJECTED Fix (acc > 100m): ${location.accuracy}m", "warning")
             return
         }
 
