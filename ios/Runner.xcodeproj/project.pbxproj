@@ -7,14 +7,51 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0468DF0A91258FE974AF13C7 /* Pods_Runner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D21AD9623B21E8699E632409 /* Pods_Runner.framework */; };
+		0830BA49277640118D39F06C /* dog-ipad-pro.png in Resources */ = {isa = PBXBuildFile; fileRef = 176624993DE2CEC210E2B17C /* dog-ipad-pro.png */; };
+		13EAF99EF0B8FF92BEBA2CEF /* fox-ipad-pro.png in Resources */ = {isa = PBXBuildFile; fileRef = 29E443ECC825189F2C6A5484 /* fox-ipad-pro.png */; };
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
+		1F4ECEF0DFDCBF7DA2683934 /* dark_icon-2x.png in Resources */ = {isa = PBXBuildFile; fileRef = C722BAA7449BC5FCDF43385D /* dark_icon-2x.png */; };
+		2708BB29E9322088F1C70862 /* dog-3x.png in Resources */ = {isa = PBXBuildFile; fileRef = CE00F4D0E8B4AFB4F63A15F1 /* dog-3x.png */; };
+		2DE7B599F9471F748A90B474 /* cat-3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7DEEE9C941600BE0E4719EC0 /* cat-3x.png */; };
 		331C808B294A63AB00263BE5 /* RunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 331C807B294A618700263BE5 /* RunnerTests.swift */; };
+		358D92565BA553B2F8E3AB03 /* panda-2x.png in Resources */ = {isa = PBXBuildFile; fileRef = C85AB3044FD057A499517BD2 /* panda-2x.png */; };
+		38CB5FDBE39FBD3D332A1C0B /* dark_icon-ipad-2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 5FCAD0E67C4BFB78CEB6F5E2 /* dark_icon-ipad-2x.png */; };
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
+		3EAC2B80409A6DE3BDFB36C1 /* cat-2x.png in Resources */ = {isa = PBXBuildFile; fileRef = DC72C35CD12C92C881A4DF8A /* cat-2x.png */; };
+		43C6E68853D733596A838C9E /* festive_icon-ipad-pro.png in Resources */ = {isa = PBXBuildFile; fileRef = 026B36BE0A1F559C50C7C038 /* festive_icon-ipad-pro.png */; };
+		442B0914FE4E4139B0E619F4 /* rocket-ipad-2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 5C88E6D22A73AC6233F4F697 /* rocket-ipad-2x.png */; };
+		4AB1FB996B8013FE37AC0431 /* festive_icon-ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = 731CB26489D595E571EB7024 /* festive_icon-ipad.png */; };
+		4CB7B01B27EA5396FECD11FD /* rocket-ipad-pro.png in Resources */ = {isa = PBXBuildFile; fileRef = BA05B5FCC61D483B4AB68591 /* rocket-ipad-pro.png */; };
+		51ECE3DA038C998D96816E72 /* panda-ipad-pro.png in Resources */ = {isa = PBXBuildFile; fileRef = DD6F6425268CFDE35719C630 /* panda-ipad-pro.png */; };
+		5202F3A38FEE09A3E934B753 /* rocket-ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = C0E2506E34E3CFE8C02171FA /* rocket-ipad.png */; };
+		522C7ED499064161E0B32E30 /* cat-ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = C2AA5BBFAF918BD3D78D0505 /* cat-ipad.png */; };
+		5D0B518220F2023C6F3EFB0A /* dog-ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = 5B9D40F7E69B92E72D52CFC0 /* dog-ipad.png */; };
+		6CA6355A6A6116769FE92F05 /* dog-2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 98D835DA1840A280425F41FE /* dog-2x.png */; };
+		73AF1EFDA65AA59A0C7357CE /* fox-3x.png in Resources */ = {isa = PBXBuildFile; fileRef = AB10531E67836BF1EA6287B7 /* fox-3x.png */; };
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
 		7884E8682EC3CC0700C636F2 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7884E8672EC3CC0400C636F2 /* SceneDelegate.swift */; };
+		85AE1D8F2F359285D319CCFF /* panda-ipad-2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 7ED6A25042E5A8845E08B62D /* panda-ipad-2x.png */; };
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
+		98D61FAAB078465CE1754EEA /* fox-ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = 78D47777D38316DDC21979D5 /* fox-ipad.png */; };
+		A72CCB92D2881C6D0C6E6447 /* dark_icon-3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 8414DBFF4B8DA05F5469DBA0 /* dark_icon-3x.png */; };
+		B0EA9A911E77D2A89C8B0989 /* dog-ipad-2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 8CC43D9573BDA3CF4B71B346 /* dog-ipad-2x.png */; };
+		B45B207C017E5F50964CB724 /* panda-3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 22D17F2D81D32466CE5B65F7 /* panda-3x.png */; };
+		B668EA4AA0CCB82A3B05A8EB /* fox-ipad-2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E60BF2CCF43DDB984C812BD2 /* fox-ipad-2x.png */; };
+		B68DD6734E756F9CDD801755 /* dark_icon-ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = 5025387DBA5A92CE9E5B3633 /* dark_icon-ipad.png */; };
+		BC3FA1351DFF85ECDE235CF1 /* festive_icon-ipad-2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3C4BB042E1BC1C05F21BEA9F /* festive_icon-ipad-2x.png */; };
+		BF833B7BDD14A05500470740 /* fox-2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E96949BCCE9A53A5EFE8CA12 /* fox-2x.png */; };
+		C22ADE7208C121E199D8F2BD /* festive_icon-3x.png in Resources */ = {isa = PBXBuildFile; fileRef = A938C65FDACBC0ADB113DE8C /* festive_icon-3x.png */; };
+		CFD10A41001A47B1FCA01A10 /* dark_icon-ipad-pro.png in Resources */ = {isa = PBXBuildFile; fileRef = 86D4F330F574017DA39A9747 /* dark_icon-ipad-pro.png */; };
+		D884B7EFE0C58D589C609045 /* cat-ipad-pro.png in Resources */ = {isa = PBXBuildFile; fileRef = 488A2F61B2C4AE3E0DABFD93 /* cat-ipad-pro.png */; };
+		EA1CE29EDBDDCFE49FFBB453 /* rocket-2x.png in Resources */ = {isa = PBXBuildFile; fileRef = C313A8D2E4D8F71A4019F55A /* rocket-2x.png */; };
+		F15F14D198C219AC59B4D1C6 /* festive_icon-2x.png in Resources */ = {isa = PBXBuildFile; fileRef = ACB3EF982DBCEBFB4CCA4B6E /* festive_icon-2x.png */; };
+		F49026C3A7A78E79AB278C9B /* panda-ipad.png in Resources */ = {isa = PBXBuildFile; fileRef = F2FB2DD29E164E5985CA60D9 /* panda-ipad.png */; };
+		F6B0DB883C7243570497EED2 /* rocket-3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 379C04677B8802F831DAF9FC /* rocket-3x.png */; };
+		F7898D2BB4D4FA9CF0DE2575 /* cat-ipad-2x.png in Resources */ = {isa = PBXBuildFile; fileRef = DDD41CC7267E0DC78E7C2DC4 /* cat-ipad-2x.png */; };
+		F953A1FD7EE1FE7F890A1FB3 /* Pods_RunnerTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 76E90B5C3933E345B746EE6E /* Pods_RunnerTests.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -41,15 +78,38 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		026B36BE0A1F559C50C7C038 /* festive_icon-ipad-pro.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = "festive_icon-ipad-pro.png"; sourceTree = "<group>"; };
 		1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GeneratedPluginRegistrant.h; sourceTree = "<group>"; };
 		1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GeneratedPluginRegistrant.m; sourceTree = "<group>"; };
+		176624993DE2CEC210E2B17C /* dog-ipad-pro.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = "dog-ipad-pro.png"; sourceTree = "<group>"; };
+		189729BA592C14D96D975170 /* Pods-RunnerTests.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.profile.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.profile.xcconfig"; sourceTree = "<group>"; };
+		1F13CDFC41F18FBE2583E893 /* Pods-RunnerTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.debug.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.debug.xcconfig"; sourceTree = "<group>"; };
+		22D17F2D81D32466CE5B65F7 /* panda-3x.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = "panda-3x.png"; sourceTree = "<group>"; };
+		29E443ECC825189F2C6A5484 /* fox-ipad-pro.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = "fox-ipad-pro.png"; sourceTree = "<group>"; };
 		331C807B294A618700263BE5 /* RunnerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunnerTests.swift; sourceTree = "<group>"; };
 		331C8081294A63A400263BE5 /* RunnerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RunnerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		379C04677B8802F831DAF9FC /* rocket-3x.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = "rocket-3x.png"; sourceTree = "<group>"; };
 		3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = AppFrameworkInfo.plist; path = Flutter/AppFrameworkInfo.plist; sourceTree = "<group>"; };
+		3C4BB042E1BC1C05F21BEA9F /* festive_icon-ipad-2x.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = "festive_icon-ipad-2x.png"; sourceTree = "<group>"; };
+		488A2F61B2C4AE3E0DABFD93 /* cat-ipad-pro.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = "cat-ipad-pro.png"; sourceTree = "<group>"; };
+		5025387DBA5A92CE9E5B3633 /* dark_icon-ipad.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = "dark_icon-ipad.png"; sourceTree = "<group>"; };
+		5B9D40F7E69B92E72D52CFC0 /* dog-ipad.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = "dog-ipad.png"; sourceTree = "<group>"; };
+		5C88E6D22A73AC6233F4F697 /* rocket-ipad-2x.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = "rocket-ipad-2x.png"; sourceTree = "<group>"; };
+		5FCAD0E67C4BFB78CEB6F5E2 /* dark_icon-ipad-2x.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = "dark_icon-ipad-2x.png"; sourceTree = "<group>"; };
+		731CB26489D595E571EB7024 /* festive_icon-ipad.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = "festive_icon-ipad.png"; sourceTree = "<group>"; };
 		74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Runner-Bridging-Header.h"; sourceTree = "<group>"; };
 		74858FAE1ED2DC5600515810 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		76E90B5C3933E345B746EE6E /* Pods_RunnerTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RunnerTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7884E8672EC3CC0400C636F2 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		78D47777D38316DDC21979D5 /* fox-ipad.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = "fox-ipad.png"; sourceTree = "<group>"; };
 		7AFA3C8E1D35360C0083082E /* Release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Release.xcconfig; path = Flutter/Release.xcconfig; sourceTree = "<group>"; };
+		7DEEE9C941600BE0E4719EC0 /* cat-3x.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = "cat-3x.png"; sourceTree = "<group>"; };
+		7ED6A25042E5A8845E08B62D /* panda-ipad-2x.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = "panda-ipad-2x.png"; sourceTree = "<group>"; };
+		8414DBFF4B8DA05F5469DBA0 /* dark_icon-3x.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = "dark_icon-3x.png"; sourceTree = "<group>"; };
+		86D4F330F574017DA39A9747 /* dark_icon-ipad-pro.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = "dark_icon-ipad-pro.png"; sourceTree = "<group>"; };
+		8ABE1C85EF997EA81E6F2D0B /* Pods-Runner.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.profile.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.profile.xcconfig"; sourceTree = "<group>"; };
+		8CC43D9573BDA3CF4B71B346 /* dog-ipad-2x.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = "dog-ipad-2x.png"; sourceTree = "<group>"; };
+		8CD3434FFD370FB2659218B2 /* Pods-Runner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"; sourceTree = "<group>"; };
 		9740EEB21CF90195004384FC /* Debug.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Debug.xcconfig; path = Flutter/Debug.xcconfig; sourceTree = "<group>"; };
 		9740EEB31CF90195004384FC /* Generated.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; name = Generated.xcconfig; path = Flutter/Generated.xcconfig; sourceTree = "<group>"; };
 		97C146EE1CF9000F007C117D /* Runner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Runner.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -57,13 +117,42 @@
 		97C146FD1CF9000F007C117D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		97C147001CF9000F007C117D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		97C147021CF9000F007C117D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		98D835DA1840A280425F41FE /* dog-2x.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = "dog-2x.png"; sourceTree = "<group>"; };
+		9C478D9225C270EFDB6CF4E9 /* Pods-Runner.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.debug.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"; sourceTree = "<group>"; };
+		A5F97528A5E3BDAAF6999112 /* Pods-RunnerTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.release.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.release.xcconfig"; sourceTree = "<group>"; };
+		A938C65FDACBC0ADB113DE8C /* festive_icon-3x.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = "festive_icon-3x.png"; sourceTree = "<group>"; };
+		AB10531E67836BF1EA6287B7 /* fox-3x.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = "fox-3x.png"; sourceTree = "<group>"; };
+		ACB3EF982DBCEBFB4CCA4B6E /* festive_icon-2x.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = "festive_icon-2x.png"; sourceTree = "<group>"; };
+		BA05B5FCC61D483B4AB68591 /* rocket-ipad-pro.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = "rocket-ipad-pro.png"; sourceTree = "<group>"; };
+		C0E2506E34E3CFE8C02171FA /* rocket-ipad.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = "rocket-ipad.png"; sourceTree = "<group>"; };
+		C2AA5BBFAF918BD3D78D0505 /* cat-ipad.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = "cat-ipad.png"; sourceTree = "<group>"; };
+		C313A8D2E4D8F71A4019F55A /* rocket-2x.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = "rocket-2x.png"; sourceTree = "<group>"; };
+		C722BAA7449BC5FCDF43385D /* dark_icon-2x.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = "dark_icon-2x.png"; sourceTree = "<group>"; };
+		C85AB3044FD057A499517BD2 /* panda-2x.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = "panda-2x.png"; sourceTree = "<group>"; };
+		CE00F4D0E8B4AFB4F63A15F1 /* dog-3x.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = "dog-3x.png"; sourceTree = "<group>"; };
+		D21AD9623B21E8699E632409 /* Pods_Runner.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Runner.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		DC72C35CD12C92C881A4DF8A /* cat-2x.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = "cat-2x.png"; sourceTree = "<group>"; };
+		DD6F6425268CFDE35719C630 /* panda-ipad-pro.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = "panda-ipad-pro.png"; sourceTree = "<group>"; };
+		DDD41CC7267E0DC78E7C2DC4 /* cat-ipad-2x.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = "cat-ipad-2x.png"; sourceTree = "<group>"; };
+		E60BF2CCF43DDB984C812BD2 /* fox-ipad-2x.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = "fox-ipad-2x.png"; sourceTree = "<group>"; };
+		E96949BCCE9A53A5EFE8CA12 /* fox-2x.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = "fox-2x.png"; sourceTree = "<group>"; };
+		F2FB2DD29E164E5985CA60D9 /* panda-ipad.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = "panda-ipad.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		0904F1437E82F63DBCFCFB42 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F953A1FD7EE1FE7F890A1FB3 /* Pods_RunnerTests.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		97C146EB1CF9000F007C117D /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0468DF0A91258FE974AF13C7 /* Pods_Runner.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -76,6 +165,15 @@
 				331C807B294A618700263BE5 /* RunnerTests.swift */,
 			);
 			path = RunnerTests;
+			sourceTree = "<group>";
+		};
+		37B26A709AF1F45EA536DF69 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				D21AD9623B21E8699E632409 /* Pods_Runner.framework */,
+				76E90B5C3933E345B746EE6E /* Pods_RunnerTests.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		9740EEB11CF90186004384FC /* Flutter */ = {
@@ -96,6 +194,8 @@
 				97C146F01CF9000F007C117D /* Runner */,
 				97C146EF1CF9000F007C117D /* Products */,
 				331C8082294A63A400263BE5 /* RunnerTests */,
+				DD45070D13543D1B1AEC98A9 /* Pods */,
+				37B26A709AF1F45EA536DF69 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -120,8 +220,57 @@
 				74858FAE1ED2DC5600515810 /* AppDelegate.swift */,
 				7884E8672EC3CC0400C636F2 /* SceneDelegate.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
+				DC72C35CD12C92C881A4DF8A /* cat-2x.png */,
+				7DEEE9C941600BE0E4719EC0 /* cat-3x.png */,
+				DDD41CC7267E0DC78E7C2DC4 /* cat-ipad-2x.png */,
+				488A2F61B2C4AE3E0DABFD93 /* cat-ipad-pro.png */,
+				C2AA5BBFAF918BD3D78D0505 /* cat-ipad.png */,
+				C722BAA7449BC5FCDF43385D /* dark_icon-2x.png */,
+				8414DBFF4B8DA05F5469DBA0 /* dark_icon-3x.png */,
+				5FCAD0E67C4BFB78CEB6F5E2 /* dark_icon-ipad-2x.png */,
+				86D4F330F574017DA39A9747 /* dark_icon-ipad-pro.png */,
+				5025387DBA5A92CE9E5B3633 /* dark_icon-ipad.png */,
+				98D835DA1840A280425F41FE /* dog-2x.png */,
+				CE00F4D0E8B4AFB4F63A15F1 /* dog-3x.png */,
+				8CC43D9573BDA3CF4B71B346 /* dog-ipad-2x.png */,
+				176624993DE2CEC210E2B17C /* dog-ipad-pro.png */,
+				5B9D40F7E69B92E72D52CFC0 /* dog-ipad.png */,
+				ACB3EF982DBCEBFB4CCA4B6E /* festive_icon-2x.png */,
+				A938C65FDACBC0ADB113DE8C /* festive_icon-3x.png */,
+				3C4BB042E1BC1C05F21BEA9F /* festive_icon-ipad-2x.png */,
+				026B36BE0A1F559C50C7C038 /* festive_icon-ipad-pro.png */,
+				731CB26489D595E571EB7024 /* festive_icon-ipad.png */,
+				E96949BCCE9A53A5EFE8CA12 /* fox-2x.png */,
+				AB10531E67836BF1EA6287B7 /* fox-3x.png */,
+				E60BF2CCF43DDB984C812BD2 /* fox-ipad-2x.png */,
+				29E443ECC825189F2C6A5484 /* fox-ipad-pro.png */,
+				78D47777D38316DDC21979D5 /* fox-ipad.png */,
+				C85AB3044FD057A499517BD2 /* panda-2x.png */,
+				22D17F2D81D32466CE5B65F7 /* panda-3x.png */,
+				7ED6A25042E5A8845E08B62D /* panda-ipad-2x.png */,
+				DD6F6425268CFDE35719C630 /* panda-ipad-pro.png */,
+				F2FB2DD29E164E5985CA60D9 /* panda-ipad.png */,
+				C313A8D2E4D8F71A4019F55A /* rocket-2x.png */,
+				379C04677B8802F831DAF9FC /* rocket-3x.png */,
+				5C88E6D22A73AC6233F4F697 /* rocket-ipad-2x.png */,
+				BA05B5FCC61D483B4AB68591 /* rocket-ipad-pro.png */,
+				C0E2506E34E3CFE8C02171FA /* rocket-ipad.png */,
 			);
 			path = Runner;
+			sourceTree = "<group>";
+		};
+		DD45070D13543D1B1AEC98A9 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				9C478D9225C270EFDB6CF4E9 /* Pods-Runner.debug.xcconfig */,
+				8CD3434FFD370FB2659218B2 /* Pods-Runner.release.xcconfig */,
+				8ABE1C85EF997EA81E6F2D0B /* Pods-Runner.profile.xcconfig */,
+				1F13CDFC41F18FBE2583E893 /* Pods-RunnerTests.debug.xcconfig */,
+				A5F97528A5E3BDAAF6999112 /* Pods-RunnerTests.release.xcconfig */,
+				189729BA592C14D96D975170 /* Pods-RunnerTests.profile.xcconfig */,
+			);
+			name = Pods;
+			path = Pods;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -131,8 +280,10 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 331C8087294A63A400263BE5 /* Build configuration list for PBXNativeTarget "RunnerTests" */;
 			buildPhases = (
+				B94769C18D6724DF1CD6F2AC /* [CP] Check Pods Manifest.lock */,
 				331C807D294A63A400263BE5 /* Sources */,
 				331C807F294A63A400263BE5 /* Resources */,
+				0904F1437E82F63DBCFCFB42 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -148,12 +299,15 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 97C147051CF9000F007C117D /* Build configuration list for PBXNativeTarget "Runner" */;
 			buildPhases = (
+				4362A39F7A84C8A61DF7D3CC /* [CP] Check Pods Manifest.lock */,
 				9740EEB61CF901F6004384FC /* Run Script */,
 				97C146EA1CF9000F007C117D /* Sources */,
 				97C146EB1CF9000F007C117D /* Frameworks */,
 				97C146EC1CF9000F007C117D /* Resources */,
 				9705A1C41CF9048500538489 /* Embed Frameworks */,
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
+				0531E0895EAA64909A10950E /* [CP] Embed Pods Frameworks */,
+				532D9EC2C43938FF9E6F0C7C /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -219,12 +373,64 @@
 				3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */,
 				97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */,
 				97C146FC1CF9000F007C117D /* Main.storyboard in Resources */,
+				3EAC2B80409A6DE3BDFB36C1 /* cat-2x.png in Resources */,
+				2DE7B599F9471F748A90B474 /* cat-3x.png in Resources */,
+				F7898D2BB4D4FA9CF0DE2575 /* cat-ipad-2x.png in Resources */,
+				D884B7EFE0C58D589C609045 /* cat-ipad-pro.png in Resources */,
+				522C7ED499064161E0B32E30 /* cat-ipad.png in Resources */,
+				1F4ECEF0DFDCBF7DA2683934 /* dark_icon-2x.png in Resources */,
+				A72CCB92D2881C6D0C6E6447 /* dark_icon-3x.png in Resources */,
+				38CB5FDBE39FBD3D332A1C0B /* dark_icon-ipad-2x.png in Resources */,
+				CFD10A41001A47B1FCA01A10 /* dark_icon-ipad-pro.png in Resources */,
+				B68DD6734E756F9CDD801755 /* dark_icon-ipad.png in Resources */,
+				6CA6355A6A6116769FE92F05 /* dog-2x.png in Resources */,
+				2708BB29E9322088F1C70862 /* dog-3x.png in Resources */,
+				B0EA9A911E77D2A89C8B0989 /* dog-ipad-2x.png in Resources */,
+				0830BA49277640118D39F06C /* dog-ipad-pro.png in Resources */,
+				5D0B518220F2023C6F3EFB0A /* dog-ipad.png in Resources */,
+				F15F14D198C219AC59B4D1C6 /* festive_icon-2x.png in Resources */,
+				C22ADE7208C121E199D8F2BD /* festive_icon-3x.png in Resources */,
+				BC3FA1351DFF85ECDE235CF1 /* festive_icon-ipad-2x.png in Resources */,
+				43C6E68853D733596A838C9E /* festive_icon-ipad-pro.png in Resources */,
+				4AB1FB996B8013FE37AC0431 /* festive_icon-ipad.png in Resources */,
+				BF833B7BDD14A05500470740 /* fox-2x.png in Resources */,
+				73AF1EFDA65AA59A0C7357CE /* fox-3x.png in Resources */,
+				B668EA4AA0CCB82A3B05A8EB /* fox-ipad-2x.png in Resources */,
+				13EAF99EF0B8FF92BEBA2CEF /* fox-ipad-pro.png in Resources */,
+				98D61FAAB078465CE1754EEA /* fox-ipad.png in Resources */,
+				358D92565BA553B2F8E3AB03 /* panda-2x.png in Resources */,
+				B45B207C017E5F50964CB724 /* panda-3x.png in Resources */,
+				85AE1D8F2F359285D319CCFF /* panda-ipad-2x.png in Resources */,
+				51ECE3DA038C998D96816E72 /* panda-ipad-pro.png in Resources */,
+				F49026C3A7A78E79AB278C9B /* panda-ipad.png in Resources */,
+				EA1CE29EDBDDCFE49FFBB453 /* rocket-2x.png in Resources */,
+				F6B0DB883C7243570497EED2 /* rocket-3x.png in Resources */,
+				442B0914FE4E4139B0E619F4 /* rocket-ipad-2x.png in Resources */,
+				4CB7B01B27EA5396FECD11FD /* rocket-ipad-pro.png in Resources */,
+				5202F3A38FEE09A3E934B753 /* rocket-ipad.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		0531E0895EAA64909A10950E /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		3B06AD1E1E4923F5004D2608 /* Thin Binary */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
@@ -241,6 +447,45 @@
 			shellPath = /bin/sh;
 			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" embed_and_thin";
 		};
+		4362A39F7A84C8A61DF7D3CC /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-Runner-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		532D9EC2C43938FF9E6F0C7C /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		9740EEB61CF901F6004384FC /* Run Script */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
@@ -255,6 +500,28 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" build";
+		};
+		B94769C18D6724DF1CD6F2AC /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-RunnerTests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -382,6 +649,7 @@
 		};
 		331C8088294A63A400263BE5 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 1F13CDFC41F18FBE2583E893 /* Pods-RunnerTests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
@@ -399,6 +667,7 @@
 		};
 		331C8089294A63A400263BE5 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = A5F97528A5E3BDAAF6999112 /* Pods-RunnerTests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
@@ -414,6 +683,7 @@
 		};
 		331C808A294A63A400263BE5 /* Profile */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 189729BA592C14D96D975170 /* Pods-RunnerTests.profile.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;

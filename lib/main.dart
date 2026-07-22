@@ -32,48 +32,47 @@ bool _handlePlatformError(Object error, StackTrace stack) {
   return true; // Prevents propagation
 }
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+void main() {
+  runZonedGuarded(() async {
+    WidgetsFlutterBinding.ensureInitialized();
 
-  // Crash-safe handlers
-  FlutterError.onError = _handleFlutterError;
-  PlatformDispatcher.instance.onError = _handlePlatformError;
+    // Crash-safe handlers
+    FlutterError.onError = _handleFlutterError;
+    PlatformDispatcher.instance.onError = _handlePlatformError;
 
-  // Branded error widget for release mode
-  ErrorWidget.builder = (FlutterErrorDetails details) {
-    return const _AppCrashFallback();
-  };
+    // Branded error widget for release mode
+    ErrorWidget.builder = (FlutterErrorDetails details) {
+      return const _AppCrashFallback();
+    };
 
-  // System UI styling
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.light,
-    ),
-  );
+    // System UI styling
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+      ),
+    );
 
-  // Support all orientations
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-    DeviceOrientation.landscapeLeft,
-    DeviceOrientation.landscapeRight,
-  ]);
+    // Support all orientations
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
 
-  final prefs = await SharedPreferences.getInstance();
-  final storageService = StorageService(prefs);
-  ServiceLocator.register<StorageService>(storageService);
+    final prefs = await SharedPreferences.getInstance();
+    final storageService = StorageService(prefs);
+    ServiceLocator.register<StorageService>(storageService);
 
-  // Register core services early to prevent race conditions during ViewModel creation
-  final dbHelper = DBHelper.instance;
-  await dbHelper.database;
-  final rideRepository = RideRepositoryImpl(dbHelper);
-  ServiceLocator.register<RideRepository>(rideRepository);
-  ServiceLocator.register<PermissionService>(PermissionService());
+    // Register core services early to prevent race conditions during ViewModel creation
+    final dbHelper = DBHelper.instance;
+    await dbHelper.database;
+    final rideRepository = RideRepositoryImpl(dbHelper);
+    ServiceLocator.register<RideRepository>(rideRepository);
+    ServiceLocator.register<PermissionService>(PermissionService());
 
-
-  runZonedGuarded(
-    () => runApp(
+    runApp(
       MultiProvider(
         providers: [
           ChangeNotifierProvider<SettingsViewModel>(
@@ -91,11 +90,10 @@ void main() async {
         ],
         child: const DriveTrackerApp(),
       ),
-    ),
-    (error, stack) {
-      debugPrint('⚠️ Zone Error: $error\n$stack');
-    },
-  );
+    );
+  }, (error, stack) {
+    debugPrint('⚠️ Zone Error: $error\n$stack');
+  });
 }
 
 class DriveTrackerApp extends StatelessWidget {
