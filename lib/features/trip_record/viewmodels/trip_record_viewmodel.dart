@@ -42,8 +42,8 @@ class TripRecordViewModel extends ChangeNotifier {
   void _onReceiveTaskData(Object data) {
     if (data is Map) {
       if (data['type'] == 'UPDATE') {
-        _currentSpeed = data['speed'] ?? 0.0;
-        _totalDistance = data['distance'] ?? 0.0;
+        _currentSpeed = (data['speed'] as num?)?.toDouble() ?? 0.0;
+        _totalDistance = (data['distance'] as num?)?.toDouble() ?? 0.0;
         notifyListeners();
       }
     }
@@ -97,7 +97,13 @@ class TripRecordViewModel extends ChangeNotifier {
     _stopTimer();
     
     if (_currentTripId != null) {
-      await _repository.endTrip(_currentTripId!, DateTime.now(), _totalDistance);
+      if (_totalDistance < 10.0) {
+        // If they traveled less than 10 meters (basically 0 km/h the whole time), discard it.
+        LoggerService.info('Trip $_currentTripId discarded: Distance was less than 10 meters.');
+        await _repository.softDeleteTrip(_currentTripId!);
+      } else {
+        await _repository.endTrip(_currentTripId!, DateTime.now(), _totalDistance);
+      }
     }
     
     _state = TripState.idle;

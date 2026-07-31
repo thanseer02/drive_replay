@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:drive_replay/core/di/dependency_injection.dart';
 import 'package:drive_replay/core/theme/app_colors.dart';
+import 'package:drive_replay/core/theme/app_theme.dart';
 import 'package:drive_replay/features/trip_record/viewmodels/trip_record_viewmodel.dart';
 
 class TripRecordScreen extends StatelessWidget {
@@ -140,7 +141,30 @@ class _TripRecordView extends StatelessWidget {
           label: 'START TRIP',
           color: Colors.green,
           icon: Icons.play_arrow,
-          onTap: () => vm.startTrip(),
+          onTap: () {
+            showDialog(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                backgroundColor: AppColors.surface,
+                title: Text('Start Trip?', style: AppTextStyles.tss18w700),
+                content: Text('Are you ready to begin recording your trip?', style: AppTextStyles.tss14w400.copyWith(color: Colors.white70)),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(ctx).pop(),
+                    child: Text('Cancel', style: AppTextStyles.tss14w400.copyWith(color: Colors.grey)),
+                  ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                    onPressed: () {
+                      Navigator.of(ctx).pop();
+                      vm.startTrip();
+                    },
+                    child: Text('Start', style: AppTextStyles.tss14w700.copyWith(color: Colors.white)),
+                  ),
+                ],
+              ),
+            );
+          },
         );
       case TripState.recording:
         return Row(

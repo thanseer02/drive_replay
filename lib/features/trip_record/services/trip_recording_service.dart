@@ -52,7 +52,6 @@ class TripTaskHandler extends TaskHandler {
       locationSettings: const LocationSettings(
         accuracy: LocationAccuracy.bestForNavigation,
         distanceFilter: 3, // 3 meters strictly to avoid battery drain
-        timeLimit: Duration(seconds: 2), // Hardware goes to sleep between fetches
       ),
     ).listen((Position position) {
       _processLocation(position);
