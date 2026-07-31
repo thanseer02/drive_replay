@@ -61,6 +61,14 @@ class AppDatabase extends _$AppDatabase {
         // Ensure foreign keys are strictly enforced
         await customStatement('PRAGMA foreign_keys = ON;');
         
+        // Trip Integrity Checker: Auto-close any "Recording" trips older than 12 hours
+        // This prevents orphaned active trips if the isolate crashed and failed to recover.
+        final cutoffTime = DateTime.now().subtract(const Duration(hours: 12));
+        final cutoffSeconds = cutoffTime.millisecondsSinceEpoch ~/ 1000;
+        await customStatement(
+          "UPDATE trips SET status = 'Finished' WHERE status = 'Recording' AND strftime('%s', start_time) < '$cutoffSeconds'"
+        );
+        
         // Create indexes for fast lookup (can also be defined via custom statement if complex)
         await customStatement('CREATE INDEX IF NOT EXISTS idx_trip_points_trip_time ON trip_points (trip_id, timestamp);');
         await customStatement('CREATE INDEX IF NOT EXISTS idx_speed_trip_time ON speed_samples (trip_id, timestamp);');
