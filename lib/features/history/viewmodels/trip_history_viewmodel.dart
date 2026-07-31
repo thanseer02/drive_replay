@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:drive_replay/core/services/local_db/app_database.dart';
 import 'package:drive_replay/core/domain/repositories/trip_repository.dart';
-import 'package:drive_replay/core/logger/app_logger.dart';
+import 'package:drive_replay/core/logger/logger_service.dart';
 
 class TripHistoryViewModel extends ChangeNotifier {
   final TripRepository _repository;
@@ -57,7 +57,7 @@ class TripHistoryViewModel extends ChangeNotifier {
       
       _calculateStats();
     } catch (e) {
-      AppLogger.e('Failed to fetch initial trips: $e');
+      LoggerService.error('Failed to fetch initial trips: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -86,7 +86,7 @@ class TripHistoryViewModel extends ChangeNotifier {
       _hasMore = results.length == _limit;
       _calculateStats();
     } catch (e) {
-      AppLogger.e('Failed to fetch next page trips: $e');
+      LoggerService.error('Failed to fetch next page trips: $e');
     } finally {
       _isLoading = false;
       notifyListeners();

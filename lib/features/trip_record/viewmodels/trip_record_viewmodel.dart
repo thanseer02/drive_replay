@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:drive_replay/features/trip_record/services/trip_recording_service.dart';
-import 'package:drive_replay/core/logger/app_logger.dart';
+import 'package:drive_replay/core/logger/logger_service.dart';
 
 enum TripState { idle, recording, paused }
 
@@ -42,7 +42,7 @@ class TripRecordViewModel extends ChangeNotifier {
       _totalDistance = 0.0;
       notifyListeners();
     } else {
-      AppLogger.e('Failed to start Foreground Service');
+      LoggerService.error('Failed to start Foreground Service');
     }
   }
 

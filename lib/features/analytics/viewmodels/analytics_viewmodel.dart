@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:drive_replay/core/domain/repositories/analytics_repository.dart';
-import 'package:drive_replay/core/logger/app_logger.dart';
+import 'package:drive_replay/core/logger/logger_service.dart';
 
 enum TimeRange { weekly, monthly, yearly }
 
@@ -60,7 +60,7 @@ class AnalyticsViewModel extends ChangeNotifier {
       _buildChartData(distanceData, groupByMonth);
       
     } catch (e) {
-      AppLogger.e('Failed to load analytics: $e');
+      LoggerService.error('Failed to load analytics: $e');
     } finally {
       _isLoading = false;
       notifyListeners();

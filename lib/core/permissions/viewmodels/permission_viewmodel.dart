@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:drive_replay/core/permissions/services/permission_service.dart';
 import 'package:drive_replay/core/permissions/models/permission_state.dart';
-import 'package:drive_replay/core/logger/app_logger.dart';
+import 'package:drive_replay/core/logger/logger_service.dart';
 
 class PermissionViewModel extends ChangeNotifier with WidgetsBindingObserver {
   final PermissionService _permissionService;
@@ -24,7 +24,7 @@ class PermissionViewModel extends ChangeNotifier with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       // User might have changed permissions in Android Settings
-      AppLogger.i('App resumed. Re-checking all permissions.');
+      LoggerService.info('App resumed. Re-checking all permissions.');
       checkAllPermissions();
     }
   }

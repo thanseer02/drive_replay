@@ -1,6 +1,6 @@
 import 'package:permission_handler/permission_handler.dart';
 import 'package:drive_replay/core/permissions/models/permission_state.dart';
-import 'package:drive_replay/core/logger/app_logger.dart';
+import 'package:drive_replay/core/logger/logger_service.dart';
 
 class PermissionService {
   /// Check current status without requesting
@@ -11,16 +11,16 @@ class PermissionService {
 
   /// Request a specific permission
   Future<AppPermissionState> requestPermission(Permission permission) async {
-    AppLogger.i('Requesting permission: $permission');
+    LoggerService.info('Requesting permission: $permission');
     final status = await permission.request();
-    AppLogger.i('Permission result: $status');
+    LoggerService.info('Permission result: $status');
     return status.toAppState();
   }
 
   /// Special case for Android Background Location (API 30+)
   /// Must be requested only AFTER fine location is granted.
   Future<AppPermissionState> requestBackgroundLocation() async {
-    AppLogger.i('Requesting Background Location');
+    LoggerService.info('Requesting Background Location');
     final status = await Permission.locationAlways.request();
     return status.toAppState();
   }
@@ -48,7 +48,7 @@ class PermissionService {
 
   /// Handle OEM specific battery restrictions (Xiaomi, Huawei, etc.)
   Future<void> requestOemBackgroundExecution() async {
-    AppLogger.w('OEM Background execution prompt requested. (Implementation requires platform-specific intents or auto_start_flutter)');
+    LoggerService.warning('OEM Background execution prompt requested. (Implementation requires platform-specific intents or auto_start_flutter)');
     // In a full production app, this would use MethodChannels to launch the 
     // manufacturer-specific AutoStart or Battery Saver whitelisting screens.
   }

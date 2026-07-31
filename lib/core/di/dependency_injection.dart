@@ -10,10 +10,11 @@ import 'package:drive_replay/features/replay/viewmodels/replay_viewmodel.dart';
 import 'package:drive_replay/core/domain/repositories/analytics_repository.dart';
 import 'package:drive_replay/core/data/repositories/analytics_repository_impl.dart';
 import 'package:drive_replay/features/analytics/viewmodels/analytics_viewmodel.dart';
+import 'package:drive_replay/features/dashboard/viewmodels/dashboard_viewmodel.dart';
 
 final GetIt locator = GetIt.instance;
 
-void setupLocator() {
+Future<void> setupLocatorAsync() async {
   // Services
   locator.registerLazySingleton<AppDatabase>(() => AppDatabase());
   locator.registerLazySingleton<PermissionService>(() => PermissionService());
@@ -28,4 +29,5 @@ void setupLocator() {
   locator.registerFactory<TripHistoryViewModel>(() => TripHistoryViewModel(locator<TripRepository>()));
   locator.registerFactory<ReplayViewModel>(() => ReplayViewModel(locator<TripRepository>()));
   locator.registerFactory<AnalyticsViewModel>(() => AnalyticsViewModel(locator<AnalyticsRepository>()));
+  locator.registerFactory<DashboardViewModel>(() => DashboardViewModel(locator<TripRepository>(), locator<AnalyticsRepository>()));
 }

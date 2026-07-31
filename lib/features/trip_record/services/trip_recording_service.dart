@@ -3,7 +3,7 @@ import 'package:flutter_foreground_task/flutter_foreground_task.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:drift/drift.dart' as drift;
-import 'package:drive_replay/core/logger/app_logger.dart';
+import 'package:drive_replay/core/logger/logger_service.dart';
 import 'package:drive_replay/core/services/local_db/app_database.dart';
 
 @pragma('vm:entry-point')
@@ -26,7 +26,7 @@ class TripTaskHandler extends TaskHandler {
 
   @override
   Future<void> onStart(DateTime timestamp, TaskStarter starter) async {
-    AppLogger.i('Foreground Service Started');
+    LoggerService.info('Foreground Service Started');
     
     // Initialize DB and Prefs in this isolate
     _db = AppDatabase();
@@ -36,7 +36,7 @@ class TripTaskHandler extends TaskHandler {
     _activeTripId = _prefs?.getInt('current_active_trip_id');
     
     if (_activeTripId == null) {
-      AppLogger.w('No active trip found on start. Stopping service.');
+      LoggerService.warning('No active trip found on start. Stopping service.');
       await FlutterForegroundTask.stopService();
       return;
     }
@@ -99,7 +99,7 @@ class TripTaskHandler extends TaskHandler {
         ),
       );
     } catch (e) {
-      AppLogger.e('Failed to insert TripPoint: $e');
+      LoggerService.error('Failed to insert TripPoint: $e');
     }
 
     // Send update to UI
@@ -119,7 +119,7 @@ class TripTaskHandler extends TaskHandler {
 
   @override
   Future<void> onDestroy(DateTime timestamp, bool isTaskKilled) async {
-    AppLogger.i('Foreground Service Destroyed');
+    LoggerService.info('Foreground Service Destroyed');
     await _positionStream?.cancel();
     if (_db != null) {
       await _db!.close();
