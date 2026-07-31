@@ -26,7 +26,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
-          title: const Text('Drive Replay', style: TextStyle(fontWeight: FontWeight.bold)),
+          title: Text('Drive Replay', style: Theme.of(context).textTheme.titleLarge),
           backgroundColor: AppColors.surface,
           elevation: 0,
         ),
@@ -45,11 +45,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   const SizedBox(height: 16),
                   _buildStatsGrid(vm),
                   const SizedBox(height: 24),
-                  const Text('Quick Actions', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text('Quick Actions', style: Theme.of(context).textTheme.titleLarge),
                   const SizedBox(height: 16),
                   _buildQuickActions(context),
                   const SizedBox(height: 24),
-                  const Text('System Health', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text('System Health', style: Theme.of(context).textTheme.titleLarge),
                   const SizedBox(height: 16),
                   _buildSystemHealth(),
                 ],
@@ -82,12 +82,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
             children: [
               Text(
                 vm.isRecording ? 'Recording in progress' : 'Ready to drive',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                style: Theme.of(context).textTheme.titleLarge,
               ),
               const SizedBox(height: 4),
               Text(
                 vm.isRecording ? 'GPS tracking active' : 'Vehicle is parked',
-                style: const TextStyle(color: Colors.grey),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey),
               ),
             ],
           ),
@@ -232,9 +232,9 @@ class _StatBox extends StatelessWidget {
         children: [
           Icon(icon, color: color),
           const SizedBox(height: 12),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
+          Text(value, style: Theme.of(context).textTheme.headlineSmall),
           const SizedBox(height: 4),
-          Text(title, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+          Text(title, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey)),
         ],
       ),
     );
@@ -267,7 +267,7 @@ class _ActionButton extends StatelessWidget {
             child: Icon(icon, size: 28, color: AppColors.primary),
           ),
           const SizedBox(height: 8),
-          Text(label, style: const TextStyle(fontSize: 12)),
+          Text(label, style: Theme.of(context).textTheme.bodySmall),
         ],
       ),
     );

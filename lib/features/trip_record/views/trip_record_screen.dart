@@ -25,7 +25,7 @@ class _TripRecordView extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Trip Recording', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text('Trip Recording', style: Theme.of(context).textTheme.titleLarge),
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: Consumer<TripRecordViewModel>(
@@ -46,7 +46,7 @@ class _TripRecordView extends StatelessWidget {
           return Column(
             children: [
               Expanded(
-                child: _buildTelemetryDashboard(vm),
+                child: _buildTelemetryDashboard(context, vm),
               ),
               _buildControlPanel(context, vm),
             ],
@@ -56,7 +56,7 @@ class _TripRecordView extends StatelessWidget {
     );
   }
 
-  Widget _buildTelemetryDashboard(TripRecordViewModel vm) {
+  Widget _buildTelemetryDashboard(BuildContext context, TripRecordViewModel vm) {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.all(24),
@@ -83,20 +83,11 @@ class _TripRecordView extends StatelessWidget {
           // Speed
           Text(
             vm.currentSpeedKmh.toStringAsFixed(0),
-            style: const TextStyle(
-              fontSize: 120,
-              fontWeight: FontWeight.w900,
-              color: Colors.white,
-              height: 1.0,
-            ),
+            style: Theme.of(context).textTheme.displayLarge,
           ).animate(target: vm.state == TripState.recording ? 1 : 0).shimmer(duration: 2.seconds),
-          const Text(
+          Text(
             'km/h',
-            style: TextStyle(
-              fontSize: 24,
-              color: Colors.grey,
-              fontWeight: FontWeight.bold,
-            ),
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: Colors.grey),
           ),
           
           const SizedBox(height: 48),
@@ -105,9 +96,9 @@ class _TripRecordView extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildSecondaryStat('Distance', '${vm.totalDistanceKm.toStringAsFixed(2)} km'),
+              _buildSecondaryStat(context, 'Distance', '${vm.totalDistanceKm.toStringAsFixed(2)} km'),
               Container(width: 1, height: 40, color: Colors.white12),
-              _buildSecondaryStat('Time', vm.formattedDuration),
+              _buildSecondaryStat(context, 'Time', vm.formattedDuration),
             ],
           ),
         ],
@@ -115,17 +106,17 @@ class _TripRecordView extends StatelessWidget {
     );
   }
 
-  Widget _buildSecondaryStat(String label, String value) {
+  Widget _buildSecondaryStat(BuildContext context, String label, String value) {
     return Column(
       children: [
         Text(
           value,
-          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
+          style: Theme.of(context).textTheme.headlineLarge,
         ),
         const SizedBox(height: 4),
         Text(
           label,
-          style: const TextStyle(fontSize: 14, color: Colors.grey),
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey),
         ),
       ],
     );
@@ -145,6 +136,7 @@ class _TripRecordView extends StatelessWidget {
     switch (vm.state) {
       case TripState.idle:
         return _buildBigButton(
+          context: context,
           label: 'START TRIP',
           color: Colors.green,
           icon: Icons.play_arrow,
@@ -155,6 +147,7 @@ class _TripRecordView extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             _buildBigButton(
+              context: context,
               label: 'PAUSE',
               color: Colors.orange,
               icon: Icons.pause,
@@ -162,6 +155,7 @@ class _TripRecordView extends StatelessWidget {
               isSmall: true,
             ),
             _buildBigButton(
+              context: context,
               label: 'STOP',
               color: Colors.red,
               icon: Icons.stop,
@@ -180,6 +174,7 @@ class _TripRecordView extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             _buildBigButton(
+              context: context,
               label: 'RESUME',
               color: Colors.green,
               icon: Icons.play_arrow,
@@ -187,6 +182,7 @@ class _TripRecordView extends StatelessWidget {
               isSmall: true,
             ),
             _buildBigButton(
+              context: context,
               label: 'STOP',
               color: Colors.red,
               icon: Icons.stop,
@@ -204,6 +200,7 @@ class _TripRecordView extends StatelessWidget {
   }
 
   Widget _buildBigButton({
+    required BuildContext context,
     required String label,
     required Color color,
     required IconData icon,
@@ -227,10 +224,8 @@ class _TripRecordView extends StatelessWidget {
             const SizedBox(width: 8),
             Text(
               label,
-              style: TextStyle(
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 color: color,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
                 letterSpacing: 1.5,
               ),
             ),

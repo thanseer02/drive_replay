@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:drive_replay/core/theme/app_colors.dart';
+import 'package:drive_replay/core/theme/app_theme.dart';
 import 'package:drive_replay/core/permissions/viewmodels/permission_viewmodel.dart';
 import 'package:drive_replay/core/permissions/models/permission_state.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -13,7 +14,7 @@ class PermissionsScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Setup Requirements', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text('Setup Requirements', style: AppTextStyles.tss18w700),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -33,7 +34,7 @@ class PermissionsScreen extends StatelessWidget {
               children: [
                 const Text(
                   'Drive Replay needs your permission to track trips accurately.',
-                  style: TextStyle(fontSize: 18, color: Colors.white70),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.white70),
                 ),
                 const SizedBox(height: 32),
                 Expanded(
@@ -87,7 +88,7 @@ class PermissionsScreen extends StatelessWidget {
                     onPressed: allDone ? () => Navigator.of(context).pop() : null,
                     child: Text(
                       allDone ? 'Continue to App' : 'Grant permissions to continue',
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                      style: AppTextStyles.tss18w700,
                     ),
                   ),
                 ),
@@ -139,9 +140,9 @@ class PermissionsScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text(title, style: AppTextStyles.tss18w700),
                   const SizedBox(height: 4),
-                  Text(description, style: const TextStyle(fontSize: 12, color: Colors.white70)),
+                  Text(description, style: AppTextStyles.tss12w400.copyWith(color: Colors.white70)),
                 ],
               ),
             ),

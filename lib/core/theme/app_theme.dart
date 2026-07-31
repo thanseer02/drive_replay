@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:drive_replay/core/theme/app_colors.dart';
 
 class AppTheme {
@@ -28,4 +29,29 @@ class AppTheme {
       ),
     );
   }
+}
+
+class AppTextStyles {
+  AppTextStyles._();
+
+  static TextStyle get tss120w900 => TextStyle(fontSize: 120.spMin, fontWeight: FontWeight.w900, color: Colors.white, height: 1.0);
+  static TextStyle get tss48w700 => TextStyle(fontSize: 48.spMin, fontWeight: FontWeight.bold, color: Colors.white);
+  static TextStyle get tss36w700 => TextStyle(fontSize: 36.spMin, fontWeight: FontWeight.bold, color: Colors.white);
+  static TextStyle get tss28w700 => TextStyle(fontSize: 28.spMin, fontWeight: FontWeight.bold, color: Colors.white);
+  static TextStyle get tss24w700 => TextStyle(fontSize: 24.spMin, fontWeight: FontWeight.bold, color: Colors.white);
+  static TextStyle get tss20w700 => TextStyle(fontSize: 20.spMin, fontWeight: FontWeight.bold, color: Colors.white);
+  
+  static TextStyle get tss18w700 => TextStyle(fontSize: 18.spMin, fontWeight: FontWeight.bold, color: Colors.white);
+  static TextStyle get tss18w400 => TextStyle(fontSize: 18.spMin, fontWeight: FontWeight.w400, color: Colors.white);
+
+  static TextStyle get tss16w700 => TextStyle(fontSize: 16.spMin, fontWeight: FontWeight.bold, color: Colors.white);
+  static TextStyle get tss16w600 => TextStyle(fontSize: 16.spMin, fontWeight: FontWeight.w600, color: Colors.white);
+  static TextStyle get tss16w400 => TextStyle(fontSize: 16.spMin, fontWeight: FontWeight.w400, color: Colors.white);
+
+  static TextStyle get tss14w700 => TextStyle(fontSize: 14.spMin, fontWeight: FontWeight.bold, color: Colors.white);
+  static TextStyle get tss14w500 => TextStyle(fontSize: 14.spMin, fontWeight: FontWeight.w500, color: Colors.white);
+  static TextStyle get tss14w400 => TextStyle(fontSize: 14.spMin, fontWeight: FontWeight.w400, color: Colors.white);
+
+  static TextStyle get tss12w700 => TextStyle(fontSize: 12.spMin, fontWeight: FontWeight.bold, color: Colors.white);
+  static TextStyle get tss12w400 => TextStyle(fontSize: 12.spMin, fontWeight: FontWeight.w400, color: Colors.white);
 }
