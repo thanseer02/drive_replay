@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_foreground_task/flutter_foreground_task.dart';
+import 'package:flutter/services.dart';
 import 'package:drive_replay/core/domain/repositories/trip_repository.dart';
 import 'package:drive_replay/core/logger/logger_service.dart';
 
@@ -26,23 +26,30 @@ class DashboardViewModel extends ChangeNotifier {
     _loadDashboardData();
   }
 
-  void _initLiveSync() {
-    FlutterForegroundTask.addTaskDataCallback(_onReceiveTaskData);
-  }
+  final _eventChannel = const EventChannel('com.drivereplay.location/stream');
 
-  void _onReceiveTaskData(Object data) {
-    if (data is Map && data['type'] == 'UPDATE') {
-      _liveActiveTripDistance = (data['distance'] as num?)?.toDouble() ?? 0.0;
-      if (!_isRecording) {
-        _isRecording = true;
+  void _initLiveSync() {
+    _eventChannel.receiveBroadcastStream().listen((data) {
+      LoggerService.info('DASHBOARD_SYNC: Native EventChannel called with: $data');
+      if (data is Map && data['type'] == 'UPDATE') {
+        _liveActiveTripDistance = (data['distance'] as num?)?.toDouble() ?? 0.0;
+        if (!_isRecording) {
+          _isRecording = true;
+        }
+        notifyListeners();
       }
-      notifyListeners();
-    }
+    }, onError: (error) {
+      LoggerService.error('Native EventChannel Error: $error');
+    });
   }
 
   bool get isLoading => _isLoading;
   // Odometer Getters = Completed DB Distance + Live Active Distance
-  double get todayDistance => _staticTodayDistance + _liveActiveTripDistance;
+  double get todayDistance {
+    final total = _staticTodayDistance + _liveActiveTripDistance;
+    LoggerService.info('DASHBOARD_SYNC: getter todayDistance called. static: $_staticTodayDistance, live: $_liveActiveTripDistance, total: $total');
+    return total;
+  }
   double get weeklyDistance => _staticWeeklyDistance + _liveActiveTripDistance;
   double get monthlyDistance => _staticMonthlyDistance + _liveActiveTripDistance;
   double get lifetimeDistance => _staticLifetimeDistance + _liveActiveTripDistance;
@@ -56,12 +63,13 @@ class DashboardViewModel extends ChangeNotifier {
 
     try {
       // 1. Recover Live State First (to prevent double counting if DB just finished)
-      final isRunning = await FlutterForegroundTask.isRunningService;
-      _isRecording = isRunning;
-      if (isRunning) {
-        final prefs = await SharedPreferences.getInstance();
-        _liveActiveTripDistance = prefs.getDouble('current_active_trip_distance') ?? 0.0;
+      final prefs = await SharedPreferences.getInstance();
+      final activeTripId = prefs.getInt('flutter.current_active_trip_id') ?? -1;
+      if (activeTripId != -1) {
+        _isRecording = true;
+        _liveActiveTripDistance = prefs.getDouble('flutter.current_active_trip_distance') ?? 0.0;
       } else {
+        _isRecording = false;
         _liveActiveTripDistance = 0.0;
       }
 
@@ -93,7 +101,6 @@ class DashboardViewModel extends ChangeNotifier {
   
   @override
   void dispose() {
-    FlutterForegroundTask.removeTaskDataCallback(_onReceiveTaskData);
     super.dispose();
   }
 }

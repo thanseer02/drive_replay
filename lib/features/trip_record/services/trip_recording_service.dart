@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter_foreground_task/flutter_foreground_task.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:drive_replay/core/logger/logger_service.dart';
@@ -12,7 +12,8 @@ void startCallback() {
 }
 
 class TripTaskHandler extends TaskHandler {
-  StreamSubscription<Position>? _positionStream;
+  StreamSubscription? _positionStream;
+  static const _eventChannel = EventChannel('com.drivereplay.location/stream');
   
   // Independent isolate resources
   AppDatabase? _db;
@@ -20,14 +21,13 @@ class TripTaskHandler extends TaskHandler {
 
   // State
   bool _isPaused = false;
-  Position? _lastPosition;
   double _totalDistance = 0.0;
   int? _activeTripId;
   String _unit = 'metric';
 
   @override
   Future<void> onStart(DateTime timestamp, TaskStarter starter) async {
-    LoggerService.info('Foreground Service Started');
+    LoggerService.info('ISOLATE_LIFECYCLE: onStart called at $timestamp');
     
     // Initialize DB and Prefs in this isolate
     _db = AppDatabase();
@@ -54,34 +54,18 @@ class TripTaskHandler extends TaskHandler {
     }
 
     // Verify Permissions Mid-Trip Recovery
-    final permStatus = await Geolocator.checkPermission();
-    if (permStatus == LocationPermission.denied || permStatus == LocationPermission.deniedForever) {
-      LoggerService.error('Location permission revoked while in background.');
-      FlutterForegroundTask.sendDataToMain({
-        'type': 'ERROR',
-        'message': 'Location permission was revoked.',
-      });
-      await FlutterForegroundTask.stopService();
-      return;
-    }
+    // Removed Dart-side Geolocator check as Native Kotlin does its own check
 
     _startLocationUpdates();
   }
 
   void _startLocationUpdates() {
-    _positionStream = Geolocator.getPositionStream(
-      locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.bestForNavigation,
-        distanceFilter: 3, // 3 meters strictly to avoid battery drain
-      ),
-    ).listen((Position position) {
-      _processLocation(position);
+    _positionStream = _eventChannel.receiveBroadcastStream().listen((data) {
+      if (data is Map && data['type'] == 'UPDATE') {
+        _processLocation(data);
+      }
     }, onError: (error) {
-      LoggerService.error('Geolocator Stream Error: $error');
-      FlutterForegroundTask.updateService(
-        notificationTitle: 'ERROR: GPS Lost',
-        notificationText: 'Tracking paused. Check location settings.',
-      );
+      LoggerService.error('Native Location Stream Error: $error');
       FlutterForegroundTask.sendDataToMain({
         'type': 'ERROR',
         'message': 'Location services are disabled or unavailable.',
@@ -89,81 +73,28 @@ class TripTaskHandler extends TaskHandler {
     });
   }
 
-  Future<void> _processLocation(Position position) async {
+  Future<void> _processLocation(Map data) async {
     if (_isPaused || _activeTripId == null) return;
     
-    // Log Mock Locations
-    if (position.isMocked) {
-      LoggerService.warning('Mock Location Detected: ${position.latitude}, ${position.longitude}');
-      // In production, you might want to reject mocked locations depending on business logic:
-      // return; 
-    }
+    // We get pre-filtered data from Native
+    final effectiveSpeed = (data['speed'] as num?)?.toDouble() ?? 0.0;
+    
+    final lat = (data['latitude'] as num?)?.toDouble() ?? 0.0;
+    final lng = (data['longitude'] as num?)?.toDouble() ?? 0.0;
+    final alt = (data['altitude'] as num?)?.toDouble() ?? 0.0;
+    final head = (data['heading'] as num?)?.toDouble() ?? 0.0;
+    final acc = (data['accuracy'] as num?)?.toDouble() ?? 0.0;
 
-    // 1. Noise Filtering (Accuracy)
-    if (position.accuracy > 30.0) {
-      LoggerService.debug('Filtered: Poor accuracy (${position.accuracy}m)');
-      return;
-    }
-
-    // 2. Time Consistency Filtering (Out of order packets)
-    if (_lastPosition != null && position.timestamp.compareTo(_lastPosition!.timestamp) <= 0) {
-      LoggerService.debug('Filtered: Stale or duplicate timestamp');
-      return;
-    }
-
-    double effectiveSpeed = position.speed;
-    if (effectiveSpeed < 0.0) effectiveSpeed = 0.0;
-
-    if (_lastPosition != null) {
-      final distance = Geolocator.distanceBetween(
-        _lastPosition!.latitude,
-        _lastPosition!.longitude,
-        position.latitude,
-        position.longitude,
-      );
-
-      final timeDeltaSecs = position.timestamp.difference(_lastPosition!.timestamp).inMilliseconds / 1000.0;
-      
-      if (effectiveSpeed == 0.0 && timeDeltaSecs > 0) {
-        effectiveSpeed = distance / timeDeltaSecs;
-      }
-      
-      // 3. Speed Jump Filtering (Impossible Speeds > 250 km/h = 69.4 m/s)
-      if (timeDeltaSecs > 0) {
-        final calculatedSpeedMps = distance / timeDeltaSecs;
-        if (calculatedSpeedMps > 69.4) {
-          LoggerService.warning('Filtered: Impossible GPS Jump detected (${(calculatedSpeedMps * 3.6).toStringAsFixed(1)} km/h).');
-          return;
-        }
-      }
-
-      // 4. Jitter Filtering (Ignore micro-movements < 3 meters)
-      if (distance < 3.0) {
-        LoggerService.debug('Filtered: Jitter movement (${distance.toStringAsFixed(2)}m)');
-        // DO NOT RETURN. We want to send the current speed to the UI, just don't add to distance.
-      } else {
-        _totalDistance += distance;
-        _lastPosition = position;
-        // Persist distance incrementally so a crash won't lose it
-        await _prefs?.setDouble('current_active_trip_distance', _totalDistance);
-      }
-    } else {
-      _lastPosition = position;
-    }
-
-    // 3. Memory Leak Prevention (Write immediately, do not hold in memory)
     try {
-      // Only insert to DB if we actually moved significantly, or maybe every point?
-      // Let's insert every valid point so the track is smooth, or maybe we just let the DB handle it.
       await _db?.into(_db!.tripPoints).insert(
         TripPointsCompanion(
           tripId: drift.Value(_activeTripId!),
-          timestamp: drift.Value(position.timestamp),
-          latitude: drift.Value(position.latitude),
-          longitude: drift.Value(position.longitude),
-          altitude: drift.Value(position.altitude),
-          heading: drift.Value(position.heading),
-          accuracy: drift.Value(position.accuracy),
+          timestamp: drift.Value(DateTime.now()), // Assuming native timestamp is now
+          latitude: drift.Value(lat),
+          longitude: drift.Value(lng),
+          altitude: drift.Value(alt),
+          heading: drift.Value(head),
+          accuracy: drift.Value(acc),
           speed: drift.Value(effectiveSpeed),
         ),
       );
@@ -171,20 +102,21 @@ class TripTaskHandler extends TaskHandler {
       LoggerService.error('Failed to insert TripPoint: $e');
     }
 
+    // Send update to UI Isolate for TripRecordViewModel
+    FlutterForegroundTask.sendDataToMain(data);
+    
     // Logging EXACT format requested by user
     try {
       final lifetimeRes = await _db?.customSelect('SELECT SUM(total_distance) as s FROM trips WHERE is_deleted = 0').getSingleOrNull();
       final lifetime = lifetimeRes?.read<double?>('s') ?? 0.0;
-      final distanceSinceLast = (_lastPosition != null) ? Geolocator.distanceBetween(_lastPosition!.latitude, _lastPosition!.longitude, position.latitude, position.longitude) : 0.0;
 
       final logMessage = '''
-[GPS]
-Latitude: ${position.latitude}
-Longitude: ${position.longitude}
-Accuracy: ${position.accuracy}
-Heading: ${position.heading}
+[GPS NATIVE SYNC]
+Latitude: $lat
+Longitude: $lng
+Accuracy: $acc
+Heading: $head
 Speed: $effectiveSpeed
-Distance from previous point: $distanceSinceLast
 Current Trip Distance: $_totalDistance
 Lifetime Distance: $lifetime
 Saved To Database: true
@@ -195,17 +127,9 @@ UI Updated: true''';
       LoggerService.error('Failed to generate GPS log: $e');
     }
 
+    LoggerService.info('ISOLATE_SYNC: Sending data to main port. Distance sent: $_totalDistance');
     // Send update to UI
-    FlutterForegroundTask.sendDataToMain({
-      'type': 'UPDATE',
-      'speed': effectiveSpeed,
-      'distance': _totalDistance,
-      'latitude': position.latitude,
-      'longitude': position.longitude,
-      'accuracy': position.accuracy,
-      'heading': position.heading,
-      'altitude': position.altitude,
-    });
+    FlutterForegroundTask.sendDataToMain(data);
 
     // Update Notification
     double displaySpeed = effectiveSpeed;
@@ -241,7 +165,7 @@ UI Updated: true''';
 
   @override
   Future<void> onDestroy(DateTime timestamp, bool isTaskKilled) async {
-    LoggerService.info('Foreground Service Destroyed');
+    LoggerService.info('ISOLATE_LIFECYCLE: onDestroy called. TaskKilled: $isTaskKilled');
     await _positionStream?.cancel();
     if (_db != null) {
       await _db!.close();
@@ -285,8 +209,11 @@ class TripRecordingService {
 
   static Future<bool> startService(int tripId) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('current_active_trip_id', tripId);
-    await prefs.setDouble('current_active_trip_distance', 0.0);
+    await prefs.setInt('flutter.current_active_trip_id', tripId);
+    await prefs.setDouble('flutter.current_active_trip_distance', 0.0);
+
+    const methodChannel = MethodChannel('com.drivereplay.location/method');
+    await methodChannel.invokeMethod('startTracking', {'tripId': tripId});
 
     if (await FlutterForegroundTask.isRunningService) return true;
     
@@ -300,8 +227,11 @@ class TripRecordingService {
 
   static Future<bool> stopService() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('current_active_trip_id');
-    await prefs.remove('current_active_trip_distance');
+    await prefs.remove('flutter.current_active_trip_id');
+    await prefs.remove('flutter.current_active_trip_distance');
+
+    const methodChannel = MethodChannel('com.drivereplay.location/method');
+    await methodChannel.invokeMethod('stopTracking');
 
     await FlutterForegroundTask.stopService();
     return !(await FlutterForegroundTask.isRunningService);
