@@ -119,4 +119,12 @@ class TripRepositoryImpl implements TripRepository {
     await file.writeAsString(csvData);
     return file.path;
   }
+
+  @override
+  Future<List<TripPoint>> getTripPoints(int tripId) async {
+    final query = _db.select(_db.tripPoints)
+      ..where((p) => p.tripId.equals(tripId))
+      ..orderBy([(p) => OrderingTerm(expression: p.timestamp)]);
+    return await query.get();
+  }
 }

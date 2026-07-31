@@ -6,6 +6,7 @@ import 'package:drive_replay/core/permissions/services/permission_service.dart';
 import 'package:drive_replay/core/permissions/viewmodels/permission_viewmodel.dart';
 import 'package:drive_replay/features/trip_record/viewmodels/trip_record_viewmodel.dart';
 import 'package:drive_replay/features/history/viewmodels/trip_history_viewmodel.dart';
+import 'package:drive_replay/features/replay/viewmodels/replay_viewmodel.dart';
 
 final GetIt locator = GetIt.instance;
 
@@ -21,4 +22,5 @@ void setupLocator() {
   locator.registerLazySingleton<PermissionViewModel>(() => PermissionViewModel(locator<PermissionService>()));
   locator.registerLazySingleton<TripRecordViewModel>(() => TripRecordViewModel());
   locator.registerLazySingleton<TripHistoryViewModel>(() => TripHistoryViewModel(locator<TripRepository>()));
+  locator.registerFactory<ReplayViewModel>(() => ReplayViewModel(locator<TripRepository>()));
 }

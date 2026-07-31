@@ -15,4 +15,5 @@ abstract class TripRepository {
   Future<void> softDeleteTrip(int tripId);
   Future<void> restoreTrip(int tripId);
   Future<String> exportTripCsv(int tripId);
+  Future<List<TripPoint>> getTripPoints(int tripId);
 }
