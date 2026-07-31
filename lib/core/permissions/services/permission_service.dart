@@ -45,4 +45,11 @@ class PermissionService {
       Permission.ignoreBatteryOptimizations: (await Permission.ignoreBatteryOptimizations.status).toAppState(),
     };
   }
+
+  /// Handle OEM specific battery restrictions (Xiaomi, Huawei, etc.)
+  Future<void> requestOemBackgroundExecution() async {
+    AppLogger.w('OEM Background execution prompt requested. (Implementation requires platform-specific intents or auto_start_flutter)');
+    // In a full production app, this would use MethodChannels to launch the 
+    // manufacturer-specific AutoStart or Battery Saver whitelisting screens.
+  }
 }

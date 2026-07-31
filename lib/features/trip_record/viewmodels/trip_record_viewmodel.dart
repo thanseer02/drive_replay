@@ -34,8 +34,8 @@ class TripRecordViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> startTrip() async {
-    final started = await TripRecordingService.startService();
+  Future<void> startTrip(int tripId) async {
+    final started = await TripRecordingService.startService(tripId);
     if (started) {
       _state = TripState.recording;
       _currentSpeed = 0.0;
