@@ -5,6 +5,9 @@ import 'package:drive_replay/bootstrap/splash_screen.dart';
 import 'package:drive_replay/bootstrap/global_error_handler.dart';
 import 'package:drive_replay/bootstrap/app_lifecycle_observer.dart';
 import 'package:drive_replay/core/logger/logger_service.dart';
+import 'package:provider/provider.dart';
+import 'package:drive_replay/core/di/dependency_injection.dart';
+import 'package:drive_replay/core/permissions/viewmodels/permission_viewmodel.dart';
 import 'package:drive_replay/features/dashboard/views/dashboard_screen.dart';
 
 void main() {
@@ -46,12 +49,17 @@ class _DriveReplayAppState extends State<DriveReplayApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Drive Replay',
-      theme: AppTheme.darkTheme,
-      debugShowCheckedModeBanner: false,
-      home: const SplashScreen(
-        nextScreen: DashboardScreen(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => locator<PermissionViewModel>()),
+      ],
+      child: MaterialApp(
+        title: 'Drive Replay',
+        theme: AppTheme.darkTheme,
+        debugShowCheckedModeBanner: false,
+        home: const SplashScreen(
+          nextScreen: DashboardScreen(),
+        ),
       ),
     );
   }

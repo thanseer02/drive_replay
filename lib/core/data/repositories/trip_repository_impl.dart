@@ -11,6 +11,12 @@ class TripRepositoryImpl implements TripRepository {
 
   @override
   Future<int> startTrip(Trip trip) async {
+    // Ensure the vehicle exists to prevent Foreign Key constraint failure
+    await _db.customStatement(
+      "INSERT OR IGNORE INTO vehicles (id, name, is_active, odometer) VALUES (?, 'My Vehicle', 1, 0.0);",
+      [trip.vehicleId],
+    );
+
     return await _db.into(_db.trips).insert(
       TripsCompanion(
         vehicleId: Value(trip.vehicleId),

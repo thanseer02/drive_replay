@@ -6,6 +6,10 @@ import 'package:drive_replay/features/dashboard/viewmodels/dashboard_viewmodel.d
 import 'package:drive_replay/features/trip_record/views/trip_record_screen.dart';
 import 'package:drive_replay/features/history/views/trip_history_screen.dart';
 import 'package:drive_replay/features/analytics/views/analytics_screen.dart';
+import 'package:drive_replay/core/permissions/viewmodels/permission_viewmodel.dart';
+import 'package:drive_replay/core/permissions/models/permission_state.dart';
+import 'package:drive_replay/core/permissions/views/permissions_screen.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -124,7 +128,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
           icon: Icons.play_arrow,
           label: 'Start Trip',
           onTap: () {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => const TripRecordScreen()));
+            final permVm = context.read<PermissionViewModel>();
+            if (permVm.getState(Permission.location) == AppPermissionState.granted &&
+                permVm.getState(Permission.locationAlways) == AppPermissionState.granted &&
+                permVm.getState(Permission.ignoreBatteryOptimizations) == AppPermissionState.granted &&
+                permVm.getState(Permission.notification) == AppPermissionState.granted) {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const TripRecordScreen()));
+            } else {
+              // Route to permissions screen
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const PermissionsScreen()));
+            }
           },
         ),
         _ActionButton(
@@ -146,32 +159,49 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildSystemHealth() {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: const Column(
-        children: [
-          ListTile(
-            leading: Icon(Icons.gps_fixed, color: Colors.green),
-            title: Text('GPS Signal'),
-            trailing: Text('Excellent', style: TextStyle(color: Colors.green)),
+    return Consumer<PermissionViewModel>(
+      builder: (context, permVm, child) {
+        final allGranted = permVm.getState(Permission.location) == AppPermissionState.granted &&
+            permVm.getState(Permission.locationAlways) == AppPermissionState.granted &&
+            permVm.getState(Permission.ignoreBatteryOptimizations) == AppPermissionState.granted &&
+            permVm.getState(Permission.notification) == AppPermissionState.granted;
+
+        return Container(
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(16),
           ),
-          Divider(height: 1, color: Colors.white12),
-          ListTile(
-            leading: Icon(Icons.security, color: Colors.green),
-            title: Text('Permissions'),
-            trailing: Text('Granted', style: TextStyle(color: Colors.green)),
+          child: Column(
+            children: [
+              const ListTile(
+                leading: Icon(Icons.gps_fixed, color: Colors.green),
+                title: Text('GPS Signal'),
+                trailing: Text('Waiting for Trip', style: TextStyle(color: Colors.grey)),
+              ),
+              const Divider(height: 1, color: Colors.white12),
+              ListTile(
+                leading: Icon(Icons.security, color: allGranted ? Colors.green : Colors.red),
+                title: const Text('Permissions'),
+                trailing: Text(
+                  allGranted ? 'Granted' : 'Action Required',
+                  style: TextStyle(color: allGranted ? Colors.green : Colors.red),
+                ),
+                onTap: () {
+                  if (!allGranted) {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => const PermissionsScreen()));
+                  }
+                },
+              ),
+              const Divider(height: 1, color: Colors.white12),
+              const ListTile(
+                leading: Icon(Icons.storage, color: Colors.green),
+                title: Text('Local Storage'),
+                trailing: Text('Healthy', style: TextStyle(color: Colors.green)),
+              ),
+            ],
           ),
-          Divider(height: 1, color: Colors.white12),
-          ListTile(
-            leading: Icon(Icons.storage, color: Colors.green),
-            title: Text('Local Storage'),
-            trailing: Text('Healthy', style: TextStyle(color: Colors.green)),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
