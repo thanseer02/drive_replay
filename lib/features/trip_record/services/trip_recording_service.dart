@@ -87,6 +87,9 @@ class TripTaskHandler extends TaskHandler {
       return;
     }
 
+    double effectiveSpeed = position.speed;
+    if (effectiveSpeed < 0.0) effectiveSpeed = 0.0;
+
     if (_lastPosition != null) {
       final distance = Geolocator.distanceBetween(
         _lastPosition!.latitude,
@@ -96,6 +99,10 @@ class TripTaskHandler extends TaskHandler {
       );
 
       final timeDeltaSecs = position.timestamp.difference(_lastPosition!.timestamp).inMilliseconds / 1000.0;
+      
+      if (effectiveSpeed == 0.0 && timeDeltaSecs > 0) {
+        effectiveSpeed = distance / timeDeltaSecs;
+      }
       
       // 3. Speed Jump Filtering (Impossible Speeds > 250 km/h = 69.4 m/s)
       if (timeDeltaSecs > 0) {
@@ -109,19 +116,21 @@ class TripTaskHandler extends TaskHandler {
       // 4. Jitter Filtering (Ignore micro-movements < 3 meters)
       if (distance < 3.0) {
         LoggerService.debug('Filtered: Jitter movement (${distance.toStringAsFixed(2)}m)');
-        return;
+        // DO NOT RETURN. We want to send the current speed to the UI, just don't add to distance.
+      } else {
+        _totalDistance += distance;
+        _lastPosition = position;
+        // Persist distance incrementally so a crash won't lose it
+        await _prefs?.setDouble('current_active_trip_distance', _totalDistance);
       }
-
-      _totalDistance += distance;
-      
-      // Persist distance incrementally so a crash won't lose it
-      await _prefs?.setDouble('current_active_trip_distance', _totalDistance);
+    } else {
+      _lastPosition = position;
     }
-
-    _lastPosition = position;
 
     // 3. Memory Leak Prevention (Write immediately, do not hold in memory)
     try {
+      // Only insert to DB if we actually moved significantly, or maybe every point?
+      // Let's insert every valid point so the track is smooth, or maybe we just let the DB handle it.
       await _db?.into(_db!.tripPoints).insert(
         TripPointsCompanion(
           tripId: drift.Value(_activeTripId!),
@@ -131,7 +140,7 @@ class TripTaskHandler extends TaskHandler {
           altitude: drift.Value(position.altitude),
           heading: drift.Value(position.heading),
           accuracy: drift.Value(position.accuracy),
-          speed: drift.Value(position.speed),
+          speed: drift.Value(effectiveSpeed),
         ),
       );
     } catch (e) {
@@ -150,7 +159,7 @@ Latitude: ${position.latitude}
 Longitude: ${position.longitude}
 Accuracy: ${position.accuracy}
 Heading: ${position.heading}
-Speed: ${position.speed}
+Speed: $effectiveSpeed
 Distance from previous point: $distanceSinceLast
 Current Trip Distance: $_totalDistance
 Lifetime Distance: $lifetime
@@ -165,7 +174,7 @@ UI Updated: true''';
     // Send update to UI
     FlutterForegroundTask.sendDataToMain({
       'type': 'UPDATE',
-      'speed': position.speed,
+      'speed': effectiveSpeed,
       'distance': _totalDistance,
       'latitude': position.latitude,
       'longitude': position.longitude,

@@ -1,4 +1,4 @@
-package com.example.drive_replay
+package com.app.drivereplay
 
 import io.flutter.embedding.android.FlutterActivity
 
