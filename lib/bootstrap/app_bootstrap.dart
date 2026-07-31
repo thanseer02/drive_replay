@@ -46,7 +46,8 @@ class AppBootstrap {
 
       // 6. Dependency Injection (Async setup)
       await _executeStep('Registering Dependencies...', () async {
-        await setupLocatorAsync(); // We will refactor setupLocator to be async
+        // Setup happens in main() before runApp now to satisfy providers, this is just visual
+        await Future.delayed(const Duration(milliseconds: 100));
       });
 
       // 7. Repositories

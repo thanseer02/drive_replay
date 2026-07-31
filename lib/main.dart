@@ -25,7 +25,10 @@ void main() {
       DeviceOrientation.portraitDown,
     ]);
 
-    // 2. Launch the framework
+    // 2. Setup Dependency Injection
+    await setupLocatorAsync();
+
+    // 3. Launch the framework
     runApp(const DriveReplayApp());
     
   }, (error, stackTrace) {
