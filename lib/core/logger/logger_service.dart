@@ -1,14 +1,28 @@
 import 'dart:developer' as developer;
 import 'package:flutter/foundation.dart';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 
 enum LogLevel { debug, info, warning, error, critical }
 
 class LoggerService {
   static bool _enabled = true;
+  static File? _logFile;
 
-  static void initialize({bool enableLogs = true}) {
+  static Future<void> initialize({bool enableLogs = true}) async {
     _enabled = enableLogs;
-    info('LoggerService initialized. Logging enabled: $_enabled');
+    
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      _logFile = File('${directory.path}/app_crashes_and_logs.txt');
+      
+      if (!await _logFile!.exists()) {
+        await _logFile!.create();
+      }
+      info('LoggerService initialized. Logging to file: ${_logFile!.path}');
+    } catch (e) {
+      developer.log('Failed to initialize local log file: $e');
+    }
   }
 
   static void debug(String message, [Object? error, StackTrace? stackTrace]) {
@@ -38,13 +52,13 @@ class LoggerService {
     final timeString = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}';
     final levelString = level.name.toUpperCase();
     
-    final formattedMessage = '[$timeString][$levelString] $message';
+    var formattedMessage = '[$timeString][$levelString] $message';
+    if (error != null) formattedMessage += '\nError: $error';
+    if (stackTrace != null) formattedMessage += '\nStacktrace:\n$stackTrace';
 
     if (kDebugMode) {
       // In debug mode, use standard print for easy console reading
       print(formattedMessage);
-      if (error != null) print('Error: $error');
-      if (stackTrace != null) print('Stacktrace:\n$stackTrace');
     } else {
       // In release mode, use developer.log if enabled (or send to crashlytics in real app)
       developer.log(
@@ -55,6 +69,15 @@ class LoggerService {
         error: error,
         stackTrace: stackTrace,
       );
+    }
+
+    // Always append crashes and errors to the local file for release mode debugging
+    if (_logFile != null && (level == LogLevel.error || level == LogLevel.critical || !kDebugMode)) {
+      try {
+        _logFile!.writeAsStringSync('$formattedMessage\n\n', mode: FileMode.append);
+      } catch (_) {
+        // Silently fail if file system is locked to prevent crash loops
+      }
     }
   }
 

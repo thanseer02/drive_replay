@@ -22,7 +22,7 @@ class AppBootstrap {
 
       // 2. Logger
       await _executeStep('Initializing Logger...', () async {
-        LoggerService.initialize(enableLogs: true);
+        await LoggerService.initialize(enableLogs: true);
         GlobalErrorHandler.initialize();
       });
 
