@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:drive_replay/core/services/local_db/app_database.dart';
-import 'package:drive_replay/features/analytics/repositories/analytics_repository.dart';
+import 'package:drive_replay/core/domain/repositories/analytics_repository.dart';
 
 class AnalyticsRepositoryImpl implements AnalyticsRepository {
   final AppDatabase _db;

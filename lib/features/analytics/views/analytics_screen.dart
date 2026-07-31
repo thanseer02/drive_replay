@@ -13,18 +13,16 @@ class AnalyticsScreen extends StatefulWidget {
 }
 
 class _AnalyticsScreenState extends State<AnalyticsScreen> {
-  late final AnalyticsViewModel _viewModel;
 
   @override
   void initState() {
     super.initState();
-    _viewModel = locator<AnalyticsViewModel>();
   }
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider.value(
-      value: _viewModel,
+    return ChangeNotifierProvider(
+      create: (_) => locator<AnalyticsViewModel>(),
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(

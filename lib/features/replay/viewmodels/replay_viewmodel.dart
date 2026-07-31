@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:drive_replay/core/services/local_db/app_database.dart';
-import 'package:drive_replay/features/trip_record/repositories/trip_repository.dart';
+import 'package:drive_replay/core/domain/repositories/trip_repository.dart';
 import 'package:drive_replay/core/logger/app_logger.dart';
 
 class ReplayViewModel extends ChangeNotifier {
@@ -27,6 +27,7 @@ class ReplayViewModel extends ChangeNotifier {
   double _currentHeading = 0.0;
   double _currentAltitude = 0.0;
   double _currentDistance = 0.0;
+  double _currentSpeed = 0.0;
   
   Timer? _ticker;
   DateTime? _lastTickTime;
@@ -45,6 +46,7 @@ class ReplayViewModel extends ChangeNotifier {
   double get currentHeading => _currentHeading;
   double get currentAltitude => _currentAltitude;
   double get currentDistance => _currentDistance;
+  double get currentSpeed => _currentSpeed;
 
   double get progress {
     if (_startTime == null || _endTime == null || _simulationTime == null) return 0;
@@ -184,6 +186,7 @@ class ReplayViewModel extends ChangeNotifier {
     // Linear Interpolation
     _currentLatitude = _lerp(p1.latitude, p2.latitude, t);
     _currentLongitude = _lerp(p1.longitude, p2.longitude, t);
+    _currentSpeed = _lerp(p1.speed, p2.speed, t);
     
     // For smooth visuals, we can infer speed from distance over time, 
     // but we can also just lerp available accuracy/speed values if we had them. 
@@ -202,6 +205,7 @@ class ReplayViewModel extends ChangeNotifier {
     _currentLongitude = p.longitude;
     _currentAltitude = p.altitude ?? 0.0;
     _currentHeading = p.heading ?? 0.0;
+    _currentSpeed = p.speed;
   }
 
   double _lerp(double a, double b, double t) {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:drive_replay/features/analytics/repositories/analytics_repository.dart';
+import 'package:drive_replay/core/domain/repositories/analytics_repository.dart';
 import 'package:drive_replay/core/logger/app_logger.dart';
 
 enum TimeRange { weekly, monthly, yearly }

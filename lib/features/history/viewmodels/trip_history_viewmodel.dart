@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:drive_replay/core/services/local_db/app_database.dart';
-import 'package:drive_replay/features/trip_record/repositories/trip_repository.dart';
+import 'package:drive_replay/core/domain/repositories/trip_repository.dart';
+import 'package:drive_replay/core/logger/app_logger.dart';
 
 class TripHistoryViewModel extends ChangeNotifier {
   final TripRepository _repository;
@@ -8,7 +9,8 @@ class TripHistoryViewModel extends ChangeNotifier {
   // State
   List<Trip> _trips = [];
   bool _isLoading = false;
-  bool _hasReachedMax = false;
+  bool _hasMore = true;
+  int? _lastSeenId;
   String _searchQuery = '';
   bool _favoritesOnly = false;
   
@@ -18,7 +20,6 @@ class TripHistoryViewModel extends ChangeNotifier {
 
   // Pagination config
   final int _limit = 20;
-  int _offset = 0;
 
   TripHistoryViewModel(this._repository) {
     // Assuming vehicleId 1 for now (active vehicle)
@@ -27,46 +28,65 @@ class TripHistoryViewModel extends ChangeNotifier {
 
   List<Trip> get trips => _trips;
   bool get isLoading => _isLoading;
-  bool get hasReachedMax => _hasReachedMax;
+  bool get hasMore => _hasMore;
   String get searchQuery => _searchQuery;
   bool get favoritesOnly => _favoritesOnly;
   double get totalDistance => _totalDistance;
   int get totalTripsCount => _totalTripsCount;
 
   Future<void> fetchInitialTrips() async {
-    _offset = 0;
-    _hasReachedMax = false;
-    _trips = [];
-    _totalDistance = 0.0;
-    _totalTripsCount = 0;
-    await _fetchTrips();
-  }
-
-  Future<void> fetchNextPage() async {
-    if (_hasReachedMax || _isLoading) return;
-    _offset += _limit;
-    await _fetchTrips();
-  }
-
-  Future<void> _fetchTrips() async {
     _isLoading = true;
+    _lastSeenId = null;
+    _hasMore = true;
     notifyListeners();
 
     try {
-      final fetchedTrips = await _repository.getTripHistory(
-        vehicleId: 1, // Defaulting to 1 for this implementation
+      final results = await _repository.getTripHistory(
+        vehicleId: 1, // Hardcoded for now
         limit: _limit,
-        offset: _offset,
+        lastSeenId: _lastSeenId,
         searchQuery: _searchQuery,
         favoritesOnly: _favoritesOnly,
       );
 
-      if (fetchedTrips.isEmpty) {
-        _hasReachedMax = true;
-      } else {
-        _trips.addAll(fetchedTrips);
-        _calculateStats();
+      _trips = results;
+      if (results.isNotEmpty) {
+        _lastSeenId = results.last.id;
       }
+      _hasMore = results.length == _limit;
+      
+      _calculateStats();
+    } catch (e) {
+      AppLogger.e('Failed to fetch initial trips: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> fetchNextPage() async {
+    if (_isLoading || !_hasMore) return;
+
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final results = await _repository.getTripHistory(
+        vehicleId: 1,
+        limit: _limit,
+        lastSeenId: _lastSeenId,
+        searchQuery: _searchQuery,
+        favoritesOnly: _favoritesOnly,
+      );
+
+      if (results.isNotEmpty) {
+        _trips.addAll(results);
+        _lastSeenId = results.last.id;
+      }
+      _hasMore = results.length == _limit;
+      _calculateStats();
+    } catch (e) {
+      AppLogger.e('Failed to fetch next page trips: $e');
     } finally {
       _isLoading = false;
       notifyListeners();

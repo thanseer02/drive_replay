@@ -6,7 +6,7 @@ abstract class TripRepository {
   Future<List<Trip>> getTripHistory({
     required int vehicleId,
     required int limit,
-    required int offset,
+    int? lastSeenId,
     String? searchQuery,
     bool favoritesOnly = false,
   });

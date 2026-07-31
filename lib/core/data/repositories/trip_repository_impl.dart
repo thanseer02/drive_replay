@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:drift/drift.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:drive_replay/core/services/local_db/app_database.dart';
-import 'package:drive_replay/features/trip_record/repositories/trip_repository.dart';
+import 'package:drive_replay/core/domain/repositories/trip_repository.dart';
 
 class TripRepositoryImpl implements TripRepository {
   final AppDatabase _db;
@@ -34,13 +34,18 @@ class TripRepositoryImpl implements TripRepository {
   Future<List<Trip>> getTripHistory({
     required int vehicleId,
     required int limit,
-    required int offset,
+    int? lastSeenId,
     String? searchQuery,
     bool favoritesOnly = false,
   }) async {
     final query = _db.select(_db.trips)
+      ..where((t) => t.vehicleId.equals(vehicleId))
       ..where((t) => t.isDeleted.equals(false))
-      ..where((t) => t.vehicleId.equals(vehicleId));
+      ..orderBy([(t) => OrderingTerm(expression: t.id, mode: OrderingMode.desc)]);
+
+    if (lastSeenId != null) {
+      query.where((t) => t.id.isSmallerThanValue(lastSeenId));
+    }
 
     if (favoritesOnly) {
       query.where((t) => t.isFavorite.equals(true));
@@ -53,8 +58,7 @@ class TripRepositoryImpl implements TripRepository {
       );
     }
 
-    query.orderBy([(t) => OrderingTerm(expression: t.startTime, mode: OrderingMode.desc)]);
-    query.limit(limit, offset: offset);
+    query.limit(limit);
 
     return await query.get();
   }

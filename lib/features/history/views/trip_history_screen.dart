@@ -16,7 +16,7 @@ class TripHistoryScreen extends StatefulWidget {
 class _TripHistoryScreenState extends State<TripHistoryScreen> {
   final _scrollController = ScrollController();
   final _searchController = TextEditingController();
-  late final TripHistoryViewModel _viewModel;
+  TripHistoryViewModel? _viewModel;
 
   @override
   void initState() {
@@ -26,8 +26,9 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
   }
 
   void _onScroll() {
+    if (_viewModel == null) return;
     if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
-      _viewModel.fetchNextPage();
+      _viewModel!.fetchNextPage();
     }
   }
 
@@ -40,8 +41,12 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider.value(
-      value: _viewModel,
+    return ChangeNotifierProvider(
+      create: (context) {
+        final vm = locator<TripHistoryViewModel>();
+        _viewModel = vm;
+        return vm;
+      },
       child: Scaffold(
         backgroundColor: AppColors.background,
         body: SafeArea(
@@ -84,7 +89,7 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
                 ),
                 onChanged: (val) {
                   // Debouncing would be ideal here in a real production app
-                  _viewModel.setSearchQuery(val);
+                  _viewModel?.setSearchQuery(val);
                 },
               ),
             ),
@@ -159,7 +164,8 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
         return SliverList(
           delegate: SliverChildBuilderDelegate(
             (context, index) {
-              if (index >= vm.trips.length) {
+              if (index == vm.trips.length) {
+                if (!vm.hasMore) return const SizedBox();
                 return const Padding(
                   padding: EdgeInsets.all(16.0),
                   child: Center(child: CircularProgressIndicator()),
@@ -171,7 +177,7 @@ class _TripHistoryScreenState extends State<TripHistoryScreen> {
                 .fadeIn(duration: 300.ms)
                 .slideX(begin: 0.1, duration: 300.ms);
             },
-            childCount: vm.hasReachedMax ? vm.trips.length : vm.trips.length + 1,
+            childCount: !vm.hasMore ? vm.trips.length : vm.trips.length + 1,
           ),
         );
       },
