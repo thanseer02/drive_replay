@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:drive_replay/core/di/dependency_injection.dart';
 import 'package:drive_replay/core/theme/app_colors.dart';
 import 'package:drive_replay/features/dashboard/viewmodels/dashboard_viewmodel.dart';
+import 'package:drive_replay/features/trip_record/views/trip_record_screen.dart';
 import 'package:drive_replay/features/history/views/trip_history_screen.dart';
 import 'package:drive_replay/features/analytics/views/analytics_screen.dart';
 
@@ -123,8 +124,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           icon: Icons.play_arrow,
           label: 'Start Trip',
           onTap: () {
-            // Navigator.push(context, MaterialPageRoute(builder: (_) => const TripRecordScreen()));
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Trip Recording UI coming soon')));
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const TripRecordScreen()));
           },
         ),
         _ActionButton(

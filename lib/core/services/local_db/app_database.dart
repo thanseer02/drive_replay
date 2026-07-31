@@ -25,7 +25,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration {
@@ -41,9 +41,21 @@ class AppDatabase extends _$AppDatabase {
             autoRecord: Value(false),
           ),
         );
+        
+        await into(vehicles).insert(
+          const VehiclesCompanion(
+            name: Value('My Vehicle'),
+            make: Value('Unknown'),
+            model: Value('Unknown'),
+          ),
+        );
       },
       onUpgrade: (Migrator m, int from, int to) async {
-        // Handle future schema migrations here
+        if (from == 1) {
+          // We forgot to seed vehicle 1 in schema 1. 
+          // Insert it now if it doesn't exist.
+          await customStatement("INSERT OR IGNORE INTO vehicles (id, name, is_active, odometer) VALUES (1, 'My Vehicle', 1, 0.0);");
+        }
       },
       beforeOpen: (details) async {
         // Ensure foreign keys are strictly enforced

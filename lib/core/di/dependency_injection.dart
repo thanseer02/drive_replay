@@ -24,8 +24,8 @@ Future<void> setupLocatorAsync() async {
   locator.registerLazySingleton<AnalyticsRepository>(() => AnalyticsRepositoryImpl(locator<AppDatabase>()));
   
   // ViewModels
-  locator.registerLazySingleton<PermissionViewModel>(() => PermissionViewModel(locator<PermissionService>()));
-  locator.registerFactory<TripRecordViewModel>(() => TripRecordViewModel());
+  locator.registerFactory<PermissionViewModel>(() => PermissionViewModel(locator<PermissionService>()));
+  locator.registerFactory<TripRecordViewModel>(() => TripRecordViewModel(locator<TripRepository>()));
   locator.registerFactory<TripHistoryViewModel>(() => TripHistoryViewModel(locator<TripRepository>()));
   locator.registerFactory<ReplayViewModel>(() => ReplayViewModel(locator<TripRepository>()));
   locator.registerFactory<AnalyticsViewModel>(() => AnalyticsViewModel(locator<AnalyticsRepository>()));
