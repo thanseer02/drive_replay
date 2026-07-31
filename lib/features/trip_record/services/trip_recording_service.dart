@@ -68,12 +68,23 @@ class TripTaskHandler extends TaskHandler {
   Future<void> _processLocation(Position position) async {
     if (_isPaused || _activeTripId == null) return;
     
-    // 1. Noise Filtering
-    if (position.accuracy > 30) return;
+    // Log Mock Locations
+    if (position.isMocked) {
+      LoggerService.warning('Mock Location Detected: ${position.latitude}, ${position.longitude}');
+      // In production, you might want to reject mocked locations depending on business logic:
+      // return; 
+    }
 
-    // 2. Duplicate Avoidance
-    if (_lastPosition != null && _lastPosition!.timestamp == position.timestamp) {
-      return; // Exact duplicate
+    // 1. Noise Filtering (Accuracy)
+    if (position.accuracy > 30.0) {
+      LoggerService.debug('Filtered: Poor accuracy (${position.accuracy}m)');
+      return;
+    }
+
+    // 2. Time Consistency Filtering (Out of order packets)
+    if (_lastPosition != null && position.timestamp.compareTo(_lastPosition!.timestamp) <= 0) {
+      LoggerService.debug('Filtered: Stale or duplicate timestamp');
+      return;
     }
 
     if (_lastPosition != null) {
@@ -83,6 +94,24 @@ class TripTaskHandler extends TaskHandler {
         position.latitude,
         position.longitude,
       );
+
+      final timeDeltaSecs = position.timestamp.difference(_lastPosition!.timestamp).inMilliseconds / 1000.0;
+      
+      // 3. Speed Jump Filtering (Impossible Speeds > 250 km/h = 69.4 m/s)
+      if (timeDeltaSecs > 0) {
+        final calculatedSpeedMps = distance / timeDeltaSecs;
+        if (calculatedSpeedMps > 69.4) {
+          LoggerService.warning('Filtered: Impossible GPS Jump detected (${(calculatedSpeedMps * 3.6).toStringAsFixed(1)} km/h).');
+          return;
+        }
+      }
+
+      // 4. Jitter Filtering (Ignore micro-movements < 3 meters)
+      if (distance < 3.0) {
+        LoggerService.debug('Filtered: Jitter movement (${distance.toStringAsFixed(2)}m)');
+        return;
+      }
+
       _totalDistance += distance;
       
       // Persist distance incrementally so a crash won't lose it
@@ -102,6 +131,7 @@ class TripTaskHandler extends TaskHandler {
           altitude: drift.Value(position.altitude),
           heading: drift.Value(position.heading),
           accuracy: drift.Value(position.accuracy),
+          speed: drift.Value(position.speed),
         ),
       );
     } catch (e) {

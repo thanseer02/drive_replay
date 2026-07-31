@@ -20,9 +20,12 @@ class TripRecordViewModel extends ChangeNotifier {
   Timer? _timer;
 
   TripState get state => _state;
+  double get currentSpeed => _currentSpeed;
   double get currentSpeedKmh => _currentSpeed * 3.6;
+  double get totalDistance => _totalDistance;
   double get totalDistanceKm => _totalDistance / 1000.0;
   int get elapsedSeconds => _elapsedSeconds;
+  int? get currentTripId => _currentTripId;
   
   String get formattedDuration {
     final minutes = (_elapsedSeconds / 60).floor();

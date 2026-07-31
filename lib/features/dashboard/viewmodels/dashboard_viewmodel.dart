@@ -1,18 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:drive_replay/core/domain/repositories/trip_repository.dart';
-import 'package:drive_replay/core/domain/repositories/analytics_repository.dart';
 import 'package:drive_replay/core/logger/logger_service.dart';
 
 class DashboardViewModel extends ChangeNotifier {
   final TripRepository _tripRepository;
-  final AnalyticsRepository _analyticsRepository;
 
   bool _isLoading = true;
   double _todayDistance = 0.0;
   int _totalTrips = 0;
   final bool _isRecording = false; // Mock state, normally bound to TripRecordingService
 
-  DashboardViewModel(this._tripRepository, this._analyticsRepository) {
+  DashboardViewModel(this._tripRepository) {
     _loadDashboardData();
   }
 
@@ -29,12 +27,10 @@ class DashboardViewModel extends ChangeNotifier {
       final now = DateTime.now();
       final startOfDay = DateTime(now.year, now.month, now.day);
       
-      // Load today's stats
-      final stats = await _analyticsRepository.getAggregateStats(1, startOfDay, now);
-      _todayDistance = stats.totalDistance;
+      // Load today's stats using robust Odometer service
+      _todayDistance = await _tripRepository.getOdometerSince(1, startOfDay);
 
       // Load total trips count (we can approximate by fetching history without limit, or add a count query)
-      // For now, we fetch a large limit just to get a count, but in production we'd add a dedicated count() query
       final trips = await _tripRepository.getTripHistory(vehicleId: 1, limit: 10000);
       _totalTrips = trips.length;
 

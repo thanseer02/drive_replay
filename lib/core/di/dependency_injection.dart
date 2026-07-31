@@ -29,5 +29,5 @@ Future<void> setupLocatorAsync() async {
   locator.registerFactory<TripHistoryViewModel>(() => TripHistoryViewModel(locator<TripRepository>()));
   locator.registerFactory<ReplayViewModel>(() => ReplayViewModel(locator<TripRepository>()));
   locator.registerFactory<AnalyticsViewModel>(() => AnalyticsViewModel(locator<AnalyticsRepository>()));
-  locator.registerFactory<DashboardViewModel>(() => DashboardViewModel(locator<TripRepository>(), locator<AnalyticsRepository>()));
+  locator.registerFactory<DashboardViewModel>(() => DashboardViewModel(locator<TripRepository>()));
 }

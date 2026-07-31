@@ -10,6 +10,7 @@ import 'package:drive_replay/core/permissions/viewmodels/permission_viewmodel.da
 import 'package:drive_replay/core/permissions/models/permission_state.dart';
 import 'package:drive_replay/core/permissions/views/permissions_screen.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:drive_replay/features/debug/views/debug_dashboard_screen.dart' as drive_replay_debug;
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -49,7 +50,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   const SizedBox(height: 16),
                   _buildQuickActions(context),
                   const SizedBox(height: 24),
-                  Text('System Health', style: Theme.of(context).textTheme.titleLarge),
+                  GestureDetector(
+                    onLongPress: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const drive_replay_debug.DebugDashboardScreen()));
+                    },
+                    child: Text('System Health', style: Theme.of(context).textTheme.titleLarge),
+                  ),
                   const SizedBox(height: 16),
                   _buildSystemHealth(),
                 ],

@@ -16,4 +16,6 @@ abstract class TripRepository {
   Future<void> restoreTrip(int tripId);
   Future<String> exportTripCsv(int tripId);
   Future<List<TripPoint>> getTripPoints(int tripId);
+  Future<double> getOdometerTotal(int vehicleId);
+  Future<double> getOdometerSince(int vehicleId, DateTime since);
 }

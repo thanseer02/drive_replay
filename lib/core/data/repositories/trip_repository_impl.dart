@@ -137,4 +137,21 @@ class TripRepositoryImpl implements TripRepository {
       ..orderBy([(p) => OrderingTerm(expression: p.timestamp)]);
     return await query.get();
   }
+
+  @override
+  Future<double> getOdometerTotal(int vehicleId) async {
+    final trips = await (_db.select(_db.trips)
+      ..where((t) => t.vehicleId.equals(vehicleId))
+      ..where((t) => t.isDeleted.equals(false))).get();
+    return trips.fold<double>(0.0, (sum, trip) => sum + trip.totalDistance);
+  }
+
+  @override
+  Future<double> getOdometerSince(int vehicleId, DateTime since) async {
+    final trips = await (_db.select(_db.trips)
+      ..where((t) => t.vehicleId.equals(vehicleId))
+      ..where((t) => t.isDeleted.equals(false))
+      ..where((t) => t.startTime.isBiggerOrEqualValue(since))).get();
+    return trips.fold<double>(0.0, (sum, trip) => sum + trip.totalDistance);
+  }
 }
