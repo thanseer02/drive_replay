@@ -24,7 +24,6 @@ class ReplayViewModel extends ChangeNotifier {
   // Interpolated Values
   double _currentLatitude = 0.0;
   double _currentLongitude = 0.0;
-  double _currentSpeed = 0.0;
   double _currentHeading = 0.0;
   double _currentAltitude = 0.0;
   double _currentDistance = 0.0;
@@ -43,7 +42,6 @@ class ReplayViewModel extends ChangeNotifier {
   
   double get currentLatitude => _currentLatitude;
   double get currentLongitude => _currentLongitude;
-  double get currentSpeed => _currentSpeed;
   double get currentHeading => _currentHeading;
   double get currentAltitude => _currentAltitude;
   double get currentDistance => _currentDistance;
@@ -157,7 +155,7 @@ class ReplayViewModel extends ChangeNotifier {
     if (_points.isEmpty || _simulationTime == null) return;
 
     // Find bounding points
-    int idx = _points.indexWhere((p) => p.timestamp.isAfter(_simulationTime!));
+    final int idx = _points.indexWhere((p) => p.timestamp.isAfter(_simulationTime!));
     
     if (idx == -1) {
       // At the end
@@ -174,7 +172,7 @@ class ReplayViewModel extends ChangeNotifier {
     final p1 = _points[idx - 1];
     final p2 = _points[idx];
     
-    final totalMs = p2.timestamp.difference(p1.timestamp).inMilliseconds;
+    final int totalMs = p2.timestamp.difference(p1.timestamp).inMilliseconds;
     if (totalMs == 0) {
       _applyPoint(p1);
       return;
@@ -212,8 +210,12 @@ class ReplayViewModel extends ChangeNotifier {
 
   double _lerpHeading(double a, double b, double t) {
     double diff = b - a;
-    while (diff < -180.0) diff += 360.0;
-    while (diff > 180.0) diff -= 360.0;
+    while (diff < -180.0) {
+      diff += 360.0;
+    }
+    while (diff > 180.0) {
+      diff -= 360.0;
+    }
     return a + diff * t;
   }
 

@@ -7,6 +7,9 @@ import 'package:drive_replay/core/permissions/viewmodels/permission_viewmodel.da
 import 'package:drive_replay/features/trip_record/viewmodels/trip_record_viewmodel.dart';
 import 'package:drive_replay/features/history/viewmodels/trip_history_viewmodel.dart';
 import 'package:drive_replay/features/replay/viewmodels/replay_viewmodel.dart';
+import 'package:drive_replay/features/analytics/repositories/analytics_repository.dart';
+import 'package:drive_replay/features/analytics/repositories/analytics_repository_impl.dart';
+import 'package:drive_replay/features/analytics/viewmodels/analytics_viewmodel.dart';
 
 final GetIt locator = GetIt.instance;
 
@@ -17,10 +20,12 @@ void setupLocator() {
   
   // Repositories
   locator.registerLazySingleton<TripRepository>(() => TripRepositoryImpl(locator<AppDatabase>()));
+  locator.registerLazySingleton<AnalyticsRepository>(() => AnalyticsRepositoryImpl(locator<AppDatabase>()));
   
   // ViewModels
   locator.registerLazySingleton<PermissionViewModel>(() => PermissionViewModel(locator<PermissionService>()));
   locator.registerLazySingleton<TripRecordViewModel>(() => TripRecordViewModel());
   locator.registerLazySingleton<TripHistoryViewModel>(() => TripHistoryViewModel(locator<TripRepository>()));
   locator.registerFactory<ReplayViewModel>(() => ReplayViewModel(locator<TripRepository>()));
+  locator.registerLazySingleton<AnalyticsViewModel>(() => AnalyticsViewModel(locator<AnalyticsRepository>()));
 }

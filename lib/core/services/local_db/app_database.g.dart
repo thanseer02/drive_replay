@@ -1464,6 +1464,16 @@ class $TripPointsTable extends TripPoints
     type: DriftSqlType.double,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _speedMeta = const VerificationMeta('speed');
+  @override
+  late final GeneratedColumn<double> speed = GeneratedColumn<double>(
+    'speed',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0.0),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -1474,6 +1484,7 @@ class $TripPointsTable extends TripPoints
     altitude,
     heading,
     accuracy,
+    speed,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1540,6 +1551,12 @@ class $TripPointsTable extends TripPoints
         accuracy.isAcceptableOrUnknown(data['accuracy']!, _accuracyMeta),
       );
     }
+    if (data.containsKey('speed')) {
+      context.handle(
+        _speedMeta,
+        speed.isAcceptableOrUnknown(data['speed']!, _speedMeta),
+      );
+    }
     return context;
   }
 
@@ -1581,6 +1598,10 @@ class $TripPointsTable extends TripPoints
         DriftSqlType.double,
         data['${effectivePrefix}accuracy'],
       ),
+      speed: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}speed'],
+      )!,
     );
   }
 
@@ -1599,6 +1620,7 @@ class TripPoint extends DataClass implements Insertable<TripPoint> {
   final double? altitude;
   final double? heading;
   final double? accuracy;
+  final double speed;
   const TripPoint({
     required this.id,
     required this.tripId,
@@ -1608,6 +1630,7 @@ class TripPoint extends DataClass implements Insertable<TripPoint> {
     this.altitude,
     this.heading,
     this.accuracy,
+    required this.speed,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1626,6 +1649,7 @@ class TripPoint extends DataClass implements Insertable<TripPoint> {
     if (!nullToAbsent || accuracy != null) {
       map['accuracy'] = Variable<double>(accuracy);
     }
+    map['speed'] = Variable<double>(speed);
     return map;
   }
 
@@ -1645,6 +1669,7 @@ class TripPoint extends DataClass implements Insertable<TripPoint> {
       accuracy: accuracy == null && nullToAbsent
           ? const Value.absent()
           : Value(accuracy),
+      speed: Value(speed),
     );
   }
 
@@ -1662,6 +1687,7 @@ class TripPoint extends DataClass implements Insertable<TripPoint> {
       altitude: serializer.fromJson<double?>(json['altitude']),
       heading: serializer.fromJson<double?>(json['heading']),
       accuracy: serializer.fromJson<double?>(json['accuracy']),
+      speed: serializer.fromJson<double>(json['speed']),
     );
   }
   @override
@@ -1676,6 +1702,7 @@ class TripPoint extends DataClass implements Insertable<TripPoint> {
       'altitude': serializer.toJson<double?>(altitude),
       'heading': serializer.toJson<double?>(heading),
       'accuracy': serializer.toJson<double?>(accuracy),
+      'speed': serializer.toJson<double>(speed),
     };
   }
 
@@ -1688,6 +1715,7 @@ class TripPoint extends DataClass implements Insertable<TripPoint> {
     Value<double?> altitude = const Value.absent(),
     Value<double?> heading = const Value.absent(),
     Value<double?> accuracy = const Value.absent(),
+    double? speed,
   }) => TripPoint(
     id: id ?? this.id,
     tripId: tripId ?? this.tripId,
@@ -1697,6 +1725,7 @@ class TripPoint extends DataClass implements Insertable<TripPoint> {
     altitude: altitude.present ? altitude.value : this.altitude,
     heading: heading.present ? heading.value : this.heading,
     accuracy: accuracy.present ? accuracy.value : this.accuracy,
+    speed: speed ?? this.speed,
   );
   TripPoint copyWithCompanion(TripPointsCompanion data) {
     return TripPoint(
@@ -1708,6 +1737,7 @@ class TripPoint extends DataClass implements Insertable<TripPoint> {
       altitude: data.altitude.present ? data.altitude.value : this.altitude,
       heading: data.heading.present ? data.heading.value : this.heading,
       accuracy: data.accuracy.present ? data.accuracy.value : this.accuracy,
+      speed: data.speed.present ? data.speed.value : this.speed,
     );
   }
 
@@ -1721,7 +1751,8 @@ class TripPoint extends DataClass implements Insertable<TripPoint> {
           ..write('longitude: $longitude, ')
           ..write('altitude: $altitude, ')
           ..write('heading: $heading, ')
-          ..write('accuracy: $accuracy')
+          ..write('accuracy: $accuracy, ')
+          ..write('speed: $speed')
           ..write(')'))
         .toString();
   }
@@ -1736,6 +1767,7 @@ class TripPoint extends DataClass implements Insertable<TripPoint> {
     altitude,
     heading,
     accuracy,
+    speed,
   );
   @override
   bool operator ==(Object other) =>
@@ -1748,7 +1780,8 @@ class TripPoint extends DataClass implements Insertable<TripPoint> {
           other.longitude == this.longitude &&
           other.altitude == this.altitude &&
           other.heading == this.heading &&
-          other.accuracy == this.accuracy);
+          other.accuracy == this.accuracy &&
+          other.speed == this.speed);
 }
 
 class TripPointsCompanion extends UpdateCompanion<TripPoint> {
@@ -1760,6 +1793,7 @@ class TripPointsCompanion extends UpdateCompanion<TripPoint> {
   final Value<double?> altitude;
   final Value<double?> heading;
   final Value<double?> accuracy;
+  final Value<double> speed;
   const TripPointsCompanion({
     this.id = const Value.absent(),
     this.tripId = const Value.absent(),
@@ -1769,6 +1803,7 @@ class TripPointsCompanion extends UpdateCompanion<TripPoint> {
     this.altitude = const Value.absent(),
     this.heading = const Value.absent(),
     this.accuracy = const Value.absent(),
+    this.speed = const Value.absent(),
   });
   TripPointsCompanion.insert({
     this.id = const Value.absent(),
@@ -1779,6 +1814,7 @@ class TripPointsCompanion extends UpdateCompanion<TripPoint> {
     this.altitude = const Value.absent(),
     this.heading = const Value.absent(),
     this.accuracy = const Value.absent(),
+    this.speed = const Value.absent(),
   }) : tripId = Value(tripId),
        timestamp = Value(timestamp),
        latitude = Value(latitude),
@@ -1792,6 +1828,7 @@ class TripPointsCompanion extends UpdateCompanion<TripPoint> {
     Expression<double>? altitude,
     Expression<double>? heading,
     Expression<double>? accuracy,
+    Expression<double>? speed,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1802,6 +1839,7 @@ class TripPointsCompanion extends UpdateCompanion<TripPoint> {
       if (altitude != null) 'altitude': altitude,
       if (heading != null) 'heading': heading,
       if (accuracy != null) 'accuracy': accuracy,
+      if (speed != null) 'speed': speed,
     });
   }
 
@@ -1814,6 +1852,7 @@ class TripPointsCompanion extends UpdateCompanion<TripPoint> {
     Value<double?>? altitude,
     Value<double?>? heading,
     Value<double?>? accuracy,
+    Value<double>? speed,
   }) {
     return TripPointsCompanion(
       id: id ?? this.id,
@@ -1824,6 +1863,7 @@ class TripPointsCompanion extends UpdateCompanion<TripPoint> {
       altitude: altitude ?? this.altitude,
       heading: heading ?? this.heading,
       accuracy: accuracy ?? this.accuracy,
+      speed: speed ?? this.speed,
     );
   }
 
@@ -1854,6 +1894,9 @@ class TripPointsCompanion extends UpdateCompanion<TripPoint> {
     if (accuracy.present) {
       map['accuracy'] = Variable<double>(accuracy.value);
     }
+    if (speed.present) {
+      map['speed'] = Variable<double>(speed.value);
+    }
     return map;
   }
 
@@ -1867,7 +1910,8 @@ class TripPointsCompanion extends UpdateCompanion<TripPoint> {
           ..write('longitude: $longitude, ')
           ..write('altitude: $altitude, ')
           ..write('heading: $heading, ')
-          ..write('accuracy: $accuracy')
+          ..write('accuracy: $accuracy, ')
+          ..write('speed: $speed')
           ..write(')'))
         .toString();
   }
@@ -6471,6 +6515,7 @@ typedef $$TripPointsTableCreateCompanionBuilder =
       Value<double?> altitude,
       Value<double?> heading,
       Value<double?> accuracy,
+      Value<double> speed,
     });
 typedef $$TripPointsTableUpdateCompanionBuilder =
     TripPointsCompanion Function({
@@ -6482,6 +6527,7 @@ typedef $$TripPointsTableUpdateCompanionBuilder =
       Value<double?> altitude,
       Value<double?> heading,
       Value<double?> accuracy,
+      Value<double> speed,
     });
 
 final class $$TripPointsTableReferences
@@ -6547,6 +6593,11 @@ class $$TripPointsTableFilterComposer
 
   ColumnFilters<double> get accuracy => $composableBuilder(
     column: $table.accuracy,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get speed => $composableBuilder(
+    column: $table.speed,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -6618,6 +6669,11 @@ class $$TripPointsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<double> get speed => $composableBuilder(
+    column: $table.speed,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$TripsTableOrderingComposer get tripId {
     final $$TripsTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -6671,6 +6727,9 @@ class $$TripPointsTableAnnotationComposer
 
   GeneratedColumn<double> get accuracy =>
       $composableBuilder(column: $table.accuracy, builder: (column) => column);
+
+  GeneratedColumn<double> get speed =>
+      $composableBuilder(column: $table.speed, builder: (column) => column);
 
   $$TripsTableAnnotationComposer get tripId {
     final $$TripsTableAnnotationComposer composer = $composerBuilder(
@@ -6732,6 +6791,7 @@ class $$TripPointsTableTableManager
                 Value<double?> altitude = const Value.absent(),
                 Value<double?> heading = const Value.absent(),
                 Value<double?> accuracy = const Value.absent(),
+                Value<double> speed = const Value.absent(),
               }) => TripPointsCompanion(
                 id: id,
                 tripId: tripId,
@@ -6741,6 +6801,7 @@ class $$TripPointsTableTableManager
                 altitude: altitude,
                 heading: heading,
                 accuracy: accuracy,
+                speed: speed,
               ),
           createCompanionCallback:
               ({
@@ -6752,6 +6813,7 @@ class $$TripPointsTableTableManager
                 Value<double?> altitude = const Value.absent(),
                 Value<double?> heading = const Value.absent(),
                 Value<double?> accuracy = const Value.absent(),
+                Value<double> speed = const Value.absent(),
               }) => TripPointsCompanion.insert(
                 id: id,
                 tripId: tripId,
@@ -6761,6 +6823,7 @@ class $$TripPointsTableTableManager
                 altitude: altitude,
                 heading: heading,
                 accuracy: accuracy,
+                speed: speed,
               ),
           withReferenceMapper: (p0) => p0
               .map(

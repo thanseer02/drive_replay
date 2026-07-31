@@ -43,6 +43,7 @@ class TripPoints extends Table {
   RealColumn get altitude => real().nullable()();
   RealColumn get heading => real().nullable()();
   RealColumn get accuracy => real().nullable()();
+  RealColumn get speed => real().withDefault(const Constant(0.0))();
 }
 
 @DataClassName('Stop')

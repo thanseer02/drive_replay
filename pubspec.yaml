@@ -48,6 +48,7 @@ dependencies:
   geolocator: ^14.0.3
   flutter_animate: ^4.5.2
   csv: ^8.0.0
+  fl_chart: ^1.2.0
 
 dev_dependencies:
   flutter_test:
