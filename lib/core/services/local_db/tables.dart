@@ -29,6 +29,8 @@ class Trips extends Table {
   TextColumn get endLocation => text().nullable()();
   RealColumn get totalDistance => real().withDefault(const Constant(0.0))();
   TextColumn get status => text().withDefault(const Constant('Recording'))();
+  BoolColumn get isFavorite => boolean().withDefault(const Constant(false))();
+  BoolColumn get isDeleted => boolean().withDefault(const Constant(false))();
 }
 
 @DataClassName('TripPoint')

@@ -847,6 +847,36 @@ class $TripsTable extends Trips with TableInfo<$TripsTable, Trip> {
     requiredDuringInsert: false,
     defaultValue: const Constant('Recording'),
   );
+  static const VerificationMeta _isFavoriteMeta = const VerificationMeta(
+    'isFavorite',
+  );
+  @override
+  late final GeneratedColumn<bool> isFavorite = GeneratedColumn<bool>(
+    'is_favorite',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_favorite" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _isDeletedMeta = const VerificationMeta(
+    'isDeleted',
+  );
+  @override
+  late final GeneratedColumn<bool> isDeleted = GeneratedColumn<bool>(
+    'is_deleted',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_deleted" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     id,
@@ -857,6 +887,8 @@ class $TripsTable extends Trips with TableInfo<$TripsTable, Trip> {
     endLocation,
     totalDistance,
     status,
+    isFavorite,
+    isDeleted,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -928,6 +960,18 @@ class $TripsTable extends Trips with TableInfo<$TripsTable, Trip> {
         status.isAcceptableOrUnknown(data['status']!, _statusMeta),
       );
     }
+    if (data.containsKey('is_favorite')) {
+      context.handle(
+        _isFavoriteMeta,
+        isFavorite.isAcceptableOrUnknown(data['is_favorite']!, _isFavoriteMeta),
+      );
+    }
+    if (data.containsKey('is_deleted')) {
+      context.handle(
+        _isDeletedMeta,
+        isDeleted.isAcceptableOrUnknown(data['is_deleted']!, _isDeletedMeta),
+      );
+    }
     return context;
   }
 
@@ -969,6 +1013,14 @@ class $TripsTable extends Trips with TableInfo<$TripsTable, Trip> {
         DriftSqlType.string,
         data['${effectivePrefix}status'],
       )!,
+      isFavorite: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_favorite'],
+      )!,
+      isDeleted: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_deleted'],
+      )!,
     );
   }
 
@@ -987,6 +1039,8 @@ class Trip extends DataClass implements Insertable<Trip> {
   final String? endLocation;
   final double totalDistance;
   final String status;
+  final bool isFavorite;
+  final bool isDeleted;
   const Trip({
     required this.id,
     required this.vehicleId,
@@ -996,6 +1050,8 @@ class Trip extends DataClass implements Insertable<Trip> {
     this.endLocation,
     required this.totalDistance,
     required this.status,
+    required this.isFavorite,
+    required this.isDeleted,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1014,6 +1070,8 @@ class Trip extends DataClass implements Insertable<Trip> {
     }
     map['total_distance'] = Variable<double>(totalDistance);
     map['status'] = Variable<String>(status);
+    map['is_favorite'] = Variable<bool>(isFavorite);
+    map['is_deleted'] = Variable<bool>(isDeleted);
     return map;
   }
 
@@ -1033,6 +1091,8 @@ class Trip extends DataClass implements Insertable<Trip> {
           : Value(endLocation),
       totalDistance: Value(totalDistance),
       status: Value(status),
+      isFavorite: Value(isFavorite),
+      isDeleted: Value(isDeleted),
     );
   }
 
@@ -1050,6 +1110,8 @@ class Trip extends DataClass implements Insertable<Trip> {
       endLocation: serializer.fromJson<String?>(json['endLocation']),
       totalDistance: serializer.fromJson<double>(json['totalDistance']),
       status: serializer.fromJson<String>(json['status']),
+      isFavorite: serializer.fromJson<bool>(json['isFavorite']),
+      isDeleted: serializer.fromJson<bool>(json['isDeleted']),
     );
   }
   @override
@@ -1064,6 +1126,8 @@ class Trip extends DataClass implements Insertable<Trip> {
       'endLocation': serializer.toJson<String?>(endLocation),
       'totalDistance': serializer.toJson<double>(totalDistance),
       'status': serializer.toJson<String>(status),
+      'isFavorite': serializer.toJson<bool>(isFavorite),
+      'isDeleted': serializer.toJson<bool>(isDeleted),
     };
   }
 
@@ -1076,6 +1140,8 @@ class Trip extends DataClass implements Insertable<Trip> {
     Value<String?> endLocation = const Value.absent(),
     double? totalDistance,
     String? status,
+    bool? isFavorite,
+    bool? isDeleted,
   }) => Trip(
     id: id ?? this.id,
     vehicleId: vehicleId ?? this.vehicleId,
@@ -1087,6 +1153,8 @@ class Trip extends DataClass implements Insertable<Trip> {
     endLocation: endLocation.present ? endLocation.value : this.endLocation,
     totalDistance: totalDistance ?? this.totalDistance,
     status: status ?? this.status,
+    isFavorite: isFavorite ?? this.isFavorite,
+    isDeleted: isDeleted ?? this.isDeleted,
   );
   Trip copyWithCompanion(TripsCompanion data) {
     return Trip(
@@ -1104,6 +1172,10 @@ class Trip extends DataClass implements Insertable<Trip> {
           ? data.totalDistance.value
           : this.totalDistance,
       status: data.status.present ? data.status.value : this.status,
+      isFavorite: data.isFavorite.present
+          ? data.isFavorite.value
+          : this.isFavorite,
+      isDeleted: data.isDeleted.present ? data.isDeleted.value : this.isDeleted,
     );
   }
 
@@ -1117,7 +1189,9 @@ class Trip extends DataClass implements Insertable<Trip> {
           ..write('startLocation: $startLocation, ')
           ..write('endLocation: $endLocation, ')
           ..write('totalDistance: $totalDistance, ')
-          ..write('status: $status')
+          ..write('status: $status, ')
+          ..write('isFavorite: $isFavorite, ')
+          ..write('isDeleted: $isDeleted')
           ..write(')'))
         .toString();
   }
@@ -1132,6 +1206,8 @@ class Trip extends DataClass implements Insertable<Trip> {
     endLocation,
     totalDistance,
     status,
+    isFavorite,
+    isDeleted,
   );
   @override
   bool operator ==(Object other) =>
@@ -1144,7 +1220,9 @@ class Trip extends DataClass implements Insertable<Trip> {
           other.startLocation == this.startLocation &&
           other.endLocation == this.endLocation &&
           other.totalDistance == this.totalDistance &&
-          other.status == this.status);
+          other.status == this.status &&
+          other.isFavorite == this.isFavorite &&
+          other.isDeleted == this.isDeleted);
 }
 
 class TripsCompanion extends UpdateCompanion<Trip> {
@@ -1156,6 +1234,8 @@ class TripsCompanion extends UpdateCompanion<Trip> {
   final Value<String?> endLocation;
   final Value<double> totalDistance;
   final Value<String> status;
+  final Value<bool> isFavorite;
+  final Value<bool> isDeleted;
   const TripsCompanion({
     this.id = const Value.absent(),
     this.vehicleId = const Value.absent(),
@@ -1165,6 +1245,8 @@ class TripsCompanion extends UpdateCompanion<Trip> {
     this.endLocation = const Value.absent(),
     this.totalDistance = const Value.absent(),
     this.status = const Value.absent(),
+    this.isFavorite = const Value.absent(),
+    this.isDeleted = const Value.absent(),
   });
   TripsCompanion.insert({
     this.id = const Value.absent(),
@@ -1175,6 +1257,8 @@ class TripsCompanion extends UpdateCompanion<Trip> {
     this.endLocation = const Value.absent(),
     this.totalDistance = const Value.absent(),
     this.status = const Value.absent(),
+    this.isFavorite = const Value.absent(),
+    this.isDeleted = const Value.absent(),
   }) : vehicleId = Value(vehicleId),
        startTime = Value(startTime);
   static Insertable<Trip> custom({
@@ -1186,6 +1270,8 @@ class TripsCompanion extends UpdateCompanion<Trip> {
     Expression<String>? endLocation,
     Expression<double>? totalDistance,
     Expression<String>? status,
+    Expression<bool>? isFavorite,
+    Expression<bool>? isDeleted,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1196,6 +1282,8 @@ class TripsCompanion extends UpdateCompanion<Trip> {
       if (endLocation != null) 'end_location': endLocation,
       if (totalDistance != null) 'total_distance': totalDistance,
       if (status != null) 'status': status,
+      if (isFavorite != null) 'is_favorite': isFavorite,
+      if (isDeleted != null) 'is_deleted': isDeleted,
     });
   }
 
@@ -1208,6 +1296,8 @@ class TripsCompanion extends UpdateCompanion<Trip> {
     Value<String?>? endLocation,
     Value<double>? totalDistance,
     Value<String>? status,
+    Value<bool>? isFavorite,
+    Value<bool>? isDeleted,
   }) {
     return TripsCompanion(
       id: id ?? this.id,
@@ -1218,6 +1308,8 @@ class TripsCompanion extends UpdateCompanion<Trip> {
       endLocation: endLocation ?? this.endLocation,
       totalDistance: totalDistance ?? this.totalDistance,
       status: status ?? this.status,
+      isFavorite: isFavorite ?? this.isFavorite,
+      isDeleted: isDeleted ?? this.isDeleted,
     );
   }
 
@@ -1248,6 +1340,12 @@ class TripsCompanion extends UpdateCompanion<Trip> {
     if (status.present) {
       map['status'] = Variable<String>(status.value);
     }
+    if (isFavorite.present) {
+      map['is_favorite'] = Variable<bool>(isFavorite.value);
+    }
+    if (isDeleted.present) {
+      map['is_deleted'] = Variable<bool>(isDeleted.value);
+    }
     return map;
   }
 
@@ -1261,7 +1359,9 @@ class TripsCompanion extends UpdateCompanion<Trip> {
           ..write('startLocation: $startLocation, ')
           ..write('endLocation: $endLocation, ')
           ..write('totalDistance: $totalDistance, ')
-          ..write('status: $status')
+          ..write('status: $status, ')
+          ..write('isFavorite: $isFavorite, ')
+          ..write('isDeleted: $isDeleted')
           ..write(')'))
         .toString();
   }
@@ -5315,6 +5415,8 @@ typedef $$TripsTableCreateCompanionBuilder =
       Value<String?> endLocation,
       Value<double> totalDistance,
       Value<String> status,
+      Value<bool> isFavorite,
+      Value<bool> isDeleted,
     });
 typedef $$TripsTableUpdateCompanionBuilder =
     TripsCompanion Function({
@@ -5326,6 +5428,8 @@ typedef $$TripsTableUpdateCompanionBuilder =
       Value<String?> endLocation,
       Value<double> totalDistance,
       Value<String> status,
+      Value<bool> isFavorite,
+      Value<bool> isDeleted,
     });
 
 final class $$TripsTableReferences
@@ -5524,6 +5628,16 @@ class $$TripsTableFilterComposer extends Composer<_$AppDatabase, $TripsTable> {
 
   ColumnFilters<String> get status => $composableBuilder(
     column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isFavorite => $composableBuilder(
+    column: $table.isFavorite,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isDeleted => $composableBuilder(
+    column: $table.isDeleted,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -5770,6 +5884,16 @@ class $$TripsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get isFavorite => $composableBuilder(
+    column: $table.isFavorite,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isDeleted => $composableBuilder(
+    column: $table.isDeleted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   $$VehiclesTableOrderingComposer get vehicleId {
     final $$VehiclesTableOrderingComposer composer = $composerBuilder(
       composer: this,
@@ -5829,6 +5953,14 @@ class $$TripsTableAnnotationComposer
 
   GeneratedColumn<String> get status =>
       $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<bool> get isFavorite => $composableBuilder(
+    column: $table.isFavorite,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isDeleted =>
+      $composableBuilder(column: $table.isDeleted, builder: (column) => column);
 
   $$VehiclesTableAnnotationComposer get vehicleId {
     final $$VehiclesTableAnnotationComposer composer = $composerBuilder(
@@ -6075,6 +6207,8 @@ class $$TripsTableTableManager
                 Value<String?> endLocation = const Value.absent(),
                 Value<double> totalDistance = const Value.absent(),
                 Value<String> status = const Value.absent(),
+                Value<bool> isFavorite = const Value.absent(),
+                Value<bool> isDeleted = const Value.absent(),
               }) => TripsCompanion(
                 id: id,
                 vehicleId: vehicleId,
@@ -6084,6 +6218,8 @@ class $$TripsTableTableManager
                 endLocation: endLocation,
                 totalDistance: totalDistance,
                 status: status,
+                isFavorite: isFavorite,
+                isDeleted: isDeleted,
               ),
           createCompanionCallback:
               ({
@@ -6095,6 +6231,8 @@ class $$TripsTableTableManager
                 Value<String?> endLocation = const Value.absent(),
                 Value<double> totalDistance = const Value.absent(),
                 Value<String> status = const Value.absent(),
+                Value<bool> isFavorite = const Value.absent(),
+                Value<bool> isDeleted = const Value.absent(),
               }) => TripsCompanion.insert(
                 id: id,
                 vehicleId: vehicleId,
@@ -6104,6 +6242,8 @@ class $$TripsTableTableManager
                 endLocation: endLocation,
                 totalDistance: totalDistance,
                 status: status,
+                isFavorite: isFavorite,
+                isDeleted: isDeleted,
               ),
           withReferenceMapper: (p0) => p0
               .map(
