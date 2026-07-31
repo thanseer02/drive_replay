@@ -12,8 +12,11 @@ class DebugDashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => DebugViewModel(locator<AppDatabase>()),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => DebugViewModel(locator<AppDatabase>())),
+        ChangeNotifierProvider(create: (_) => locator<TripRecordViewModel>()),
+      ],
       child: const _DebugDashboardContent(),
     );
   }
@@ -43,13 +46,25 @@ class _DebugDashboardContent extends StatelessWidget {
           _buildCard('Background Telemetry', [
             _buildRow('Foreground Service', debugVm.isForegroundServiceRunning ? 'RUNNING' : 'STOPPED'),
             _buildRow('Total DB Points', debugVm.totalDbPoints.toString()),
+            _buildRow('State (Provider)', tripVm.state.name),
           ]),
           const SizedBox(height: 16),
-          _buildCard('Current Trip State (UI)', [
-            _buildRow('Trip ID', tripVm.currentTripId?.toString() ?? 'N/A'),
-            _buildRow('Total Distance', '${tripVm.totalDistance.toStringAsFixed(2)} m'),
-            _buildRow('Current Speed', '${tripVm.currentSpeed.toStringAsFixed(1)} m/s'),
-            _buildRow('State', tripVm.state.name),
+          _buildCard('Raw GPS Sensor', [
+            _buildRow('Latitude', tripVm.latitude.toStringAsFixed(6)),
+            _buildRow('Longitude', tripVm.longitude.toStringAsFixed(6)),
+            _buildRow('Altitude', '${tripVm.altitude.toStringAsFixed(2)} m'),
+            _buildRow('Heading', '${tripVm.heading.toStringAsFixed(2)}°'),
+            _buildRow('Speed', '${(tripVm.currentSpeed * 3.6).toStringAsFixed(1)} km/h'),
+            _buildRow('Accuracy', '${tripVm.accuracy.toStringAsFixed(1)} m'),
+          ]),
+          const SizedBox(height: 16),
+          _buildCard('Calculated Distance', [
+            _buildRow('Distance Since Last Point', '${tripVm.distanceSinceLast.toStringAsFixed(2)} m'),
+            _buildRow('Current Trip Distance', '${tripVm.totalDistance.toStringAsFixed(2)} m'),
+          ]),
+          const SizedBox(height: 16),
+          _buildCard('System Timestamps', [
+            _buildRow('Last GPS Update', tripVm.lastUpdateTime?.toIso8601String() ?? 'N/A'),
           ]),
         ],
       ),

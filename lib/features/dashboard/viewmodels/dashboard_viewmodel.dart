@@ -7,6 +7,9 @@ class DashboardViewModel extends ChangeNotifier {
 
   bool _isLoading = true;
   double _todayDistance = 0.0;
+  double _weeklyDistance = 0.0;
+  double _monthlyDistance = 0.0;
+  double _lifetimeDistance = 0.0;
   int _totalTrips = 0;
   final bool _isRecording = false; // Mock state, normally bound to TripRecordingService
 
@@ -16,6 +19,9 @@ class DashboardViewModel extends ChangeNotifier {
 
   bool get isLoading => _isLoading;
   double get todayDistance => _todayDistance;
+  double get weeklyDistance => _weeklyDistance;
+  double get monthlyDistance => _monthlyDistance;
+  double get lifetimeDistance => _lifetimeDistance;
   int get totalTrips => _totalTrips;
   bool get isRecording => _isRecording;
 
@@ -26,9 +32,14 @@ class DashboardViewModel extends ChangeNotifier {
     try {
       final now = DateTime.now();
       final startOfDay = DateTime(now.year, now.month, now.day);
+      final startOfWeek = startOfDay.subtract(Duration(days: now.weekday - 1));
+      final startOfMonth = DateTime(now.year, now.month, 1);
       
       // Load today's stats using robust Odometer service
       _todayDistance = await _tripRepository.getOdometerSince(1, startOfDay);
+      _weeklyDistance = await _tripRepository.getOdometerSince(1, startOfWeek);
+      _monthlyDistance = await _tripRepository.getOdometerSince(1, startOfMonth);
+      _lifetimeDistance = await _tripRepository.getOdometerTotal(1);
 
       // Load total trips count (we can approximate by fetching history without limit, or add a count query)
       final trips = await _tripRepository.getTripHistory(vehicleId: 1, limit: 10000);

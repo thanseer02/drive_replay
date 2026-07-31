@@ -19,6 +19,15 @@ class TripRecordViewModel extends ChangeNotifier {
   int? _currentTripId;
   Timer? _timer;
 
+  // Extensive Telemetry
+  double _latitude = 0.0;
+  double _longitude = 0.0;
+  double _accuracy = 0.0;
+  double _heading = 0.0;
+  double _altitude = 0.0;
+  double _distanceSinceLast = 0.0;
+  DateTime? _lastUpdateTime;
+
   TripState get state => _state;
   double get currentSpeed => _currentSpeed;
   double get currentSpeedKmh => _currentSpeed * 3.6;
@@ -26,6 +35,15 @@ class TripRecordViewModel extends ChangeNotifier {
   double get totalDistanceKm => _totalDistance / 1000.0;
   int get elapsedSeconds => _elapsedSeconds;
   int? get currentTripId => _currentTripId;
+  
+  // Telemetry Getters
+  double get latitude => _latitude;
+  double get longitude => _longitude;
+  double get accuracy => _accuracy;
+  double get heading => _heading;
+  double get altitude => _altitude;
+  double get distanceSinceLast => _distanceSinceLast;
+  DateTime? get lastUpdateTime => _lastUpdateTime;
   
   String get formattedDuration {
     final minutes = (_elapsedSeconds / 60).floor();
@@ -46,7 +64,18 @@ class TripRecordViewModel extends ChangeNotifier {
     if (data is Map) {
       if (data['type'] == 'UPDATE') {
         _currentSpeed = (data['speed'] as num?)?.toDouble() ?? 0.0;
-        _totalDistance = (data['distance'] as num?)?.toDouble() ?? 0.0;
+        
+        final newDistance = (data['distance'] as num?)?.toDouble() ?? 0.0;
+        _distanceSinceLast = newDistance - _totalDistance;
+        _totalDistance = newDistance;
+
+        _latitude = (data['latitude'] as num?)?.toDouble() ?? 0.0;
+        _longitude = (data['longitude'] as num?)?.toDouble() ?? 0.0;
+        _accuracy = (data['accuracy'] as num?)?.toDouble() ?? 0.0;
+        _heading = (data['heading'] as num?)?.toDouble() ?? 0.0;
+        _altitude = (data['altitude'] as num?)?.toDouble() ?? 0.0;
+        _lastUpdateTime = DateTime.now();
+
         notifyListeners();
       }
     }

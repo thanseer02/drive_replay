@@ -103,24 +103,50 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildStatsGrid(DashboardViewModel vm) {
-    return Row(
+    return Column(
       children: [
-        Expanded(
-          child: _StatBox(
-            title: 'Today\'s Distance',
-            value: '${(vm.todayDistance / 1000).toStringAsFixed(1)} km',
-            icon: Icons.route,
-            color: Colors.blueAccent,
-          ),
+        Row(
+          children: [
+            Expanded(
+              child: _StatBox(
+                title: 'Today',
+                value: '${(vm.todayDistance / 1000).toStringAsFixed(1)} km',
+                icon: Icons.today,
+                color: Colors.blueAccent,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _StatBox(
+                title: 'This Week',
+                value: '${(vm.weeklyDistance / 1000).toStringAsFixed(1)} km',
+                icon: Icons.calendar_view_week,
+                color: Colors.purpleAccent,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: _StatBox(
-            title: 'Total Trips',
-            value: '${vm.totalTrips}',
-            icon: Icons.history,
-            color: Colors.orangeAccent,
-          ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: _StatBox(
+                title: 'This Month',
+                value: '${(vm.monthlyDistance / 1000).toStringAsFixed(1)} km',
+                icon: Icons.calendar_month,
+                color: Colors.orangeAccent,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: _StatBox(
+                title: 'Lifetime',
+                value: '${(vm.lifetimeDistance / 1000).toStringAsFixed(1)} km',
+                icon: Icons.public,
+                color: Colors.greenAccent,
+              ),
+            ),
+          ],
         ),
       ],
     );

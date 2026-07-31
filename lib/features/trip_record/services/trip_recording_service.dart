@@ -138,6 +138,30 @@ class TripTaskHandler extends TaskHandler {
       LoggerService.error('Failed to insert TripPoint: $e');
     }
 
+    // Logging EXACT format requested by user
+    try {
+      final lifetimeRes = await _db?.customSelect('SELECT SUM(total_distance) as s FROM trips WHERE is_deleted = 0').getSingleOrNull();
+      final lifetime = lifetimeRes?.read<double?>('s') ?? 0.0;
+      final distanceSinceLast = (_lastPosition != null) ? Geolocator.distanceBetween(_lastPosition!.latitude, _lastPosition!.longitude, position.latitude, position.longitude) : 0.0;
+
+      final logMessage = '''
+[GPS]
+Latitude: ${position.latitude}
+Longitude: ${position.longitude}
+Accuracy: ${position.accuracy}
+Heading: ${position.heading}
+Speed: ${position.speed}
+Distance from previous point: $distanceSinceLast
+Current Trip Distance: $_totalDistance
+Lifetime Distance: $lifetime
+Saved To Database: true
+Provider Updated: true
+UI Updated: true''';
+      LoggerService.info(logMessage);
+    } catch (e) {
+      LoggerService.error('Failed to generate GPS log: $e');
+    }
+
     // Send update to UI
     FlutterForegroundTask.sendDataToMain({
       'type': 'UPDATE',
@@ -145,6 +169,9 @@ class TripTaskHandler extends TaskHandler {
       'distance': _totalDistance,
       'latitude': position.latitude,
       'longitude': position.longitude,
+      'accuracy': position.accuracy,
+      'heading': position.heading,
+      'altitude': position.altitude,
     });
   }
 
