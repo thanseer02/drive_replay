@@ -55,6 +55,13 @@ class TripTaskHandler extends TaskHandler {
       ),
     ).listen((Position position) {
       _processLocation(position);
+    }, onError: (error) {
+      LoggerService.error('Geolocator Stream Error: $error');
+      // In a real app we might send an event back to the UI indicating GPS is off
+      FlutterForegroundTask.sendDataToMain({
+        'type': 'ERROR',
+        'message': 'Location services are disabled or unavailable.',
+      });
     });
   }
 

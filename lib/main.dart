@@ -10,12 +10,19 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:drive_replay/core/di/dependency_injection.dart';
 import 'package:drive_replay/core/permissions/viewmodels/permission_viewmodel.dart';
 import 'package:drive_replay/features/dashboard/views/dashboard_screen.dart';
+import 'package:flutter/services.dart';
 
 void main() {
   // Catch initialization errors gracefully
-  runZonedGuarded(() {
+  runZonedGuarded(() async {
     // 1. Error Handling Init
     GlobalErrorHandler.initialize();
+
+    WidgetsFlutterBinding.ensureInitialized();
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
 
     // 2. Launch the framework
     runApp(const DriveReplayApp());
