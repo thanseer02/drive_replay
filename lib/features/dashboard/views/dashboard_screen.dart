@@ -11,6 +11,7 @@ import 'package:drive_replay/core/permissions/models/permission_state.dart';
 import 'package:drive_replay/core/permissions/views/permissions_screen.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:drive_replay/features/debug/views/debug_dashboard_screen.dart' as drive_replay_debug;
+import 'package:drive_replay/features/settings/viewmodels/settings_viewmodel.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -44,7 +45,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 children: [
                   _buildStatusCard(vm),
                   const SizedBox(height: 16),
-                  _buildStatsGrid(vm),
+                  Consumer<SettingsViewModel>(
+                    builder: (context, settingsVm, child) {
+                      return _buildStatsGrid(vm, settingsVm);
+                    },
+                  ),
                   const SizedBox(height: 24),
                   Text('Quick Actions', style: Theme.of(context).textTheme.titleLarge),
                   const SizedBox(height: 16),
@@ -102,7 +107,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  Widget _buildStatsGrid(DashboardViewModel vm) {
+  Widget _buildStatsGrid(DashboardViewModel vm, SettingsViewModel settingsVm) {
     return Column(
       children: [
         Row(
@@ -110,7 +115,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             Expanded(
               child: _StatBox(
                 title: 'Today',
-                value: '${(vm.todayDistance / 1000).toStringAsFixed(1)} km',
+                value: '${settingsVm.convertDistance(vm.todayDistance).toStringAsFixed(1)} ${settingsVm.distanceUnitString}',
                 icon: Icons.today,
                 color: Colors.blueAccent,
               ),
@@ -119,7 +124,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             Expanded(
               child: _StatBox(
                 title: 'This Week',
-                value: '${(vm.weeklyDistance / 1000).toStringAsFixed(1)} km',
+                value: '${settingsVm.convertDistance(vm.weeklyDistance).toStringAsFixed(1)} ${settingsVm.distanceUnitString}',
                 icon: Icons.calendar_view_week,
                 color: Colors.purpleAccent,
               ),
@@ -132,7 +137,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             Expanded(
               child: _StatBox(
                 title: 'This Month',
-                value: '${(vm.monthlyDistance / 1000).toStringAsFixed(1)} km',
+                value: '${settingsVm.convertDistance(vm.monthlyDistance).toStringAsFixed(1)} ${settingsVm.distanceUnitString}',
                 icon: Icons.calendar_month,
                 color: Colors.orangeAccent,
               ),
@@ -141,7 +146,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             Expanded(
               child: _StatBox(
                 title: 'Lifetime',
-                value: '${(vm.lifetimeDistance / 1000).toStringAsFixed(1)} km',
+                value: '${settingsVm.convertDistance(vm.lifetimeDistance).toStringAsFixed(1)} ${settingsVm.distanceUnitString}',
                 icon: Icons.public,
                 color: Colors.greenAccent,
               ),
@@ -159,16 +164,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
         _ActionButton(
           icon: Icons.play_arrow,
           label: 'Start Trip',
-          onTap: () {
+          onTap: () async {
             final permVm = context.read<PermissionViewModel>();
             if (permVm.getState(Permission.location) == AppPermissionState.granted &&
                 permVm.getState(Permission.locationAlways) == AppPermissionState.granted &&
                 permVm.getState(Permission.ignoreBatteryOptimizations) == AppPermissionState.granted &&
                 permVm.getState(Permission.notification) == AppPermissionState.granted) {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const TripRecordScreen()));
+              await Navigator.push(context, MaterialPageRoute(builder: (_) => const TripRecordScreen()));
+              if (context.mounted) {
+                await context.read<DashboardViewModel>().refresh();
+              }
             } else {
               // Route to permissions screen
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const PermissionsScreen()));
+              await Navigator.push(context, MaterialPageRoute(builder: (_) => const PermissionsScreen()));
             }
           },
         ),

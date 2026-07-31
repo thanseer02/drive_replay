@@ -14,6 +14,8 @@ class TripRecordViewModel extends ChangeNotifier {
   
   TripState _state = TripState.idle;
   double _currentSpeed = 0.0; // m/s
+  double _maxSpeed = 0.0; // m/s
+  double _averageSpeed = 0.0; // m/s
   double _totalDistance = 0.0; // meters
   int _elapsedSeconds = 0;
   int? _currentTripId;
@@ -30,6 +32,8 @@ class TripRecordViewModel extends ChangeNotifier {
 
   TripState get state => _state;
   double get currentSpeed => _currentSpeed;
+  double get maxSpeed => _maxSpeed;
+  double get averageSpeed => _averageSpeed;
   double get currentSpeedKmh => _currentSpeed * 3.6;
   double get totalDistance => _totalDistance;
   double get totalDistanceKm => _totalDistance / 1000.0;
@@ -75,8 +79,23 @@ class TripRecordViewModel extends ChangeNotifier {
         _heading = (data['heading'] as num?)?.toDouble() ?? 0.0;
         _altitude = (data['altitude'] as num?)?.toDouble() ?? 0.0;
         _lastUpdateTime = DateTime.now();
+        
+        if (_currentSpeed > _maxSpeed) {
+          _maxSpeed = _currentSpeed;
+        }
+        
+        if (_elapsedSeconds > 0) {
+          _averageSpeed = _totalDistance / _elapsedSeconds;
+        } else {
+          _averageSpeed = _currentSpeed;
+        }
 
         notifyListeners();
+      } else if (data['type'] == 'ERROR') {
+        LoggerService.error('Trip Isolate broadcast ERROR: ${data['message']}');
+        stopTrip();
+        // Since we are decoupling from the UI, throwing a dialog requires an active context.
+        // But stopping the trip preserves data and triggers DashboardViewModel refresh.
       }
     }
   }
@@ -100,6 +119,8 @@ class TripRecordViewModel extends ChangeNotifier {
     if (started) {
       _state = TripState.recording;
       _currentSpeed = 0.0;
+      _maxSpeed = 0.0;
+      _averageSpeed = 0.0;
       _totalDistance = 0.0;
       _elapsedSeconds = 0;
       _startTimer();

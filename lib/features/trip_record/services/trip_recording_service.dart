@@ -23,6 +23,7 @@ class TripTaskHandler extends TaskHandler {
   Position? _lastPosition;
   double _totalDistance = 0.0;
   int? _activeTripId;
+  String _unit = 'metric';
 
   @override
   Future<void> onStart(DateTime timestamp, TaskStarter starter) async {
@@ -44,6 +45,26 @@ class TripTaskHandler extends TaskHandler {
     // Resume distance if recovering
     _totalDistance = _prefs?.getDouble('current_active_trip_distance') ?? 0.0;
 
+    // Load Settings
+    try {
+      final settings = await _db?.select(_db!.settings).getSingleOrNull();
+      _unit = settings?.measurementUnit ?? 'metric';
+    } catch (e) {
+      LoggerService.error('Failed to load settings in Isolate: $e');
+    }
+
+    // Verify Permissions Mid-Trip Recovery
+    final permStatus = await Geolocator.checkPermission();
+    if (permStatus == LocationPermission.denied || permStatus == LocationPermission.deniedForever) {
+      LoggerService.error('Location permission revoked while in background.');
+      FlutterForegroundTask.sendDataToMain({
+        'type': 'ERROR',
+        'message': 'Location permission was revoked.',
+      });
+      await FlutterForegroundTask.stopService();
+      return;
+    }
+
     _startLocationUpdates();
   }
 
@@ -57,7 +78,10 @@ class TripTaskHandler extends TaskHandler {
       _processLocation(position);
     }, onError: (error) {
       LoggerService.error('Geolocator Stream Error: $error');
-      // In a real app we might send an event back to the UI indicating GPS is off
+      FlutterForegroundTask.updateService(
+        notificationTitle: 'ERROR: GPS Lost',
+        notificationText: 'Tracking paused. Check location settings.',
+      );
       FlutterForegroundTask.sendDataToMain({
         'type': 'ERROR',
         'message': 'Location services are disabled or unavailable.',
@@ -182,6 +206,32 @@ UI Updated: true''';
       'heading': position.heading,
       'altitude': position.altitude,
     });
+
+    // Update Notification
+    double displaySpeed = effectiveSpeed;
+    double displayDistance = _totalDistance;
+    String unitStr = 'km/h';
+    String distStr = 'km';
+
+    if (_unit == 'imperial') {
+      displaySpeed *= 2.23694; // mph
+      displayDistance /= 1609.34; // miles
+      unitStr = 'mph';
+      distStr = 'mi';
+    } else if (_unit == 'nautical') {
+      displaySpeed *= 1.94384; // knots
+      displayDistance /= 1852.0; // nautical miles
+      unitStr = 'knots';
+      distStr = 'nm';
+    } else {
+      displaySpeed *= 3.6; // km/h
+      displayDistance /= 1000.0; // km
+    }
+
+    await FlutterForegroundTask.updateService(
+      notificationTitle: 'Live Speed: ${displaySpeed.toStringAsFixed(1)} $unitStr',
+      notificationText: 'Distance: ${displayDistance.toStringAsFixed(2)} $distStr',
+    );
   }
 
   @override

@@ -2,6 +2,8 @@ import 'package:get_it/get_it.dart';
 import 'package:drive_replay/core/services/local_db/app_database.dart';
 import 'package:drive_replay/core/domain/repositories/trip_repository.dart';
 import 'package:drive_replay/core/data/repositories/trip_repository_impl.dart';
+import 'package:drive_replay/core/domain/repositories/settings_repository.dart';
+import 'package:drive_replay/core/data/repositories/settings_repository_impl.dart';
 import 'package:drive_replay/core/permissions/services/permission_service.dart';
 import 'package:drive_replay/core/permissions/viewmodels/permission_viewmodel.dart';
 import 'package:drive_replay/features/trip_record/viewmodels/trip_record_viewmodel.dart';
@@ -11,6 +13,7 @@ import 'package:drive_replay/core/domain/repositories/analytics_repository.dart'
 import 'package:drive_replay/core/data/repositories/analytics_repository_impl.dart';
 import 'package:drive_replay/features/analytics/viewmodels/analytics_viewmodel.dart';
 import 'package:drive_replay/features/dashboard/viewmodels/dashboard_viewmodel.dart';
+import 'package:drive_replay/features/settings/viewmodels/settings_viewmodel.dart';
 
 final GetIt locator = GetIt.instance;
 
@@ -22,6 +25,7 @@ Future<void> setupLocatorAsync() async {
   // Repositories
   locator.registerLazySingleton<TripRepository>(() => TripRepositoryImpl(locator<AppDatabase>()));
   locator.registerLazySingleton<AnalyticsRepository>(() => AnalyticsRepositoryImpl(locator<AppDatabase>()));
+  locator.registerLazySingleton<SettingsRepository>(() => SettingsRepositoryImpl(locator<AppDatabase>()));
   
   // ViewModels
   locator.registerFactory<PermissionViewModel>(() => PermissionViewModel(locator<PermissionService>()));
@@ -30,4 +34,5 @@ Future<void> setupLocatorAsync() async {
   locator.registerFactory<ReplayViewModel>(() => ReplayViewModel(locator<TripRepository>()));
   locator.registerFactory<AnalyticsViewModel>(() => AnalyticsViewModel(locator<AnalyticsRepository>()));
   locator.registerFactory<DashboardViewModel>(() => DashboardViewModel(locator<TripRepository>()));
+  locator.registerFactory<SettingsViewModel>(() => SettingsViewModel(locator<SettingsRepository>()));
 }

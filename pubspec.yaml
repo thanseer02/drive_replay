@@ -51,6 +51,7 @@ dependencies:
   fl_chart: ^1.2.0
   flutter_screenutil: ^5.9.3
   flutter_native_splash: ^2.4.7
+  auto_start_flutter: ^1.4.0
 
 dev_dependencies:
   flutter_test:

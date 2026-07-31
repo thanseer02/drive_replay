@@ -67,6 +67,9 @@ class PermissionViewModel extends ChangeNotifier with WidgetsBindingObserver {
   Future<void> requestBatteryOptimization() async {
     final state = await _permissionService.requestPermission(Permission.ignoreBatteryOptimizations);
     _states[Permission.ignoreBatteryOptimizations] = state;
+    if (state == AppPermissionState.granted) {
+      await _permissionService.requestOemBackgroundExecution();
+    }
     notifyListeners();
   }
   

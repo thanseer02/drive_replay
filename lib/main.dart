@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:drive_replay/core/di/dependency_injection.dart';
 import 'package:drive_replay/core/permissions/viewmodels/permission_viewmodel.dart';
+import 'package:drive_replay/features/settings/viewmodels/settings_viewmodel.dart';
 import 'package:drive_replay/features/dashboard/views/dashboard_screen.dart';
 import 'package:flutter/services.dart';
 
@@ -60,19 +61,26 @@ class _DriveReplayAppState extends State<DriveReplayApp> {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => locator<PermissionViewModel>()),
+        ChangeNotifierProvider(create: (_) => locator<SettingsViewModel>()),
       ],
       child: ScreenUtilInit(
         designSize: const Size(393, 852), // Standard modern phone dimensions
         minTextAdapt: true,
         splitScreenMode: true,
         builder: (context, child) {
-          return MaterialApp(
-            title: 'Drive Replay',
-            theme: AppTheme.darkTheme,
-            debugShowCheckedModeBanner: false,
-            home: const SplashScreen(
-              nextScreen: DashboardScreen(),
-            ),
+          return Consumer<SettingsViewModel>(
+            builder: (context, settingsVm, child) {
+              return MaterialApp(
+                title: 'Drive Replay',
+                theme: AppTheme.lightTheme,
+                darkTheme: AppTheme.darkTheme,
+                themeMode: settingsVm.flutterThemeMode,
+                debugShowCheckedModeBanner: false,
+                home: const SplashScreen(
+                  nextScreen: DashboardScreen(),
+                ),
+              );
+            },
           );
         },
       ),

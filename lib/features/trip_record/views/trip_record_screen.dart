@@ -5,14 +5,17 @@ import 'package:drive_replay/core/di/dependency_injection.dart';
 import 'package:drive_replay/core/theme/app_colors.dart';
 import 'package:drive_replay/core/theme/app_theme.dart';
 import 'package:drive_replay/features/trip_record/viewmodels/trip_record_viewmodel.dart';
+import 'package:drive_replay/features/settings/viewmodels/settings_viewmodel.dart';
 
 class TripRecordScreen extends StatelessWidget {
   const TripRecordScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => locator<TripRecordViewModel>(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => locator<TripRecordViewModel>()),
+      ],
       child: const _TripRecordView(),
     );
   }
@@ -42,12 +45,12 @@ class _TripRecordView extends StatelessWidget {
           },
         ),
       ),
-      body: Consumer<TripRecordViewModel>(
-        builder: (context, vm, child) {
+      body: Consumer2<TripRecordViewModel, SettingsViewModel>(
+        builder: (context, vm, settingsVm, child) {
           return Column(
             children: [
               Expanded(
-                child: _buildTelemetryDashboard(context, vm),
+                child: _buildTelemetryDashboard(context, vm, settingsVm),
               ),
               _buildControlPanel(context, vm),
             ],
@@ -57,12 +60,12 @@ class _TripRecordView extends StatelessWidget {
     );
   }
 
-  Widget _buildTelemetryDashboard(BuildContext context, TripRecordViewModel vm) {
+  Widget _buildTelemetryDashboard(BuildContext context, TripRecordViewModel vm, SettingsViewModel settingsVm) {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(32),
         border: Border.all(
           color: vm.state == TripState.recording ? Colors.green.withValues(alpha: 0.5) : Colors.transparent,
@@ -83,11 +86,13 @@ class _TripRecordView extends StatelessWidget {
         children: [
           // Speed
           Text(
-            vm.currentSpeedKmh.toStringAsFixed(0),
-            style: Theme.of(context).textTheme.displayLarge,
+            settingsVm.convertSpeed(vm.currentSpeed).toStringAsFixed(0),
+            style: Theme.of(context).textTheme.displayLarge?.copyWith(
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
           ).animate(target: vm.state == TripState.recording ? 1 : 0).shimmer(duration: 2.seconds),
           Text(
-            'km/h',
+            settingsVm.speedUnitString,
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: Colors.grey),
           ),
           
@@ -97,9 +102,18 @@ class _TripRecordView extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildSecondaryStat(context, 'Distance', '${vm.totalDistanceKm.toStringAsFixed(2)} km'),
-              Container(width: 1, height: 40, color: Colors.white12),
+              _buildSecondaryStat(context, 'Distance', '${settingsVm.convertDistance(vm.totalDistance).toStringAsFixed(2)} ${settingsVm.distanceUnitString}'),
+              Container(width: 1, height: 40, color: Colors.grey.withValues(alpha: 0.3)),
               _buildSecondaryStat(context, 'Time', vm.formattedDuration),
+            ],
+          ),
+          const SizedBox(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildSecondaryStat(context, 'Avg Speed', '${settingsVm.convertSpeed(vm.averageSpeed).toStringAsFixed(1)} ${settingsVm.speedUnitString}'),
+              Container(width: 1, height: 40, color: Colors.grey.withValues(alpha: 0.3)),
+              _buildSecondaryStat(context, 'Max Speed', '${settingsVm.convertSpeed(vm.maxSpeed).toStringAsFixed(1)} ${settingsVm.speedUnitString}'),
             ],
           ),
         ],
@@ -112,7 +126,9 @@ class _TripRecordView extends StatelessWidget {
       children: [
         Text(
           value,
-          style: Theme.of(context).textTheme.headlineLarge,
+          style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
         ),
         const SizedBox(height: 4),
         Text(

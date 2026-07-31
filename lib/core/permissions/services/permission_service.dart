@@ -1,3 +1,4 @@
+import 'package:auto_start_flutter/auto_start_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:drive_replay/core/permissions/models/permission_state.dart';
 import 'package:drive_replay/core/logger/logger_service.dart';
@@ -13,6 +14,13 @@ class PermissionService {
   Future<AppPermissionState> requestPermission(Permission permission) async {
     LoggerService.info('Requesting permission: $permission');
     final status = await permission.request();
+    
+    // Automatically intercept 'deniedForever' for UX improvement
+    if (status.isPermanentlyDenied) {
+      LoggerService.warning('Permission $permission permanently denied. User must use OS settings.');
+      // The ViewModel will handle prompting the user to open settings.
+    }
+    
     LoggerService.info('Permission result: $status');
     return status.toAppState();
   }
@@ -22,6 +30,9 @@ class PermissionService {
   Future<AppPermissionState> requestBackgroundLocation() async {
     LoggerService.info('Requesting Background Location');
     final status = await Permission.locationAlways.request();
+    if (status.isPermanentlyDenied) {
+      LoggerService.warning('Background Location permanently denied. User must use OS settings.');
+    }
     return status.toAppState();
   }
 
@@ -48,8 +59,16 @@ class PermissionService {
 
   /// Handle OEM specific battery restrictions (Xiaomi, Huawei, etc.)
   Future<void> requestOemBackgroundExecution() async {
-    LoggerService.warning('OEM Background execution prompt requested. (Implementation requires platform-specific intents or auto_start_flutter)');
-    // In a full production app, this would use MethodChannels to launch the 
-    // manufacturer-specific AutoStart or Battery Saver whitelisting screens.
+    try {
+      final isAvailable = await isAutoStartAvailable;
+      if (isAvailable == true) {
+        LoggerService.info('OEM AutoStart detected. Prompting user to whitelist app.');
+        await getAutoStartPermission();
+      } else {
+        LoggerService.info('OEM AutoStart not applicable on this device.');
+      }
+    } catch (e) {
+      LoggerService.error('Failed to check OEM AutoStart: $e');
+    }
   }
 }
