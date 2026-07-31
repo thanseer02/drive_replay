@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.drivetracker.drive_tracker"
+    namespace = "com.example.drive_replay"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -21,7 +21,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.drivetracker.drive_tracker"
+        applicationId = "com.example.drive_replay"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -41,9 +41,4 @@ android {
 
 flutter {
     source = "../.."
-}
-
-dependencies {
-    implementation("com.google.android.gms:play-services-location:21.2.0")
-    implementation("androidx.localbroadcastmanager:localbroadcastmanager:1.1.0")
 }
